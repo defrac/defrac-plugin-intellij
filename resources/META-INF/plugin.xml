@@ -1,0 +1,31 @@
+<idea-plugin version="2">
+  <id>defrac.intellij</id>
+  <name>defrac IntelliJ IDEA Plug-In</name>
+  <version>1.0</version>
+  <vendor email="team@defrac.com" url="https://www.defrac.com">defrac inc.</vendor>
+
+  <description>
+    <![CDATA[Build multi-platform apps with defrac inside IntelliJ IDEA]]>
+  </description>
+
+  <change-notes>
+    <![CDATA[<ol>
+      <li>2014-11-10 - Start of IntelliJ IDEA plugin development</li>
+    </ol>]]>
+  </change-notes>
+
+  <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
+  <idea-version since-build="131"/>
+
+
+  <extensions defaultExtensionNs="com.intellij">
+    <configurationType implementation="defrac.intellij.runner.DefracConfigurationType"/>
+    <sdkType implementation="defrac.intellij.sdk.DefracSdkType"/>
+    <moduleType id="DEFRAC_MODULE" implementationClass="defrac.intellij.module.DefracModuleType"/>
+    <moduleConfigurationEditorProvider implementation="defrac.intellij.module.DefracModuleConfigurationEditorProvider"/>
+  </extensions>
+  <application-components/>
+  <project-components/>
+  <actions/>
+  <module-components/>
+</idea-plugin>
