@@ -16,23 +16,13 @@
 
 package defrac.intellij;
 
-import com.intellij.openapi.actionSystem.DataContext;
 import defrac.intellij.util.Names;
-import org.jetbrains.annotations.Nullable;
 
 /**
  *
  */
 public final class DefracGotoDelegateDeclarationHandler extends DefracGotoDeclarationHandlerBase {
-  public static final String ACTION_TEXT = "Go to &Delegate";
-
   public DefracGotoDelegateDeclarationHandler() {
     super(Names.ALL_DELEGATES, false);
-  }
-
-  @Nullable
-  @Override
-  public String getActionText(final DataContext context) {
-    return ACTION_TEXT;
   }
 }

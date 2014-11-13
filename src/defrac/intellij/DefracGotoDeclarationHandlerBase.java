@@ -17,6 +17,7 @@
 package defrac.intellij;
 
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
@@ -44,6 +45,12 @@ abstract class DefracGotoDeclarationHandlerBase implements GotoDeclarationHandle
 
   @Nullable
   @Override
+  public String getActionText(final DataContext context) {
+    return null;
+  }
+
+  @Nullable
+  @Override
   public PsiElement[] getGotoDeclarationTargets(@Nullable final PsiElement element,
                                                 final int offset,
                                                 final Editor editor) {
@@ -65,7 +72,7 @@ abstract class DefracGotoDeclarationHandlerBase implements GotoDeclarationHandle
     final PsiAnnotation annotation =
         PsiTreeUtil.getParentOfType(literal, PsiAnnotation.class, /*strict=*/false);
 
-    if(!isDelegateOrMacroAnnotation(annotation)) {
+    if(!isDefracAnnotation(annotation)) {
       return EMPTY_ARRAY;
     }
 
@@ -86,7 +93,7 @@ abstract class DefracGotoDeclarationHandlerBase implements GotoDeclarationHandle
     return new PsiElement[] { psiClass };
   }
 
-  private boolean isDelegateOrMacroAnnotation(@Nullable final PsiAnnotation annotation) {
+  private boolean isDefracAnnotation(@Nullable final PsiAnnotation annotation) {
     if(annotation == null) {
       return false;
     }
