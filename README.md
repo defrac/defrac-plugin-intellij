@@ -25,11 +25,11 @@ TODO
 [ ] Error Highlighting
   (✓) Unsupported java.*
   ( ) Support for @Unsupported
-  ( ) Broken @Macro
-  ( ) Broken @Delegate
-  ( ) @ReadOnly
-  ( ) @WriteOnly
+  ( ) Broken reference to @Macro/@Delegate
+  ( ) Writing @ReadOnly field
+  ( ) Reading @WriteOnly field
 [ ] Scope of SourceRoot (Web shouldn't see JVM)
-[ ] Link @Macro
-[ ] Link @Delegate
+[✓] GotoDeclarationHandler @Macro/@Delegate
+[ ] SafeDeleteProcessor @Macro/@Delegate
+[ ] Rename @Macro/@Delegate
 </pre>

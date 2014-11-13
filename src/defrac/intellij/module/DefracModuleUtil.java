@@ -18,6 +18,10 @@ package defrac.intellij.module;
 
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleType;
+import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.psi.PsiDirectory;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -27,6 +31,32 @@ public final class DefracModuleUtil {
   public static boolean isDefracModule(@Nullable final Module module) {
     return module != null && ModuleType.get(module) == DefracModuleType.getInstance();
   }
+
+
+  @Nullable
+  public static Module findDefracModule(@Nullable final PsiElement psiElement) {
+    return null == psiElement ? null : findDefracModule(psiElement.getContainingFile());
+  }
+
+  @Nullable
+  public static Module findDefracModule(@Nullable PsiFile psiFile) {
+    if(psiFile == null) {
+      return null;
+    }
+
+    Module module = ModuleUtil.findModuleForPsiElement(psiFile);
+
+    if(module == null) {
+      final PsiDirectory directory = psiFile.getParent();
+
+      if(directory != null) {
+        module = ModuleUtil.findModuleForPsiElement(directory);
+      }
+    }
+
+    return isDefracModule(module) ? module : null;
+  }
+
 
   private DefracModuleUtil() {}
 }
