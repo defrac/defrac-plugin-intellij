@@ -34,6 +34,8 @@ public final class Names {
   @NotNull @NonNls public static final String defrac_annotation_MacroJVM = "defrac.annotation.MacroJVM";
   @NotNull @NonNls public static final String defrac_annotation_MacroWeb = "defrac.annotation.MacroWeb";
 
+  @NotNull @NonNls public static final String defrac_macro_Macro = "defrac.macro.Macro";
+
   @NotNull public static final String[] ALL_DELEGATES = {
       defrac_annotation_Delegate,
       defrac_annotation_DelegateA5D,

@@ -19,6 +19,8 @@ package defrac.intellij.module;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -39,6 +41,17 @@ public final class DefracModuleUtil {
   }
 
   @Nullable
+  public static Module findDefracModule(@Nullable VirtualFile file, @Nullable final Project project) {
+    if(file == null || project == null) {
+      return null;
+    }
+
+    final Module module = ModuleUtil.findModuleForFile(file, project);
+
+    return toDefracModule(module);
+  }
+
+  @Nullable
   public static Module findDefracModule(@Nullable PsiFile psiFile) {
     if(psiFile == null) {
       return null;
@@ -54,6 +67,10 @@ public final class DefracModuleUtil {
       }
     }
 
+    return toDefracModule(module);
+  }
+
+  private static Module toDefracModule(final Module module) {
     return isDefracModule(module) ? module : null;
   }
 

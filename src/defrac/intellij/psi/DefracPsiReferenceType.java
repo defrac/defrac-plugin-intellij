@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-package defrac.intellij;
-
-import defrac.intellij.util.Names;
+package defrac.intellij.psi;
 
 /**
  *
  */
-public final class DefracGotoMacroDeclarationHandler extends DefracGotoDeclarationHandlerBase {
-  public DefracGotoMacroDeclarationHandler() {
-    super(Names.ALL_MACROS, false);
-  }
+public enum DefracPsiReferenceType {
+  DELEGATE, MACRO
 }
