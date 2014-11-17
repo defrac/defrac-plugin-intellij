@@ -41,6 +41,7 @@
     <gotoDeclarationHandler implementation="defrac.intellij.DefracGotoMacroDeclarationHandler"/>
     <gotoDeclarationHandler implementation="defrac.intellij.DefracGotoDelegateDeclarationHandler"/>
     <psi.referenceContributor implementation="defrac.intellij.psi.DefracReferenceContributor"/>
+    <referencesSearch implementation="defrac.intellij.findUsages.DefracReferencesSearch"/>
     <resolveScopeProvider implementation="defrac.intellij.resolve.DefracResolveScopeProvider"/>
   </extensions>
 

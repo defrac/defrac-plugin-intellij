@@ -34,7 +34,7 @@ public final class DefracReferenceProvider extends PsiReferenceProvider {
   @NotNull
   @Override
   public PsiReference[] getReferencesByElement(@NotNull final PsiElement element,
-                                               @NotNull final ProcessingContext context) {
+                                               @Nullable final ProcessingContext context) {
     final PsiFile file = element.getContainingFile();
 
     if(null == file) {
