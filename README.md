@@ -9,11 +9,9 @@ TODO
   (✓) SDK Type
   (✓) Create Wizard
   (✓) Settings Wizard
-[ ] Module
-  (✓) Module Type
-  (✓) Create Wizard
-  ( ) Settings Wizard
-  ( ) Scope SourceRoots
+[✓] Facet
+  (✓) Facet Type
+  (✓) Facet Editor
 [ ] Run/Debug
   ( ) Config Type
   ( ) Settings Wizard

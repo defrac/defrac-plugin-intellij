@@ -16,9 +16,9 @@
 
 package defrac.intellij.runner;
 
+import com.intellij.execution.configurations.ConfigurationTypeBase;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracIcons;
-import com.intellij.execution.configurations.ConfigurationTypeBase;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,12 +26,13 @@ import org.jetbrains.annotations.NotNull;
  *
  */
 public final class DefracConfigurationType extends ConfigurationTypeBase {
-  @NotNull @NonNls public static final String TYPE = "Defrac";
+  @NotNull @NonNls public static final String ID = "DEFRAC";
+
   @NotNull public static final String DISPLAY_NAME = DefracBundle.message("defrac.config.name");
   @NotNull public static final String DESCRIPTION = DefracBundle.message("defrac.config.description");
 
   public DefracConfigurationType() {
-    super(TYPE, DISPLAY_NAME, DESCRIPTION, DefracIcons.DEFRAC);
+    super(ID, DISPLAY_NAME, DESCRIPTION, DefracIcons.DEFRAC);
     addFactory(new DefracConfigurationFactory(this));
   }
 }

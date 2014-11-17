@@ -16,11 +16,11 @@
 
 package defrac.intellij.runner;
 
-import defrac.intellij.DefracBundle;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.project.Project;
+import defrac.intellij.DefracBundle;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -34,7 +34,7 @@ public final class DefracConfigurationFactory extends ConfigurationFactory {
   }
 
   @Override
-  public RunConfiguration createTemplateConfiguration(Project project) {
+  public RunConfiguration createTemplateConfiguration(final Project project) {
     return new DefracRunConfiguration(project, this, NAME);
   }
 }

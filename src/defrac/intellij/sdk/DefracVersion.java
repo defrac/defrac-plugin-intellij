@@ -16,11 +16,11 @@
 
 package defrac.intellij.sdk;
 
-import defrac.intellij.DefracBundle;
 import com.google.common.collect.Lists;
 import com.intellij.openapi.vfs.JarFileSystem;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import defrac.intellij.DefracBundle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,12 +37,12 @@ public final class DefracVersion {
   @NotNull public static final String FILE_LIB = DefracBundle.message("defrac.sdk.file.sdk.ver.lib");
 
   @NotNull private static final String[] LIBRARIES = {
-      "defrac.sdk.file.sdk.ver.lib.defrac",
+      /*"defrac.sdk.file.sdk.ver.lib.defrac",
       "defrac.sdk.file.sdk.ver.lib.defrac.a5d",
       "defrac.sdk.file.sdk.ver.lib.defrac.cpp",
       "defrac.sdk.file.sdk.ver.lib.defrac.ios",
       "defrac.sdk.file.sdk.ver.lib.defrac.jvm",
-      "defrac.sdk.file.sdk.ver.lib.defrac.web",
+      "defrac.sdk.file.sdk.ver.lib.defrac.web",*/
       "defrac.sdk.file.sdk.ver.lib.runtime",
   };
 

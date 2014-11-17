@@ -36,6 +36,9 @@ public final class Names {
 
   @NotNull @NonNls public static final String defrac_macro_Macro = "defrac.macro.Macro";
 
+  @NotNull @NonNls public static final String settingsSuffix = ".settings";
+  @NotNull @NonNls public static final String default_settings = "default"+settingsSuffix;
+
   @NotNull public static final String[] ALL_DELEGATES = {
       defrac_annotation_Delegate,
       defrac_annotation_DelegateA5D,
