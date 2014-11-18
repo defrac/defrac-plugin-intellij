@@ -14,27 +14,49 @@
  * limitations under the License.
  */
 
-package defrac.intellij.runner;
+package defrac.intellij.run;
 
-import defrac.intellij.DefracBundle;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.facet.ProjectFacetManager;
 import com.intellij.openapi.project.Project;
+import defrac.intellij.DefracIcons;
+import defrac.intellij.facet.DefracFacet;
 import org.jetbrains.annotations.NotNull;
+
+import javax.swing.*;
 
 /**
  *
  */
 public final class DefracConfigurationFactory extends ConfigurationFactory {
-  @NotNull public static final String NAME = DefracBundle.message("defrac.name");
-
   public DefracConfigurationFactory(@NotNull final ConfigurationType configurationType) {
     super(configurationType);
   }
 
   @Override
-  public RunConfiguration createTemplateConfiguration(Project project) {
-    return new DefracRunConfiguration(project, this, NAME);
+  public RunConfiguration createTemplateConfiguration(final Project project) {
+    return new DefracRunConfiguration(project, this);
+  }
+
+  @Override
+  public Icon getIcon() {
+    return DefracIcons.DEFRAC;
+  }
+
+  @Override
+  public boolean isConfigurationSingletonByDefault() {
+    return true;
+  }
+
+  @Override
+  public boolean canConfigurationBeSingleton() {
+    return true;
+  }
+
+  @Override
+  public boolean isApplicable(@NotNull final Project project) {
+    return ProjectFacetManager.getInstance(project).hasFacets(DefracFacet.ID);
   }
 }

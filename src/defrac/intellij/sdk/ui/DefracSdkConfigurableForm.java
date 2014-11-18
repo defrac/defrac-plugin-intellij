@@ -16,13 +16,13 @@
 
 package defrac.intellij.sdk.ui;
 
-import defrac.intellij.sdk.DefracSdkAdditionalData;
-import defrac.intellij.sdk.DefracVersion;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.SdkModel;
 import com.intellij.openapi.projectRoots.SdkModificator;
 import com.intellij.openapi.util.Comparing;
-import com.intellij.ui.ListCellRendererWrapper;
+import defrac.intellij.sdk.DefracSdkAdditionalData;
+import defrac.intellij.sdk.DefracVersion;
+import defrac.intellij.ui.SdkRenderer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -46,29 +46,24 @@ public final class DefracSdkConfigurableForm {
 
   private JComponent contentPanel;
   private JComboBox<Sdk> internalJdkComboBox;
+  private JLabel internalJdkLabel;
 
   public DefracSdkConfigurableForm(@NotNull final SdkModel sdkModel,
                                    @NotNull final SdkModificator sdkModificator) {
     this.sdkModel = sdkModel;
 
-    internalJdkComboBox.setModel(javaSdkModel);
+    internalJdkLabel.setLabelFor(internalJdkComboBox);
 
     //noinspection unchecked
-    internalJdkComboBox.setRenderer(new ListCellRendererWrapper<Object>() {
-      @Override
-      public void customize(JList list, Object value, int index, boolean selected, boolean hasFocus) {
-        if(value instanceof Sdk) {
-          setText(((Sdk)value).getName());
-        }
-      }
-    });
+    internalJdkComboBox.setRenderer(new SdkRenderer());
+    internalJdkComboBox.setModel(javaSdkModel);
   }
 
-  public void addJavaSdk(Sdk sdk) {
+  public void addJavaSdk(@NotNull final Sdk sdk) {
     javaSdkModel.addElement(sdk);
   }
 
-  public void removeJavaSdk(Sdk sdk) {
+  public void removeJavaSdk(@NotNull final Sdk sdk) {
     javaSdkModel.removeElement(sdk);
   }
 

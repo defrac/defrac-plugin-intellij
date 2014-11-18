@@ -16,11 +16,15 @@
 
 package defrac.intellij.findUsages;
 
-import com.intellij.lang.java.JavaLanguage;
 import com.intellij.openapi.application.QueryExecutorBase;
-import com.intellij.openapi.util.Comparing;
-import com.intellij.psi.*;
-import com.intellij.psi.search.*;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.psi.PsiReference;
+import com.intellij.psi.search.PsiSearchHelper;
+import com.intellij.psi.search.SearchScope;
+import com.intellij.psi.search.TextOccurenceProcessor;
+import com.intellij.psi.search.UsageSearchContext;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;

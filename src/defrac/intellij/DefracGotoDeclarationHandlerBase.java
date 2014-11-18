@@ -23,7 +23,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
-import defrac.intellij.module.DefracModuleUtil;
+import defrac.intellij.facet.DefracFacet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -58,7 +58,7 @@ abstract class DefracGotoDeclarationHandlerBase implements GotoDeclarationHandle
       return EMPTY_ARRAY;
     }
 
-    if(onlyInDefracModule && DefracModuleUtil.findDefracModule(element) == null) {
+    if(onlyInDefracModule && DefracFacet.getInstance(element) == null) {
       return EMPTY_ARRAY;
     }
 

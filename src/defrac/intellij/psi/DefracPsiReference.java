@@ -18,7 +18,7 @@ package defrac.intellij.psi;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.module.Module;
+import com.intellij.facet.Facet;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
@@ -30,7 +30,7 @@ import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.IconUtil;
 import com.intellij.util.Query;
-import defrac.intellij.module.DefracModuleUtil;
+import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -92,13 +92,13 @@ public final class DefracPsiReference extends PsiReferenceBase<PsiLiteralExpress
   private Object[] getMacroVariants() {
     // all classes of current platform extending defrac.macro.Macro are eligible
     final Project project = getElement().getProject();
-    final Module module = DefracModuleUtil.findDefracModule(getElement());
+    final Facet facet = DefracFacet.getInstance(getElement());
 
-    if(module == null) {
+    if(facet == null) {
       return NO_VARIANTS;
     }
 
-    final GlobalSearchScope scope = GlobalSearchScope.moduleScope(module);
+    final GlobalSearchScope scope = GlobalSearchScope.moduleScope(facet.getModule());
 
     final PsiClass macro =
         JavaPsiFacade.getInstance(project).findClass(Names.defrac_macro_Macro, scope);
@@ -117,13 +117,13 @@ public final class DefracPsiReference extends PsiReferenceBase<PsiLiteralExpress
   private Object[] getDelegateVariants() {
     // all classes of current platform with same type closure are eligible
     final Project project = getElement().getProject();
-    final Module module = DefracModuleUtil.findDefracModule(getElement());
+    final Facet facet = DefracFacet.getInstance(getElement());
 
-    if(module == null) {
+    if(facet == null) {
       return NO_VARIANTS;
     }
 
-    final GlobalSearchScope scope = GlobalSearchScope.moduleScope(module);
+    final GlobalSearchScope scope = GlobalSearchScope.moduleScope(facet.getModule());
     final PsiJavaFile file = (PsiJavaFile)getElement().getContainingFile();
 
     if(file == null) {

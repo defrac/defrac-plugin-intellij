@@ -8,7 +8,7 @@
     <properties/>
     <border type="none"/>
     <children>
-      <component id="8ffcc" class="javax.swing.JLabel">
+      <component id="8ffcc" class="javax.swing.JLabel" binding="internalJdkLabel">
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -23,16 +23,16 @@
         </constraints>
         <properties/>
       </component>
-      <component id="8ffcc" class="javax.swing.JLabel">
+      <component id="8ffc0" class="javax.swing.JLabel" binding="defracSdkLabel">
         <constraints>
           <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <labelFor value="b2bd1"/>
+          <labelFor value="b2bd2"/>
           <text value="&amp;defrac Version:"/>
         </properties>
       </component>
-      <component id="b2bd1" class="javax.swing.JComboBox" binding="defracVersionComboBox">
+      <component id="b2bd2" class="javax.swing.JComboBox" binding="defracVersionComboBox">
         <constraints>
           <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>

@@ -16,9 +16,13 @@
 
 package defrac.intellij;
 
-import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
+import defrac.intellij.util.OS;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import java.util.Map;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  *
@@ -29,6 +33,15 @@ public enum DefracPlatform {
   IOS("ios", "iOS", "ios"),
   JVM("jvm", "Java", "jvm"),
   WEB("web", "Web", "web");
+
+  @NotNull
+  private static final Map<String, DefracPlatform> NAME_TO_PLATFORM = ImmutableMap.of(
+      GENERIC.name, GENERIC,
+      ANDROID.name, ANDROID,
+      IOS.name, IOS,
+      JVM.name, JVM,
+      WEB.name, WEB
+  );
 
   @NotNull public final String name;
   @NotNull public final String displayName;
@@ -47,31 +60,11 @@ public enum DefracPlatform {
   }
 
   @NotNull
-  public String applySuffix(@NotNull final String value) {
-    return isGeneric() ? value : value+'.'+name;
+  public static DefracPlatform byName(@NotNull final String value) {
+    return checkNotNull(NAME_TO_PLATFORM.get(value));
   }
 
-  @NotNull
-  public static DefracPlatform platformOf(@Nullable final String value) {
-    if(Strings.isNullOrEmpty(value)) {
-      return GENERIC;
-    }
-
-    final int lastIndexOfDot = value.lastIndexOf('.');
-    final int length = value.length();
-
-    if(lastIndexOfDot == -1 || lastIndexOfDot == (length - 1)) {
-      return GENERIC;
-    }
-
-    final String ext = value.substring(lastIndexOfDot + 1, length);
-
-    for(final DefracPlatform platform : values()) {
-      if(platform.name.equals(ext) || platform.abbreviation.equals(ext)) {
-        return platform;
-      }
-    }
-
-    return GENERIC;
+  public boolean isAvailableOnHostOS() {
+    return this != IOS || OS.isMac();
   }
 }

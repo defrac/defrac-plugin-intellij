@@ -30,8 +30,10 @@ import java.util.List;
  */
 public final class DefracNewSdkDialog extends DialogWrapper {
   private JPanel contentPanel;
-  private JComboBox internalJdkComboBox;
-  private JComboBox defracVersionComboBox;
+  private JComboBox<String> internalJdkComboBox;
+  private JComboBox<String> defracVersionComboBox;
+  private JLabel internalJdkLabel;
+  private JLabel defracSdkLabel;
 
   public DefracNewSdkDialog(@Nullable final Project project,
                             @NotNull final List<String> javaSdkNames,
@@ -42,7 +44,12 @@ public final class DefracNewSdkDialog extends DialogWrapper {
 
     setTitle("Create New Defrac SDK");
 
+    internalJdkLabel.setLabelFor(internalJdkComboBox);
+    defracSdkLabel.setLabelFor(defracVersionComboBox);
+
+    //noinspection unchecked
     internalJdkComboBox.setModel(new CollectionComboBoxModel(javaSdkNames, selectedJavaSdk));
+    //noinspection unchecked
     defracVersionComboBox.setModel(new CollectionComboBoxModel(defracVersionNames, selectedDefracVersion));
 
     init();

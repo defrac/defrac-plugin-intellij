@@ -1,6 +1,6 @@
 <!--
   ~ Copyright 2014 defrac inc.
-  ~
+  ~   
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
   ~ You may obtain a copy of the License at
@@ -34,15 +34,13 @@
   <idea-version since-build="131"/>
 
   <extensions defaultExtensionNs="com.intellij">
-    <configurationType implementation="defrac.intellij.runner.DefracConfigurationType"/>
-    <sdkType implementation="defrac.intellij.sdk.DefracSdkType"/>
-    <moduleType id="DEFRAC_MODULE" implementationClass="defrac.intellij.module.DefracModuleType"/>
-    <moduleConfigurationEditorProvider implementation="defrac.intellij.module.DefracModuleConfigurationEditorProvider"/>
+    <configurationType implementation="defrac.intellij.run.DefracConfigurationType"/>
+    <facetType implementation="defrac.intellij.facet.DefracFacetType"/>
     <gotoDeclarationHandler implementation="defrac.intellij.DefracGotoMacroDeclarationHandler"/>
     <gotoDeclarationHandler implementation="defrac.intellij.DefracGotoDelegateDeclarationHandler"/>
     <psi.referenceContributor implementation="defrac.intellij.psi.DefracReferenceContributor"/>
     <referencesSearch implementation="defrac.intellij.findUsages.DefracReferencesSearch"/>
-    <resolveScopeProvider implementation="defrac.intellij.resolve.DefracResolveScopeProvider"/>
+    <sdkType implementation="defrac.intellij.sdk.DefracSdkType"/>
   </extensions>
 
   <application-components/>
