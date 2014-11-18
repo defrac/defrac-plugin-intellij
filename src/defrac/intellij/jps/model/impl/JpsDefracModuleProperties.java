@@ -17,6 +17,7 @@
 package defrac.intellij.jps.model.impl;
 
 import defrac.intellij.DefracPlatform;
+import defrac.intellij.sdk.DefracVersion;
 import defrac.intellij.util.Names;
 
 /**
@@ -24,7 +25,9 @@ import defrac.intellij.util.Names;
  */
 public final class JpsDefracModuleProperties {
   public String PLATFORM = DefracPlatform.GENERIC.name;
-  public String SETTINGS_FILE_RELATIVE_PATH = "/"+ Names.default_settings;
+  public String SETTINGS_FILE_RELATIVE_PATH = "/"+Names.default_settings;
+  public String DEFRAC_VERSION = DefracVersion.LATEST;
+
   public JpsDefracModuleProperties() {
   }
 }

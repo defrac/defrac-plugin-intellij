@@ -59,11 +59,11 @@ public final class DefracSdkConfigurableForm {
     internalJdkComboBox.setModel(javaSdkModel);
   }
 
-  public void addJavaSdk(Sdk sdk) {
+  public void addJavaSdk(@NotNull final Sdk sdk) {
     javaSdkModel.addElement(sdk);
   }
 
-  public void removeJavaSdk(Sdk sdk) {
+  public void removeJavaSdk(@NotNull final Sdk sdk) {
     javaSdkModel.removeElement(sdk);
   }
 

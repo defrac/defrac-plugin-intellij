@@ -16,9 +16,9 @@
 
 package defrac.intellij.sdk;
 
-import defrac.intellij.DefracBundle;
-import defrac.intellij.DefracPlatform;
 import com.google.common.collect.Lists;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.SdkModificator;
 import com.intellij.openapi.projectRoots.SdkTypeId;
@@ -27,8 +27,13 @@ import com.intellij.openapi.roots.AnnotationOrderRootType;
 import com.intellij.openapi.roots.JavadocOrderRootType;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.ui.OrderRoot;
+import com.intellij.openapi.roots.ui.configuration.ProjectStructureConfigurable;
+import com.intellij.openapi.roots.ui.configuration.projectRoot.ProjectSdksModel;
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import defrac.intellij.DefracBundle;
+import defrac.intellij.DefracPlatform;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -197,7 +202,7 @@ public final class DefracSdkUtil {
       return null;
     }
 
-    final File location = new File(sdkDir, versionName);
+    final File location = new File(sdkDir, DefracVersion.mapToCurrent(versionName));
 
     if(!location.isDirectory()) {
       return null;
@@ -205,4 +210,24 @@ public final class DefracSdkUtil {
 
     return new DefracVersion(versionName, location);
   }
+
+  @NotNull
+  public static ProjectSdksModel getSdkModel() {
+    // TODO(joa): this can't be correct
+    return getSdkModel(ProjectManager.getInstance().getOpenProjects()[0]);
+  }
+
+  @NotNull
+  public static ProjectSdksModel getSdkModel(@NotNull final Project project) {
+    return ProjectStructureConfigurable.
+        getInstance(project).getProjectJdksModel();
+  }
+
+  @NotNull
+  public static final Condition<SdkTypeId> IS_DEFRAC_VERSION = new Condition<SdkTypeId>() {
+    @Override
+    public boolean value(final SdkTypeId sdkTypeId) {
+      return isDefracSdk(sdkTypeId);
+    }
+  };
 }

@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package defrac.intellij.facet.ui;
+package defrac.intellij.facet;
 
 import com.intellij.facet.ui.FacetEditorContext;
 import com.intellij.facet.ui.FacetEditorTab;
 import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.projectRoots.SdkAdditionalData;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.util.PathUtil;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
-import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.facet.DefracFacetConfiguration;
-import defrac.intellij.facet.DefracRootUtil;
+import defrac.intellij.facet.ui.DefracFacetEditorForm;
+import defrac.intellij.sdk.DefracSdkAdditionalData;
+import defrac.intellij.sdk.DefracVersion;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -54,17 +56,11 @@ public final class DefracFacetEditorTab extends FacetEditorTab {
                               @NotNull final DefracFacetConfiguration configuration) {
     this.context = context;
     this.configuration = configuration;
-    this.form = new DefracFacetEditorForm(context, (DefracFacet)context.getFacet());
+    this.form = new DefracFacetEditorForm(
+        context,
+        (DefracFacet)context.getFacet());
 
-    final DefracPlatform[] values = DefracPlatform.values();
-
-    for(final DefracPlatform platform : values) {
-      if(!platform.isAvailableOnHostOS()) {
-        continue;
-      }
-
-      form.addPlatform(platform);
-    }
+    form.addPlatforms(DefracPlatform.values());
   }
 
   @NotNull
@@ -81,14 +77,15 @@ public final class DefracFacetEditorTab extends FacetEditorTab {
   @Override
   public boolean isModified() {
     return checkRelativePath(configuration.getState().SETTINGS_FILE_RELATIVE_PATH, form.getSettingsPath())
-        || form.getSelectedPlatform() != configuration.getPlatform();
-
+        || form.getSelectedPlatform() != configuration.getPlatform()
+        || form.getSelectedSdk() != configuration.getDefracSdk();
   }
 
   @Override
   public void reset() {
     form.setSelectedPlatform(configuration.getPlatform());
     form.setSettingsPath(getFacet().getSettingsFile().getAbsolutePath());
+    form.setSelectedSdk(configuration.getDefracSdk());
   }
 
   @Override
@@ -110,6 +107,24 @@ public final class DefracFacetEditorTab extends FacetEditorTab {
     //
 
     configuration.getState().PLATFORM = form.getSelectedPlatform().name;
+
+    //
+
+    final Sdk sdk = form.getSelectedSdk();
+    final SdkAdditionalData arbitraryData = sdk.getSdkAdditionalData();
+
+    if(!(arbitraryData instanceof DefracSdkAdditionalData)) {
+      throw new ConfigurationException("Illegal SDK");
+    }
+
+    final DefracSdkAdditionalData data = (DefracSdkAdditionalData)arbitraryData;
+    final DefracVersion version = data.getDefracVersion();
+
+    if(version == null) {
+      throw new ConfigurationException("SDK is not configured");
+    }
+
+    configuration.getState().DEFRAC_VERSION = version.getName();
 
     //
 

@@ -19,6 +19,8 @@ package defrac.intellij.facet.ui;
 import com.intellij.facet.ui.FacetEditorContext;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.roots.ui.configuration.JdkComboBox;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.io.FileUtil;
@@ -27,6 +29,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.facet.DefracRootUtil;
+import defrac.intellij.sdk.DefracSdkUtil;
 import defrac.intellij.ui.DefracPlatformRenderer;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
@@ -46,11 +49,13 @@ public final class DefracFacetEditorForm {
   @NotNull
   private final FacetEditorContext context;
 
-  private JComboBox<DefracPlatform> platformComboBox;
   private JPanel componentPanel;
+  private JComboBox<DefracPlatform> platformComboBox;
   private TextFieldWithBrowseButton settingsField;
   private JLabel platformLabel;
   private JLabel settingsLabel;
+  private JLabel defracSdkLabel;
+  private JdkComboBox defracSdkComboBox;
 
   @NotNull
   private final DefaultComboBoxModel<DefracPlatform> platformModel = new DefaultComboBoxModel<DefracPlatform>();
@@ -61,6 +66,7 @@ public final class DefracFacetEditorForm {
 
     platformLabel.setLabelFor(platformComboBox);
     settingsLabel.setLabelFor(settingsField);
+    defracSdkLabel.setLabelFor(defracSdkComboBox);
 
     //noinspection unchecked
     platformComboBox.setRenderer(new DefracPlatformRenderer());
@@ -87,6 +93,14 @@ public final class DefracFacetEditorForm {
     platformComboBox.setSelectedItem(platform);
   }
 
+  public void setSelectedSdk(@Nullable final Sdk sdk) {
+    defracSdkComboBox.setSelectedJdk(sdk);
+  }
+
+  public Sdk getSelectedSdk() {
+    return defracSdkComboBox.getSelectedJdk();
+  }
+
   public JPanel getComponentPanel() {
     return componentPanel;
   }
@@ -102,6 +116,22 @@ public final class DefracFacetEditorForm {
     }
 
     settingsField.setText(path);
+  }
+
+  public void addPlatforms(final DefracPlatform[] platforms) {
+    for(final DefracPlatform platform : platforms) {
+      addPlatform(platform);
+    }
+  }
+
+  private void createUIComponents() {
+    //TODO(joa): is there a different way to get the ProjectSdksModel?
+    // well... i give up. can't create in ctor due to magic form initialization,
+    // and cant create here since sdkModel would be null.
+    // -> DefracSdkUtil.getSdkModel is probably broken and evil
+    defracSdkComboBox = new JdkComboBox(
+        DefracSdkUtil.getSdkModel(),
+        DefracSdkUtil.IS_DEFRAC_VERSION);
   }
 
   private class FolderFieldListener implements ActionListener {

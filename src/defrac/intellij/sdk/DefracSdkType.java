@@ -16,9 +16,6 @@
 
 package defrac.intellij.sdk;
 
-import defrac.intellij.DefracBundle;
-import defrac.intellij.DefracIcons;
-import defrac.intellij.sdk.ui.DefracNewSdkDialog;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.intellij.openapi.projectRoots.*;
@@ -27,6 +24,9 @@ import com.intellij.openapi.roots.AnnotationOrderRootType;
 import com.intellij.openapi.roots.JavadocOrderRootType;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.ui.Messages;
+import defrac.intellij.DefracBundle;
+import defrac.intellij.DefracIcons;
+import defrac.intellij.sdk.ui.DefracNewSdkDialog;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -37,9 +37,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static defrac.intellij.sdk.JdkUtil.isApplicableJdk;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static defrac.intellij.sdk.JdkUtil.isApplicableJdk;
 
 /**
  *

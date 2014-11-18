@@ -21,13 +21,11 @@ import com.intellij.facet.ui.FacetEditorContext;
 import com.intellij.facet.ui.FacetEditorTab;
 import com.intellij.facet.ui.FacetValidatorsManager;
 import com.intellij.openapi.components.PersistentStateComponent;
-import com.intellij.openapi.module.Module;
+import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import defrac.intellij.DefracPlatform;
-import defrac.intellij.facet.ui.DefracFacetEditorTab;
 import defrac.intellij.jps.model.impl.JpsDefracModuleProperties;
 import defrac.intellij.sdk.DefracSdkAdditionalData;
 import defrac.intellij.sdk.DefracVersion;
@@ -52,20 +50,53 @@ public final class DefracFacetConfiguration implements FacetConfiguration, Persi
   }
 
   @Nullable
-  public DefracVersion getDefracVersion() {
+  public Sdk getDefracSdk() {
     if(facet == null) {
       return null;
     }
 
-    final Module module = facet.getModule();
-    final Sdk moduleSdk = ModuleRootManager.getInstance(module).getSdk();
+    final String version = getState().DEFRAC_VERSION;
 
-    if(moduleSdk != null && isDefracSdk(moduleSdk)) {
-      DefracSdkAdditionalData data = (DefracSdkAdditionalData)moduleSdk.getSdkAdditionalData();
-      return data != null ? data.getDefracVersion() : null;
+    for(final Sdk sdk : ProjectJdkTable.getInstance().getAllJdks()) {
+      if(!isDefracSdk(sdk)) {
+        continue;
+      }
+
+      final DefracSdkAdditionalData data = (DefracSdkAdditionalData)sdk.getSdkAdditionalData();
+
+      if(data == null) {
+        continue;
+      }
+
+      final DefracVersion defracVersion = data.getDefracVersion();
+
+      if(defracVersion == null) {
+        continue;
+      }
+
+      if(defracVersion.getName().equals(version)) {
+        return sdk;
+      }
     }
 
     return null;
+  }
+
+  @Nullable
+  public DefracVersion getDefracVersion() {
+    final Sdk sdk = getDefracSdk();
+
+    if(sdk == null) {
+      return null;
+    }
+
+    final DefracSdkAdditionalData data = (DefracSdkAdditionalData)sdk.getSdkAdditionalData();
+
+    if(data == null) {
+      return null;
+    }
+
+    return data.getDefracVersion();
   }
 
   @NotNull

@@ -35,7 +35,9 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.xml.ConvertContext;
 import com.intellij.util.xml.DomElement;
+import defrac.intellij.DefracPlatform;
 import defrac.intellij.jps.model.impl.JpsDefracModuleProperties;
+import defrac.intellij.sdk.DefracVersion;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -154,5 +156,20 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
     }
 
     return VfsUtilCore.virtualToIoFile(settingsFile);
+  }
+
+  @NotNull
+  public DefracPlatform getPlatform() {
+    return getConfiguration().getPlatform();
+  }
+
+  @Nullable
+  public DefracVersion getDefracVersion() {
+    return getConfiguration().getDefracVersion();
+  }
+
+  @Nullable
+  public Sdk getDefracSdk() {
+    return getConfiguration().getDefracSdk();
   }
 }

@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-package defrac.intellij.runner;
+package defrac.intellij.run;
 
 import com.intellij.execution.configurations.ConfigurationTypeBase;
+import com.intellij.execution.configurations.ConfigurationTypeUtil;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracIcons;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
+
+import javax.swing.*;
 
 /**
  *
@@ -31,8 +34,17 @@ public final class DefracConfigurationType extends ConfigurationTypeBase {
   @NotNull public static final String DISPLAY_NAME = DefracBundle.message("defrac.config.name");
   @NotNull public static final String DESCRIPTION = DefracBundle.message("defrac.config.description");
 
+  public static DefracConfigurationType getInstance() {
+    return ConfigurationTypeUtil.findConfigurationType(DefracConfigurationType.class);
+  }
+
   public DefracConfigurationType() {
     super(ID, DISPLAY_NAME, DESCRIPTION, DefracIcons.DEFRAC);
     addFactory(new DefracConfigurationFactory(this));
+  }
+
+  @Override
+  public Icon getIcon() {
+    return DefracIcons.DEFRAC;
   }
 }

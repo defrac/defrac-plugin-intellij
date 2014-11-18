@@ -21,6 +21,8 @@ import com.intellij.openapi.vfs.JarFileSystem;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import defrac.intellij.DefracBundle;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,6 +34,15 @@ import java.util.List;
  *
  */
 public final class DefracVersion {
+  @NotNull @NonNls public static final String LATEST = "Latest";
+  @NotNull @NonNls public static final String CURRENT = "current";
+
+  @Contract("!null -> !null")
+  @Nullable
+  public static String mapToCurrent(@Nullable final String value) {
+    return LATEST.equals(value) ? CURRENT : value;
+  }
+
   @NotNull public static final DefracVersion[] EMPTY_ARRAY = new DefracVersion[0];
 
   @NotNull public static final String FILE_LIB = DefracBundle.message("defrac.sdk.file.sdk.ver.lib");
@@ -68,8 +79,8 @@ public final class DefracVersion {
 
   public DefracVersion(@NotNull final String name,
                        @NotNull final File location) {
-    this.isCurrent = name.equals("current");
-    this.name = isCurrent ? "Latest" : name;
+    this.isCurrent = CURRENT.equals(name);
+    this.name = isCurrent ? LATEST : name;
     this.location = location;
   }
 

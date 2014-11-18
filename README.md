@@ -12,21 +12,26 @@ TODO
 [✓] Facet
   (✓) Facet Type
   (✓) Facet Editor
-[ ] Run/Debug
-  ( ) Config Type
-  ( ) Settings Wizard
-  ( ) Run
-    { } Android
-    { } iOS
-    { } JVM
-    { } Web
+[✓] Run/Debug
+  (✓) Config Type
+  (✓) Settings Wizard
+  (✓) Run
+    {✓} Android
+    {✓} iOS
+    {✓} JVM
+    {✓} Web
+  ( ) Integrate with Tool Window
+[ ] Tool Window
+  ( ) Single defrac instance running
+  ( ) Allow user input
+  ( ) Keep Alive (user might enter "quit")
+  ( ) Communicate with Run/Debug
 [ ] Error Highlighting
   (✓) Unsupported java.*
   ( ) Support for @Unsupported
   ( ) Broken reference to @Macro/@Delegate
   ( ) Writing @ReadOnly field
   ( ) Reading @WriteOnly field
-[ ] Scope of SourceRoot (Web shouldn't see JVM)
 [✓] GotoDeclarationHandler @Macro/@Delegate
 [ ] SafeDeleteProcessor @Macro/@Delegate
 [ ] Rename @Macro/@Delegate
