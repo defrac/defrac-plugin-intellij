@@ -45,8 +45,8 @@ import static defrac.intellij.sdk.JdkUtil.isApplicableJdk;
  *
  */
 public final class DefracSdkType extends JavaDependentSdkType implements JavaSdkType {
-  @NotNull public static final String NAME = DefracBundle.message("defrac.sdk.name");
-  @NotNull public static final String DEFAULT_DOCUMENTATION_URL = DefracBundle.message("defrac.sdk.javadoc.default");
+  @NotNull public static final String NAME = DefracBundle.message("sdk.name");
+  @NotNull public static final String DEFAULT_DOCUMENTATION_URL = DefracBundle.message("sdk.javadoc.default");
 
   public DefracSdkType() {
     super(NAME);
@@ -159,8 +159,8 @@ public final class DefracSdkType extends JavaDependentSdkType implements JavaSdk
 
     if(javaSdks.isEmpty()){
       Messages.showErrorDialog(
-          DefracBundle.message("defrac.sdk.error.jdkNotFound.message"),
-          DefracBundle.message("defrac.sdk.error.jdkNotFound.title"));
+          DefracBundle.message("sdk.error.jdkNotFound.message"),
+          DefracBundle.message("sdk.error.jdkNotFound.title"));
       return false;
     }
 
@@ -169,8 +169,8 @@ public final class DefracSdkType extends JavaDependentSdkType implements JavaSdk
 
     if(sdkData == null) {
       Messages.showErrorDialog(
-          DefracBundle.message("defrac.sdk.error.parse.message"),
-          DefracBundle.message("defrac.sdk.error.parse.title"));
+          DefracBundle.message("sdk.error.parse.message"),
+          DefracBundle.message("sdk.error.parse.title"));
       return false;
     }
 

@@ -39,6 +39,7 @@ import defrac.intellij.DefracPlatform;
 import defrac.intellij.jps.model.impl.JpsDefracModuleProperties;
 import defrac.intellij.sdk.DefracVersion;
 import defrac.intellij.util.Names;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,8 +52,10 @@ import static defrac.intellij.sdk.DefracSdkUtil.isDefracSdk;
  *
  */
 public final class DefracFacet extends Facet<DefracFacetConfiguration> {
+  @NotNull @NonNls public static final String DEBUG_NAME = "DEFRAC";
+
   @NotNull
-  public static final FacetTypeId<DefracFacet> ID = new FacetTypeId<DefracFacet>("DEFRAC");
+  public static final FacetTypeId<DefracFacet> ID = new FacetTypeId<DefracFacet>(DEBUG_NAME);
 
   @NotNull
   public static DefracFacetType getFacetType() {
@@ -66,7 +69,7 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
 
   @Nullable
   public static DefracFacet getInstance(@NotNull ConvertContext context) {
-    Module module = context.getModule();
+    final Module module = context.getModule();
     return module != null ? getInstance(module) : null;
   }
 
@@ -134,8 +137,9 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
     return false;
   }
 
-  public DefracFacet(@NotNull final Module module, final String name,
-                      final @NotNull DefracFacetConfiguration configuration) {
+  public DefracFacet(@NotNull final Module module,
+                     @NotNull final String name,
+                     @NotNull final DefracFacetConfiguration configuration) {
     super(getFacetType(), module, name, configuration, null);
     configuration.setFacet(this);
   }
@@ -171,5 +175,13 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
   @Nullable
   public Sdk getDefracSdk() {
     return getConfiguration().getDefracSdk();
+  }
+
+  public boolean isMacroLibrary() {
+    return getConfiguration().isMacroLibrary();
+  }
+
+  public boolean skipJavac() {
+    return getConfiguration().skipJavac();
   }
 }

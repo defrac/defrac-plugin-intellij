@@ -48,10 +48,10 @@ import static com.google.common.base.Strings.isNullOrEmpty;
  *
  */
 public final class DefracSdkUtil {
-  @NotNull public static final String FILE_LAUNCHER = DefracBundle.message("defrac.sdk.file.launcher");
-  @NotNull public static final String FILE_SDK = DefracBundle.message("defrac.sdk.file.sdk");
-  @NotNull public static final String FILE_SDK_CURRENT = DefracBundle.message("defrac.sdk.file.sdk.current");
-  @NotNull public static final String FILE_SDK_CURRENT_VERSION = DefracBundle.message("defrac.sdk.file.sdk.current.version");
+  @NotNull public static final String FILE_LAUNCHER = DefracBundle.message("sdk.file.launcher");
+  @NotNull public static final String FILE_SDK = DefracBundle.message("sdk.file.sdk");
+  @NotNull public static final String FILE_SDK_CURRENT = DefracBundle.message("sdk.file.sdk.current");
+  @NotNull public static final String FILE_SDK_CURRENT_VERSION = DefracBundle.message("sdk.file.sdk.current.version");
 
   public static boolean isValidSdkHome(@Nullable final String path) {
     return !isNullOrEmpty(path) && isValidSdkHome(new File(path));
@@ -172,7 +172,7 @@ public final class DefracSdkUtil {
   private static String getJavadocUrl(@NotNull final DefracVersion defracVersion,
                                       @NotNull final DefracPlatform defracPlatform) {
     return DefracBundle.message(
-        "defrac.sdk.javadoc.version",
+        "sdk.javadoc.withVersion",
         defracVersion.isCurrent() ? "latest" : defracVersion.getName(),
         defracPlatform.name);
   }

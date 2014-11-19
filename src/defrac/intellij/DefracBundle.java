@@ -30,7 +30,7 @@ import java.util.ResourceBundle;
  *
  */
 public final class DefracBundle {
-  @NonNls @NotNull public static final String BUNDLE = "defrac.intellij.DefracBundle";
+  @NonNls @NotNull private static final String BUNDLE = "defrac.intellij.DefracBundle";
 
   @Nullable private static Reference<ResourceBundle> bundle;
 

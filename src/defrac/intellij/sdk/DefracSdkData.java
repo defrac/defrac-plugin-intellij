@@ -16,13 +16,13 @@
 
 package defrac.intellij.sdk;
 
-import defrac.intellij.DefracBundle;
 import com.google.common.collect.Lists;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.io.FileUtil;
+import defrac.intellij.DefracBundle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,7 +37,7 @@ import java.util.List;
  */
 public final class DefracSdkData {
   @NotNull private static final List<SoftReference<DefracSdkData>> instances = Lists.newArrayList();
-  @NotNull public static final String FILE_SDK = DefracBundle.message("defrac.sdk.file.sdk");
+  @NotNull public static final String FILE_SDK = DefracBundle.message("sdk.file.sdk");
 
   @Nullable
   public static DefracSdkData getSdkData(@NotNull final File sdkLocation) {

@@ -50,7 +50,8 @@ public final class DefracRunConfigurationEditor extends SettingsEditor<DefracRun
         final DefracFacet facet = DefracFacet.getInstance(module);
 
         return facet != null
-            && !facet.getPlatform().isGeneric();
+            && !facet.getPlatform().isGeneric()
+            && !facet.isMacroLibrary();
       }
     };
 
