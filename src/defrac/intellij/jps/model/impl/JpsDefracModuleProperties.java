@@ -27,7 +27,8 @@ public final class JpsDefracModuleProperties {
   public String PLATFORM = DefracPlatform.GENERIC.name;
   public String SETTINGS_FILE_RELATIVE_PATH = "/"+Names.default_settings;
   public String DEFRAC_VERSION = DefracVersion.LATEST;
+  public boolean IS_MACRO_LIBRARY = false;
+  public boolean SKIP_JAVAC = true;
 
-  public JpsDefracModuleProperties() {
-  }
+  public JpsDefracModuleProperties() {}
 }

@@ -88,6 +88,10 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
       throw new ExecutionException(DefracBundle.message("facet.error.facetMissing", module.getName()));
     }
 
+    if(facet.isMacroLibrary()) {
+      throw new ExecutionException(DefracBundle.message("facet.error.isMacroLibrary"));
+    }
+
     if(facet.getDefracVersion() == null) {
       throw new ExecutionException(DefracBundle.message("facet.error.noVersion"));
     }
@@ -100,6 +104,10 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
       throw new ExecutionException(DefracBundle.message("facet.error.genericPlatform", module.getName()));
     }
 
+    if(!facet.getPlatform().isAvailableOnHostOS()) {
+      throw new ExecutionException(DefracBundle.message("facet.error.unavailablePlatform", facet.getPlatform().displayName));
+    }
+
     final boolean isDebug = DefaultDebugExecutor.EXECUTOR_ID.equals(executor.getId());
 
     if(isDebug) {
@@ -107,6 +115,7 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
       return null;
     }
 
+    //noinspection ConstantConditions
     return new DefracRunningState(
         environment,
         facet,
@@ -131,6 +140,10 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
       throw new RuntimeConfigurationError(DefracBundle.message("facet.error.facetMissing", module.getName()));
     }
 
+    if(facet.isMacroLibrary()) {
+      throw new RuntimeConfigurationError(DefracBundle.message("facet.error.isMacroLibrary"));
+    }
+
     if(facet.getDefracVersion() == null) {
       throw new RuntimeConfigurationError(DefracBundle.message("facet.error.noVersion"));
     }
@@ -141,6 +154,10 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
 
     if(facet.getPlatform().isGeneric()) {
       throw new RuntimeConfigurationError(DefracBundle.message("facet.error.genericPlatform", module.getName()));
+    }
+
+    if(!facet.getPlatform().isAvailableOnHostOS()) {
+      throw new RuntimeConfigurationError(DefracBundle.message("facet.error.unavailablePlatform", facet.getPlatform().displayName));
     }
   }
 

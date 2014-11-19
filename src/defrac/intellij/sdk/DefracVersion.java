@@ -45,7 +45,7 @@ public final class DefracVersion {
 
   @NotNull public static final DefracVersion[] EMPTY_ARRAY = new DefracVersion[0];
 
-  @NotNull public static final String FILE_LIB = DefracBundle.message("defrac.sdk.file.sdk.ver.lib");
+  @NotNull public static final String FILE_LIB = DefracBundle.message("sdk.file.sdk.ver.lib");
 
   @NotNull private static final String[] LIBRARIES = {
       /*"defrac.sdk.file.sdk.ver.lib.defrac",
@@ -54,19 +54,19 @@ public final class DefracVersion {
       "defrac.sdk.file.sdk.ver.lib.defrac.ios",
       "defrac.sdk.file.sdk.ver.lib.defrac.jvm",
       "defrac.sdk.file.sdk.ver.lib.defrac.web",*/
-      "defrac.sdk.file.sdk.ver.lib.runtime",
+      "sdk.file.sdk.ver.lib.runtime",
   };
 
   @NotNull private static final String[] ANNOTATIONS = {
-      "defrac.sdk.file.sdk.ver.lib.annotations",
+      "sdk.file.sdk.ver.lib.annotations",
   };
 
   @NotNull private static final String[] MACROS = {
-      "defrac.sdk.file.sdk.ver.lib.macro.a5d",
-      "defrac.sdk.file.sdk.ver.lib.macro.cpp",
-      "defrac.sdk.file.sdk.ver.lib.macro.ios",
-      "defrac.sdk.file.sdk.ver.lib.macro.jvm",
-      "defrac.sdk.file.sdk.ver.lib.macro.web",
+      "sdk.file.sdk.ver.lib.macro.a5d",
+      "sdk.file.sdk.ver.lib.macro.cpp",
+      "sdk.file.sdk.ver.lib.macro.ios",
+      "sdk.file.sdk.ver.lib.macro.jvm",
+      "sdk.file.sdk.ver.lib.macro.web",
   };
 
   @NotNull

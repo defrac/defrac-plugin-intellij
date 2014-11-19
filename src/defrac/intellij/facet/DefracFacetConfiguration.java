@@ -99,6 +99,14 @@ public final class DefracFacetConfiguration implements FacetConfiguration, Persi
     return data.getDefracVersion();
   }
 
+  public boolean isMacroLibrary() {
+    return getState().IS_MACRO_LIBRARY;
+  }
+
+  public boolean skipJavac() {
+    return getState().SKIP_JAVAC;
+  }
+
   @NotNull
   public DefracPlatform getPlatform() {
     return DefracPlatform.byName(getState().PLATFORM);

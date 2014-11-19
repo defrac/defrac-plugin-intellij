@@ -80,7 +80,10 @@ public final class DefracRunningState extends CommandLineState {
     cmd.add("-project");
     cmd.add(facet.getSettingsFile().getParentFile().getAbsolutePath());
 
-    //TODO(joa): skip javac
+    if(facet.skipJavac()) {
+      cmd.add("-skip-javac");
+    }
+
     //TODO(joa): configure android sdk if available!
     //TODO(joa): configure settings when console supports it
 

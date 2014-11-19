@@ -31,7 +31,7 @@ public enum DefracPlatform {
   GENERIC("generic", "Generic", ""),
   ANDROID("android", "Android", "a5d"),
   IOS("ios", "iOS", "ios"),
-  JVM("jvm", "Java", "jvm"),
+  JVM("jvm", "JVM", "jvm"),
   WEB("web", "Web", "web");
 
   @NotNull

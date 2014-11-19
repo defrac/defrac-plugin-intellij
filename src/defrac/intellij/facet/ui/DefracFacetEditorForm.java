@@ -56,6 +56,8 @@ public final class DefracFacetEditorForm {
   private JLabel settingsLabel;
   private JLabel defracSdkLabel;
   private JdkComboBox defracSdkComboBox;
+  private JCheckBox macroLibraryCheckBox;
+  private JCheckBox skipJavacCheckBox;
 
   @NotNull
   private final DefaultComboBoxModel<DefracPlatform> platformModel = new DefaultComboBoxModel<DefracPlatform>();
@@ -91,6 +93,22 @@ public final class DefracFacetEditorForm {
 
   public void setSelectedPlatform(@NotNull final DefracPlatform platform) {
     platformComboBox.setSelectedItem(platform);
+  }
+
+  public void setMacroLibrary(final boolean value) {
+    macroLibraryCheckBox.setSelected(value);
+  }
+
+  public boolean isMacroLibrary() {
+    return macroLibraryCheckBox.isSelected();
+  }
+
+  public void setSkipJavac(final boolean value) {
+    skipJavacCheckBox.setSelected(value);
+  }
+
+  public boolean getSkipJavac() {
+    return skipJavacCheckBox.isSelected();
   }
 
   public void setSelectedSdk(@Nullable final Sdk sdk) {

@@ -31,8 +31,8 @@ import javax.swing.*;
 public final class DefracConfigurationType extends ConfigurationTypeBase {
   @NotNull @NonNls public static final String ID = "DEFRAC";
 
-  @NotNull public static final String DISPLAY_NAME = DefracBundle.message("defrac.config.name");
-  @NotNull public static final String DESCRIPTION = DefracBundle.message("defrac.config.description");
+  @NotNull public static final String DISPLAY_NAME = DefracBundle.message("config.name");
+  @NotNull public static final String DESCRIPTION = DefracBundle.message("config.description");
 
   public static DefracConfigurationType getInstance() {
     return ConfigurationTypeUtil.findConfigurationType(DefracConfigurationType.class);
