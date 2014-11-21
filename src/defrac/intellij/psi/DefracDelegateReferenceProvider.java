@@ -19,10 +19,12 @@ package defrac.intellij.psi;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
+import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static defrac.intellij.psi.DefracPsiUtil.isDelegateAnnotation;
 
@@ -63,8 +65,14 @@ public final class DefracDelegateReferenceProvider extends PsiReferenceProvider 
       return PsiReference.EMPTY_ARRAY;
     }
 
+    final DefracPlatform targetPlatform =
+        DefracPlatform.byDelegateAnnotation(checkNotNull(annotation.getQualifiedName()));
+
     return new PsiReference[] {
-        new DefracDelegateClassReference(value, (PsiLiteralExpression)element)
+        new DefracDelegateClassReference(
+            value,
+            (PsiLiteralExpression)element,
+            targetPlatform)
     };
   }
 

@@ -16,7 +16,6 @@
 
 package defrac.intellij.annotator;
 
-import com.google.common.collect.ImmutableMap;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.psi.*;
@@ -32,7 +31,6 @@ import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -41,15 +39,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
  *
  */
 public final class DefracMacroAnnotator implements Annotator {
-  private static final Map<String, DefracPlatform> ANNOTATION_TO_PLATFORM = ImmutableMap.of(
-      Names.defrac_annotation_MacroA5D, DefracPlatform.ANDROID,
-      Names.defrac_annotation_MacroIOS, DefracPlatform.IOS,
-      Names.defrac_annotation_MacroJVM, DefracPlatform.JVM,
-      Names.defrac_annotation_MacroWeb, DefracPlatform.WEB
-  );
-
-  public DefracMacroAnnotator() {
-  }
+  public DefracMacroAnnotator() {}
 
   @Override
   public void annotate(@NotNull final PsiElement element,
@@ -147,7 +137,7 @@ public final class DefracMacroAnnotator implements Annotator {
       DefracAnnotatorUtil.reportMissingImplementations(
           element, holder,
           facet, method,
-          platformImplementations, ANNOTATION_TO_PLATFORM);
+          platformImplementations, DefracPlatform.MACRO_ANNOTATION_TO_PLATFORM);
     } else {
       DefracAnnotatorUtil.reportMoreGenericAnnotation(holder, annotation, method);
     }

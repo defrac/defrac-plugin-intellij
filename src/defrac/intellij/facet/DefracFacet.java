@@ -153,6 +153,11 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
 
   @NotNull
   public GlobalSearchScope getDelegateSearchScope() {
+    return getDelegateSearchScope(null);
+  }
+
+  @NotNull
+  public GlobalSearchScope getDelegateSearchScope(@Nullable final DefracPlatform targetPlatform) {
     // Search only in non-macro-library modules that match the platform of the current
     // module. If the current module is generic, we search in all eligible modules
     final Module thisModule = getModule();
@@ -180,6 +185,10 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
           continue;
         }
 
+        if(targetPlatform != null && !targetPlatform.isGeneric() && this.getPlatform().isGeneric() && that.getPlatform() != targetPlatform) {
+          continue;
+        }
+
         moduleScope = GlobalSearchScope.moduleWithDependenciesAndLibrariesScope(thatModule, /*includeTests=*/false);
       }
 
@@ -191,6 +200,11 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
 
   @NotNull
   public GlobalSearchScope getMacroSearchScope() {
+    return getMacroSearchScope(null);
+  }
+
+  @NotNull
+  public GlobalSearchScope getMacroSearchScope(@Nullable final DefracPlatform targetPlatform) {
     // Search only in macro-library modules that match the platform of the current
     // module. If the current module is generic, we search in all macro modules
     final Module[] modules = ModuleManager.getInstance(getModule().getProject()).getModules();
@@ -212,6 +226,10 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
       }
 
       if(!this.getPlatform().isGeneric() && that.getPlatform() != this.getPlatform()) {
+        continue;
+      }
+
+      if(targetPlatform != null && !targetPlatform.isGeneric() && this.getPlatform().isGeneric() && that.getPlatform() != targetPlatform) {
         continue;
       }
 

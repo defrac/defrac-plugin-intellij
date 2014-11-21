@@ -19,10 +19,12 @@ package defrac.intellij.psi;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
+import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static defrac.intellij.psi.DefracPsiUtil.isMacroAnnotation;
 
@@ -64,6 +66,9 @@ public final class DefracMacroReferenceProvider extends PsiReferenceProvider {
       return PsiReference.EMPTY_ARRAY;
     }
 
+    final DefracPlatform targetPlatform =
+        DefracPlatform.byMacroAnnotation(checkNotNull(annotation.getQualifiedName()));
+
     final int indexOfHash = value.lastIndexOf('#');
 
     if(indexOfHash == -1) {
@@ -73,7 +78,8 @@ public final class DefracMacroReferenceProvider extends PsiReferenceProvider {
               // We ignore the first ", so start-offset is 1
               1,
               // We ignore the last ", so length is fine (end is exclusive)
-              value.length()
+              value.length(),
+              targetPlatform
           )
       };
     }
@@ -86,13 +92,9 @@ public final class DefracMacroReferenceProvider extends PsiReferenceProvider {
         // minus one for the first " we ignore
         //
         // Example: "abc#foo" the indexOfHash is 4 and the length is 3, but exclusive
-        indexOfHash
+        indexOfHash,
+        targetPlatform
     );
-
-    /*if(indexOfHash >= value.length() - 2) {
-      // "foo.bar.Baz#"
-      return new PsiReference[] { classReference };
-    }*/
 
     return new PsiReference[] {
         classReference,

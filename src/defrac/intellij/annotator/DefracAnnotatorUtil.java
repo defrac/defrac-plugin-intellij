@@ -93,7 +93,7 @@ public final class DefracAnnotatorUtil {
       final DefracPlatform moreSpecificPlatform =
           nameToPlatform.get(otherAnnotation.getQualifiedName());
 
-      if(moreSpecificPlatform != null) {
+      if(moreSpecificPlatform != null && !moreSpecificPlatform.isGeneric()) {
         implementations.add(moreSpecificPlatform);
       }
     }

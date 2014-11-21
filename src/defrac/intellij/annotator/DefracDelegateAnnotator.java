@@ -16,7 +16,6 @@
 
 package defrac.intellij.annotator;
 
-import com.google.common.collect.ImmutableMap;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.psi.*;
@@ -31,7 +30,6 @@ import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -40,14 +38,6 @@ import static com.google.common.base.Strings.isNullOrEmpty;
  *
  */
 public final class DefracDelegateAnnotator implements Annotator {
-  @NotNull
-  private static final Map<String, DefracPlatform> ANNOTATION_TO_PLATFORM = ImmutableMap.of(
-      Names.defrac_annotation_DelegateA5D, DefracPlatform.ANDROID,
-      Names.defrac_annotation_DelegateIOS, DefracPlatform.IOS,
-      Names.defrac_annotation_DelegateJVM, DefracPlatform.JVM,
-      Names.defrac_annotation_DelegateWeb, DefracPlatform.WEB
-  );
-
   public DefracDelegateAnnotator() {}
 
   @Override
@@ -126,7 +116,7 @@ public final class DefracDelegateAnnotator implements Annotator {
           element, holder,
           facet,
           klass, platformImplementations,
-          ANNOTATION_TO_PLATFORM);
+          DefracPlatform.DELEGATE_ANNOTATION_TO_PLATFORM);
     } else {
       DefracAnnotatorUtil.reportMoreGenericAnnotation(holder, annotation, klass);
     }
