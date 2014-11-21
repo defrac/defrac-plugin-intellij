@@ -36,6 +36,7 @@
   <extensions defaultExtensionNs="com.intellij">
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.DefracDelegateAnnotator"/>
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.DefracMacroAnnotator"/>
+    <annotator language="JAVA" implementationClass="defrac.intellij.annotator.DefracReadOnlyAnnotator"/>
     <configurationType implementation="defrac.intellij.run.DefracConfigurationType"/>
     <facetType implementation="defrac.intellij.facet.DefracFacetType"/>
     <gotoDeclarationHandler implementation="defrac.intellij.gotoDeclaration.DefracGotoMacroDeclarationHandler" order="first"/>
