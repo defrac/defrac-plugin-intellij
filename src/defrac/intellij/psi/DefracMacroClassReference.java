@@ -56,14 +56,15 @@ public final class DefracMacroClassReference extends DefracClassReferenceBase {
       return NO_VARIANTS;
     }
 
-    final GlobalSearchScope scope = facet.getMacroSearchScope();
     final PsiClass macro =
-        JavaPsiFacade.getInstance(project).findClass(Names.defrac_compiler_macro_Macro, scope);
+        JavaPsiFacade.getInstance(project).findClass(
+            Names.defrac_compiler_macro_Macro, GlobalSearchScope.allScope(project));
 
     if(macro == null) {
       return NO_VARIANTS;
     }
 
+    final GlobalSearchScope scope = facet.getMacroSearchScope();
     final Query<PsiClass> query =
         ClassInheritorsSearch.search(macro, scope, true, true);
 
