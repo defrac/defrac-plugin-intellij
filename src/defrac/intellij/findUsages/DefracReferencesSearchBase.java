@@ -23,7 +23,9 @@ import com.intellij.psi.PsiReference;
 import com.intellij.psi.search.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
+import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
+import defrac.intellij.psi.DefracReference;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -71,7 +73,7 @@ abstract class DefracReferencesSearchBase<E extends PsiElement, T> extends Query
 
     final SearchScope scope = getSearchScope(queryParameter, elementToSearch, facet);
     final PsiSearchHelper helper = PsiSearchHelper.SERVICE.getInstance(elementToSearch.getProject());
-    final TextOccurenceProcessor processor = new DefracTextOccurenceProcessor(elementToSearch, consumer);
+    final TextOccurenceProcessor processor = new DefracTextOccurrenceProcessor(elementToSearch, facet.getPlatform(), consumer);
 
     helper.processElementsWithWord(
         processor,
@@ -82,12 +84,21 @@ abstract class DefracReferencesSearchBase<E extends PsiElement, T> extends Query
     );
   }
 
-  private class DefracTextOccurenceProcessor implements TextOccurenceProcessor {
+  private class DefracTextOccurrenceProcessor implements TextOccurenceProcessor {
+    @NotNull
     private final E elementToSearch;
+
+    @NotNull
+    private final DefracPlatform platform;
+
+    @NotNull
     private final Processor<PsiReference> consumer;
 
-    public DefracTextOccurenceProcessor(final E elementToSearch, final Processor<PsiReference> consumer) {
+    public DefracTextOccurrenceProcessor(@NotNull final E elementToSearch,
+                                         @NotNull final DefracPlatform platform,
+                                         @NotNull final Processor<PsiReference> consumer) {
       this.elementToSearch = elementToSearch;
+      this.platform = platform;
       this.consumer = consumer;
     }
 
@@ -109,6 +120,15 @@ abstract class DefracReferencesSearchBase<E extends PsiElement, T> extends Query
 
         if(!reference.getRangeInElement().contains(offsetInElement)) {
           continue;
+        }
+
+        if(reference instanceof DefracReference) {
+          final DefracReference defracReference = (DefracReference)reference;
+          final DefracPlatform thatPlatform = defracReference.getPlatform();
+
+          if(!platform.isGeneric() && !thatPlatform.isGeneric() && platform != thatPlatform) {
+            continue;
+          }
         }
 
         if(reference.isReferenceTo(elementToSearch)) {

@@ -52,7 +52,7 @@ public final class DefracMacroMethodReferencesSearch extends DefracMacroReferenc
   @Override
   protected String getSearchString(@NotNull final PsiMethod candidate,
                                    @NotNull final DefracFacet facet) {
-    return '#'+candidate.getName();
+    return candidate.getName();
   }
 
   @NotNull

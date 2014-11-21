@@ -28,7 +28,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  *
  */
-abstract class DefracClassReferenceBase extends PsiReferenceBase<PsiLiteralExpression> implements PsiPolyVariantReference {
+abstract class DefracClassReferenceBase extends PsiReferenceBase<PsiLiteralExpression> implements PsiPolyVariantReference, DefracReference {
   @NotNull
   static final Object[] NO_VARIANTS = new Object[0];
 
@@ -87,5 +87,23 @@ abstract class DefracClassReferenceBase extends PsiReferenceBase<PsiLiteralExpre
     }
 
     return resolveResult;
+  }
+
+  @NotNull
+  public final DefracPlatform getPlatform() {
+    return platform;
+  }
+
+  @Override
+  public final boolean isReferenceTo(@NotNull final PsiElement element) {
+    final PsiManager psiManager = getElement().getManager();
+
+    for(final ResolveResult result : multiResolve()) {
+      if(psiManager.areElementsEquivalent(result.getElement(), element)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }
