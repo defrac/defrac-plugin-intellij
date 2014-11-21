@@ -55,8 +55,13 @@ abstract class DefracClassReferenceBase extends PsiReferenceBase<PsiLiteralExpre
   @Nullable
   @Override
   public final PsiElement resolve() {
-    ResolveResult[] resolveResults = multiResolve(false);
+    ResolveResult[] resolveResults = multiResolve();
     return resolveResults.length == 1 ? resolveResults[0].getElement() : null;
+  }
+
+  @NotNull
+  public final ResolveResult[] multiResolve() {
+    return multiResolve(false);
   }
 
   @NotNull

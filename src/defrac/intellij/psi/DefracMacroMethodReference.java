@@ -46,7 +46,7 @@ public final class DefracMacroMethodReference extends PsiReferenceBase<PsiLitera
   @NotNull
   @Override
   public Object[] getVariants() {
-    final ResolveResult[] parentResults = parent.multiResolve(false);
+    final ResolveResult[] parentResults = parent.multiResolve();
     final List<LookupElement> variants = new LinkedList<LookupElement>();
 
     for(final ResolveResult parentResult : parentResults) {
@@ -69,8 +69,12 @@ public final class DefracMacroMethodReference extends PsiReferenceBase<PsiLitera
   @Nullable
   @Override
   public final PsiElement resolve() {
-    ResolveResult[] resolveResults = multiResolve(false);
+    ResolveResult[] resolveResults = multiResolve();
     return resolveResults.length == 1 ? resolveResults[0].getElement() : null;
+  }
+
+  public final ResolveResult[] multiResolve() {
+    return multiResolve(false);
   }
 
   @NotNull

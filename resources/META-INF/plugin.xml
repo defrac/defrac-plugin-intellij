@@ -34,10 +34,12 @@
   <idea-version since-build="131"/>
 
   <extensions defaultExtensionNs="com.intellij">
+    <annotator language="JAVA" implementationClass="defrac.intellij.annotator.DefracDelegateAnnotator"/>
+    <annotator language="JAVA" implementationClass="defrac.intellij.annotator.DefracMacroAnnotator"/>
     <configurationType implementation="defrac.intellij.run.DefracConfigurationType"/>
     <facetType implementation="defrac.intellij.facet.DefracFacetType"/>
-    <gotoDeclarationHandler implementation="defrac.intellij.DefracGotoMacroDeclarationHandler"/>
-    <gotoDeclarationHandler implementation="defrac.intellij.DefracGotoDelegateDeclarationHandler"/>
+    <gotoDeclarationHandler implementation="defrac.intellij.gotoDeclaration.DefracGotoMacroDeclarationHandler" order="first"/>
+    <gotoDeclarationHandler implementation="defrac.intellij.gotoDeclaration.DefracGotoDelegateDeclarationHandler" order="first"/>
     <methodReferencesSearch implementation="defrac.intellij.findUsages.DefracMacroMethodReferencesSearch"/>
     <projectViewPane implementation="defrac.intellij.projectView.DefracProjectViewPane"/>
     <psi.referenceContributor implementation="defrac.intellij.psi.DefracReferenceContributor"/>

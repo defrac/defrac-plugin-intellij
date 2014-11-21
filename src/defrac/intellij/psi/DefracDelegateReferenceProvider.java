@@ -20,11 +20,11 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static defrac.intellij.psi.DefracPsiUtil.isDelegateAnnotation;
 
 /**
  *
@@ -55,39 +55,17 @@ public final class DefracDelegateReferenceProvider extends PsiReferenceProvider 
       return PsiReference.EMPTY_ARRAY;
     }
 
-    // (2) get annotation
+    // (2) get delegate annotation
     final PsiAnnotation annotation =
         PsiTreeUtil.getParentOfType(element, PsiAnnotation.class, /*strict=*/false);
 
-    if(annotation == null) {
-      return PsiReference.EMPTY_ARRAY;
-    }
-
-    // (3) is this our annotation?
-    final String qualifiedName = annotation.getQualifiedName();
-
-    if(qualifiedName == null) {
-      return PsiReference.EMPTY_ARRAY;
-    }
-
-    if(!matchType(qualifiedName, Names.ALL_DELEGATES)) {
+    if(!isDelegateAnnotation(annotation)) {
       return PsiReference.EMPTY_ARRAY;
     }
 
     return new PsiReference[] {
         new DefracDelegateClassReference(value, (PsiLiteralExpression)element)
     };
-  }
-
-  private boolean matchType(@NotNull final String qname,
-                            @NotNull final String[] availableNames) {
-    for(final String name : availableNames) {
-      if(name.equals(qname)) {
-        return true;
-      }
-    }
-
-    return false;
   }
 
   @Override

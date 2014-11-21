@@ -28,7 +28,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  *
  */
-public final class DefracMacroMethodReferencesSearch extends DefracMacroReferencesSearch<PsiMethod, MethodReferencesSearch.SearchParameters> {
+public final class DefracMacroMethodReferencesSearch extends DefracMacroReferencesSearchBase<PsiMethod, MethodReferencesSearch.SearchParameters> {
   public DefracMacroMethodReferencesSearch() {}
 
   @NotNull

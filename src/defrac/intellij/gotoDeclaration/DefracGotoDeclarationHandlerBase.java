@@ -14,30 +14,34 @@
  * limitations under the License.
  */
 
-package defrac.intellij;
+package defrac.intellij.gotoDeclaration;
 
+import com.google.common.collect.Lists;
 import com.intellij.codeInsight.navigation.actions.GotoDeclarationHandler;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
-import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.PsiUtil;
 import defrac.intellij.facet.DefracFacet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
+import java.util.ArrayList;
+import java.util.Set;
+
 import static com.intellij.psi.PsiElement.EMPTY_ARRAY;
 
 /**
  *
  */
 abstract class DefracGotoDeclarationHandlerBase implements GotoDeclarationHandler {
-  @NotNull private final String[] allowedQualifiedNames;
+  @NotNull
+  private final Set<String> allowedQualifiedNames;
+
   private final boolean onlyInDefracModule;
 
-  DefracGotoDeclarationHandlerBase(@NotNull final String[] allowedQualifiedNames,
+  DefracGotoDeclarationHandlerBase(@NotNull final Set<String> allowedQualifiedNames,
                                    final boolean onlyInDefracModule) {
     this.allowedQualifiedNames = allowedQualifiedNames;
     this.onlyInDefracModule = onlyInDefracModule;
@@ -76,21 +80,35 @@ abstract class DefracGotoDeclarationHandlerBase implements GotoDeclarationHandle
       return EMPTY_ARRAY;
     }
 
-    final String value = getValue(literal);
+    final PsiReference[] references = literal.getReferences();
+    final ArrayList<PsiPolyVariantReference> defracReferences =
+        Lists.newArrayListWithExpectedSize(references.length);
 
-    if(isNullOrEmpty(value)) {
-      return EMPTY_ARRAY;
+    for(final PsiReference reference : references) {
+      if(isDefracReference(reference)) {
+        if(!reference.getRangeInElement().contains(offset)) {
+          continue;
+        }
+
+        defracReferences.add((PsiPolyVariantReference)reference);
+      }
     }
 
-    final Project project = element.getProject();
-    final GlobalSearchScope scope = GlobalSearchScope.allScope(project);
-    final PsiClass psiClass = JavaPsiFacade.getInstance(project).findClass(value, scope);
+    final ArrayList<PsiElement> result = Lists.newArrayListWithExpectedSize(defracReferences.size());
 
-    if(psiClass == null) {
-      return EMPTY_ARRAY;
+    for(final PsiPolyVariantReference reference : defracReferences) {
+      final ResolveResult[] resolveResults = reference.multiResolve(false);
+
+      for(final PsiElement resolveResult : PsiUtil.mapElements(resolveResults)) {
+        if(resolveResult == null) {
+          continue;
+        }
+
+        result.add(resolveResult);
+      }
     }
 
-    return new PsiElement[] { psiClass };
+    return result.toArray(new PsiElement[result.size()]);
   }
 
   private boolean isDefracAnnotation(@Nullable final PsiAnnotation annotation) {
@@ -101,22 +119,8 @@ abstract class DefracGotoDeclarationHandlerBase implements GotoDeclarationHandle
     final String qualifiedName =
         annotation.getQualifiedName();
 
-    if(qualifiedName == null) {
-      return false;
-    }
-
-    for(final String allowedQualifiedName : allowedQualifiedNames) {
-      if(allowedQualifiedName.equals(qualifiedName)) {
-        return true;
-      }
-    }
-
-    return false;
+    return allowedQualifiedNames.contains(qualifiedName);
   }
 
-  @Nullable
-  private static String getValue(@NotNull final PsiLiteralExpression literalExp) {
-    final Object value = literalExp.getValue();
-    return value instanceof String ? (String)value : null;
-  }
+  protected abstract boolean isDefracReference(@NotNull final PsiReference reference);
 }

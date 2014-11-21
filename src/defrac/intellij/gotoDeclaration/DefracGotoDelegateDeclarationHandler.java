@@ -14,15 +14,23 @@
  * limitations under the License.
  */
 
-package defrac.intellij;
+package defrac.intellij.gotoDeclaration;
 
+import com.intellij.psi.PsiReference;
+import defrac.intellij.psi.DefracDelegateClassReference;
 import defrac.intellij.util.Names;
+import org.jetbrains.annotations.NotNull;
 
 /**
  *
  */
-public final class DefracGotoMacroDeclarationHandler extends DefracGotoDeclarationHandlerBase {
-  public DefracGotoMacroDeclarationHandler() {
-    super(Names.ALL_MACROS, false);
+public final class DefracGotoDelegateDeclarationHandler extends DefracGotoDeclarationHandlerBase {
+  public DefracGotoDelegateDeclarationHandler() {
+    super(Names.ALL_DELEGATES, false);
+  }
+
+  @Override
+  protected boolean isDefracReference(@NotNull final PsiReference reference) {
+    return reference instanceof DefracDelegateClassReference;
   }
 }
