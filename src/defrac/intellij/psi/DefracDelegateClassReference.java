@@ -29,6 +29,7 @@ import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.IconUtil;
 import com.intellij.util.Query;
+import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -52,8 +53,9 @@ public final class DefracDelegateClassReference extends DefracClassReferenceBase
   };
 
   public DefracDelegateClassReference(@NotNull final String value,
-                                      @NotNull final PsiLiteralExpression element) {
-    super(element, new TextRange(1, 1 + value.length()));
+                                      @NotNull final PsiLiteralExpression element,
+                                      @NotNull final DefracPlatform platform) {
+    super(element, new TextRange(1, 1 + value.length()), platform);
   }
 
   @NotNull
@@ -67,7 +69,7 @@ public final class DefracDelegateClassReference extends DefracClassReferenceBase
       return NO_VARIANTS;
     }
 
-    final GlobalSearchScope scope = facet.getDelegateSearchScope();
+    final GlobalSearchScope scope = facet.getDelegateSearchScope(platform);
     final PsiJavaFile file = (PsiJavaFile)getElement().getContainingFile();
 
     if(file == null) {
@@ -178,5 +180,14 @@ public final class DefracDelegateClassReference extends DefracClassReferenceBase
 
   private void sort(@NotNull final PsiClassType[] types) {
     Arrays.sort(types, TYPE_COMPARATOR);
+  }
+
+  @NotNull
+  @Override
+  protected GlobalSearchScope getSearchScope(@NotNull final Project project) {
+    final DefracFacet facet = DefracFacet.getInstance(getElement());
+    return facet == null
+        ? GlobalSearchScope.allScope(project)
+        : facet.getDelegateSearchScope(platform);
   }
 }

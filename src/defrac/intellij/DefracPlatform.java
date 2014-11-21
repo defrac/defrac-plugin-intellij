@@ -17,6 +17,7 @@
 package defrac.intellij;
 
 import com.google.common.collect.ImmutableMap;
+import defrac.intellij.util.Names;
 import defrac.intellij.util.OS;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,6 +34,24 @@ public enum DefracPlatform {
   IOS("ios", "iOS", "ios"),
   JVM("jvm", "JVM", "jvm"),
   WEB("web", "Web", "web");
+
+  @NotNull
+  public static final Map<String, DefracPlatform> MACRO_ANNOTATION_TO_PLATFORM = ImmutableMap.of(
+      Names.defrac_annotation_Macro   , GENERIC,
+      Names.defrac_annotation_MacroA5D, ANDROID,
+      Names.defrac_annotation_MacroIOS, IOS,
+      Names.defrac_annotation_MacroJVM, JVM,
+      Names.defrac_annotation_MacroWeb, WEB
+  );
+
+  @NotNull
+  public static final Map<String, DefracPlatform> DELEGATE_ANNOTATION_TO_PLATFORM = ImmutableMap.of(
+      Names.defrac_annotation_Delegate,    GENERIC,
+      Names.defrac_annotation_DelegateA5D, ANDROID,
+      Names.defrac_annotation_DelegateIOS, IOS,
+      Names.defrac_annotation_DelegateJVM, JVM,
+      Names.defrac_annotation_DelegateWeb, WEB
+  );
 
   @NotNull
   private static final Map<String, DefracPlatform> NAME_TO_PLATFORM = ImmutableMap.of(
@@ -62,6 +81,16 @@ public enum DefracPlatform {
   @NotNull
   public static DefracPlatform byName(@NotNull final String value) {
     return checkNotNull(NAME_TO_PLATFORM.get(value));
+  }
+
+  @NotNull
+  public static DefracPlatform byDelegateAnnotation(@NotNull final String qualifiedName) {
+    return checkNotNull(DELEGATE_ANNOTATION_TO_PLATFORM.get(qualifiedName));
+  }
+
+  @NotNull
+  public static DefracPlatform byMacroAnnotation(@NotNull final String qualifiedName) {
+    return checkNotNull(MACRO_ANNOTATION_TO_PLATFORM.get(qualifiedName));
   }
 
   public boolean isAvailableOnHostOS() {

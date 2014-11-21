@@ -28,6 +28,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import com.intellij.util.IconUtil;
 import com.intellij.util.Query;
+import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
@@ -41,8 +42,9 @@ import java.util.List;
 public final class DefracMacroClassReference extends DefracClassReferenceBase {
   public DefracMacroClassReference(@NotNull final PsiLiteralExpression element,
                                    final int offset,
-                                   final int length) {
-    super(element, new TextRange(offset, offset + length));
+                                   final int length,
+                                   @NotNull final DefracPlatform platform) {
+    super(element, new TextRange(offset, offset + length), platform);
   }
 
   @NotNull
@@ -64,7 +66,7 @@ public final class DefracMacroClassReference extends DefracClassReferenceBase {
       return NO_VARIANTS;
     }
 
-    final GlobalSearchScope scope = facet.getMacroSearchScope();
+    final GlobalSearchScope scope = facet.getMacroSearchScope(platform);
     final Query<PsiClass> query =
         ClassInheritorsSearch.search(macro, scope, true, true);
 
@@ -94,5 +96,14 @@ public final class DefracMacroClassReference extends DefracClassReferenceBase {
     }
 
     return variants.toArray(new Object[variants.size()]);
+  }
+
+  @NotNull
+  @Override
+  protected GlobalSearchScope getSearchScope(@NotNull final Project project) {
+    final DefracFacet facet = DefracFacet.getInstance(getElement());
+    return facet == null
+        ? GlobalSearchScope.allScope(project)
+        : facet.getMacroSearchScope(platform);
   }
 }

@@ -21,6 +21,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.IncorrectOperationException;
+import defrac.intellij.DefracPlatform;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,9 +32,14 @@ abstract class DefracClassReferenceBase extends PsiReferenceBase<PsiLiteralExpre
   @NotNull
   static final Object[] NO_VARIANTS = new Object[0];
 
+  @NotNull
+  protected final DefracPlatform platform;
+
   public DefracClassReferenceBase(@NotNull final PsiLiteralExpression element,
-                                  @NotNull final TextRange range) {
+                                  @NotNull final TextRange range,
+                                  @NotNull final DefracPlatform platform) {
     super(element, range, false);
+    this.platform = platform;
   }
 
   @Override
@@ -55,15 +61,23 @@ abstract class DefracClassReferenceBase extends PsiReferenceBase<PsiLiteralExpre
   @Nullable
   @Override
   public final PsiElement resolve() {
-    ResolveResult[] resolveResults = multiResolve(false);
+    ResolveResult[] resolveResults = multiResolve();
     return resolveResults.length == 1 ? resolveResults[0].getElement() : null;
   }
+
+  @NotNull
+  public final ResolveResult[] multiResolve() {
+    return multiResolve(false);
+  }
+
+  @NotNull
+  protected abstract GlobalSearchScope getSearchScope(@NotNull final Project project);
 
   @NotNull
   @Override
   public final ResolveResult[] multiResolve(final boolean incompleteCode) {
     final Project project = getElement().getProject();
-    final GlobalSearchScope scope = GlobalSearchScope.allScope(project);
+    final GlobalSearchScope scope = getSearchScope(project);
     final PsiElement[] results = JavaPsiFacade.getInstance(project).findClasses(getValue(), scope);
     final ResolveResult[] resolveResult = new ResolveResult[results.length];
 

@@ -19,12 +19,14 @@ package defrac.intellij.psi;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
+import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static defrac.intellij.psi.DefracPsiUtil.isMacroAnnotation;
 
 /**
  *
@@ -59,20 +61,13 @@ public final class DefracMacroReferenceProvider extends PsiReferenceProvider {
     final PsiAnnotation annotation =
         PsiTreeUtil.getParentOfType(element, PsiAnnotation.class, /*strict=*/false);
 
-    if(annotation == null) {
-      return PsiReference.EMPTY_ARRAY;
-    }
-
     // (3) is this our annotation?
-    final String qualifiedName = annotation.getQualifiedName();
-
-    if(qualifiedName == null) {
+    if(!isMacroAnnotation(annotation)) {
       return PsiReference.EMPTY_ARRAY;
     }
 
-    if(!matchType(qualifiedName, Names.ALL_MACROS)) {
-      return PsiReference.EMPTY_ARRAY;
-    }
+    final DefracPlatform targetPlatform =
+        DefracPlatform.byMacroAnnotation(checkNotNull(annotation.getQualifiedName()));
 
     final int indexOfHash = value.lastIndexOf('#');
 
@@ -83,7 +78,8 @@ public final class DefracMacroReferenceProvider extends PsiReferenceProvider {
               // We ignore the first ", so start-offset is 1
               1,
               // We ignore the last ", so length is fine (end is exclusive)
-              value.length()
+              value.length(),
+              targetPlatform
           )
       };
     }
@@ -96,13 +92,9 @@ public final class DefracMacroReferenceProvider extends PsiReferenceProvider {
         // minus one for the first " we ignore
         //
         // Example: "abc#foo" the indexOfHash is 4 and the length is 3, but exclusive
-        indexOfHash
+        indexOfHash,
+        targetPlatform
     );
-
-    /*if(indexOfHash >= value.length() - 2) {
-      // "foo.bar.Baz#"
-      return new PsiReference[] { classReference };
-    }*/
 
     return new PsiReference[] {
         classReference,
@@ -118,17 +110,6 @@ public final class DefracMacroReferenceProvider extends PsiReferenceProvider {
             value.length() - indexOfHash - 1
         )
     };
-  }
-
-  private boolean matchType(@NotNull final String qname,
-                                           @NotNull final String[] availableNames) {
-    for(final String name : availableNames) {
-      if(name.equals(qname)) {
-        return true;
-      }
-    }
-
-    return false;
   }
 
   @Override

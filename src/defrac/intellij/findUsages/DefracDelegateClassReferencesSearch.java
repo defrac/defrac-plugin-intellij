@@ -33,7 +33,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  *
  */
-public final class DefracDelegateClassReferencesSearch extends DefracReferencesSearch<PsiElement, ReferencesSearch.SearchParameters> {
+public final class DefracDelegateClassReferencesSearch extends DefracReferencesSearchBase<PsiElement, ReferencesSearch.SearchParameters> {
   public DefracDelegateClassReferencesSearch() {}
 
   @NotNull

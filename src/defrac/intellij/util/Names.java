@@ -16,8 +16,11 @@
 
 package defrac.intellij.util;
 
+import com.google.common.collect.ImmutableSet;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Set;
 
 /**
  *
@@ -35,25 +38,27 @@ public final class Names {
   @NotNull @NonNls public static final String defrac_annotation_MacroWeb = "defrac.annotation.MacroWeb";
 
   @NotNull @NonNls public static final String defrac_compiler_macro_Macro = "defrac.compiler.macro.Macro";
+  @NotNull @NonNls public static final String defrac_compiler_macro_Parameter = "defrac.compiler.macro.Parameter";
+  @NotNull @NonNls public static final String defrac_compiler_macro_MethodBody = "defrac.compiler.macro.MethodBody";
 
   @NotNull @NonNls public static final String settingsSuffix = ".settings";
   @NotNull @NonNls public static final String default_settings = "default"+settingsSuffix;
 
-  @NotNull public static final String[] ALL_DELEGATES = {
+  @NotNull public static final Set<String> ALL_DELEGATES = ImmutableSet.of(
       defrac_annotation_Delegate,
       defrac_annotation_DelegateA5D,
       defrac_annotation_DelegateIOS,
       defrac_annotation_DelegateJVM,
       defrac_annotation_DelegateWeb
-  };
+  );
 
-  @NotNull public static final String[] ALL_MACROS = {
+  @NotNull public static final Set<String> ALL_MACROS = ImmutableSet.of(
       defrac_annotation_Macro,
       defrac_annotation_MacroA5D,
       defrac_annotation_MacroIOS,
       defrac_annotation_MacroJVM,
       defrac_annotation_MacroWeb
-  };
+  );
 
   private Names() {}
 }

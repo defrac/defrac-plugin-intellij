@@ -29,12 +29,12 @@ import org.jetbrains.annotations.NotNull;
 /**
  *
  */
-abstract class DefracReferencesSearch<E extends PsiElement, T> extends QueryExecutorBase<PsiReference, T> {
+abstract class DefracReferencesSearchBase<E extends PsiElement, T> extends QueryExecutorBase<PsiReference, T> {
   public static boolean useProvidedSearchScope(@NotNull final SearchScope scope) {
     return scope instanceof LocalSearchScope;
   }
 
-  DefracReferencesSearch() {
+  DefracReferencesSearchBase() {
     super(true);
   }
 

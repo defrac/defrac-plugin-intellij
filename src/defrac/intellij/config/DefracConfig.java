@@ -21,6 +21,10 @@ import com.google.common.io.Closeables;
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
+import com.intellij.psi.util.PsiModificationTracker;
 import defrac.intellij.DefracPlatform;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
@@ -46,6 +51,39 @@ public final class DefracConfig {
     } finally {
       Closeables.closeQuietly(reader);
     }
+  }
+
+  public static DefracConfig fromJson(@NotNull final PsiFile file) throws IOException {
+    final AtomicReference<IOException> exceptionRef = new AtomicReference<IOException>(null);
+    final DefracConfig config = CachedValuesManager.getCachedValue(file, new CachedValueProvider<DefracConfig>() {
+      @Nullable
+      public Result<DefracConfig> compute() {
+
+        final Gson gson = new Gson();
+        Reader reader = null;
+
+        try {
+          reader = new InputStreamReader(file.getVirtualFile().getInputStream());
+          return Result.create(
+              gson.fromJson(reader, DefracConfig.class),
+              file, PsiModificationTracker.MODIFICATION_COUNT);
+        } catch(final IOException exception) {
+          exceptionRef.set(exception);
+          return null;
+        } finally {
+          Closeables.closeQuietly(reader);
+        }
+      }
+    });
+
+    final IOException exception = exceptionRef.get();
+
+    if(exception != null) {
+      assert config == null;
+      throw exception;
+    }
+
+    return config;
   }
 
   private String name;
