@@ -18,7 +18,6 @@ package defrac.intellij.psi;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.facet.Facet;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
@@ -31,7 +30,6 @@ import com.intellij.util.ArrayUtil;
 import com.intellij.util.IconUtil;
 import com.intellij.util.Query;
 import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,10 +41,7 @@ import java.util.List;
 /**
  *
  */
-public final class DefracPsiReference extends PsiReferenceBase<PsiLiteralExpression> implements PsiPolyVariantReference {
-  @NotNull
-  private static final Object[] NO_VARIANTS = new Object[0];
-
+public final class DefracDelegateClassReference extends DefracClassReferenceBase {
   @NotNull
   public static final Comparator<PsiClassType> TYPE_COMPARATOR = new Comparator<PsiClassType>() {
     @Override
@@ -56,74 +51,23 @@ public final class DefracPsiReference extends PsiReferenceBase<PsiLiteralExpress
     }
   };
 
-  @NotNull
-  private final DefracPsiReferenceType referenceType;
-
-  public DefracPsiReference(@NotNull final String value,
-                            @NotNull final PsiLiteralExpression element,
-                            @NotNull final DefracPsiReferenceType referenceType) {
-    super(element, new TextRange(1, 1 + value.length()), false);
-    this.referenceType = referenceType;
-  }
-
-  @Nullable
-  @Override
-  public PsiElement resolve() {
-    ResolveResult[] resolveResults = multiResolve(false);
-    return resolveResults.length == 1 ? resolveResults[0].getElement() : null;
+  public DefracDelegateClassReference(@NotNull final String value,
+                                      @NotNull final PsiLiteralExpression element) {
+    super(element, new TextRange(1, 1 + value.length()));
   }
 
   @NotNull
   @Override
   public Object[] getVariants() {
-    switch(referenceType) {
-      case MACRO:
-        return getMacroVariants();
-
-      case DELEGATE:
-        return getDelegateVariants();
-
-      default:
-        return NO_VARIANTS;
-    }
-  }
-
-  @NotNull
-  private Object[] getMacroVariants() {
-    // all classes of current platform extending defrac.macro.Macro are eligible
-    final Project project = getElement().getProject();
-    final Facet facet = DefracFacet.getInstance(getElement());
-
-    if(facet == null) {
-      return NO_VARIANTS;
-    }
-
-    final GlobalSearchScope scope = GlobalSearchScope.moduleScope(facet.getModule());
-
-    final PsiClass macro =
-        JavaPsiFacade.getInstance(project).findClass(Names.defrac_macro_Macro, scope);
-
-    if(macro == null) {
-      return NO_VARIANTS;
-    }
-
-    final Query<PsiClass> query =
-        ClassInheritorsSearch.search(macro, scope, true, true);
-
-    return variantsViaQuery(query);
-  }
-
-  @NotNull
-  private Object[] getDelegateVariants() {
     // all classes of current platform with same type closure are eligible
     final Project project = getElement().getProject();
-    final Facet facet = DefracFacet.getInstance(getElement());
+    final DefracFacet facet = DefracFacet.getInstance(getElement());
 
     if(facet == null) {
       return NO_VARIANTS;
     }
 
-    final GlobalSearchScope scope = GlobalSearchScope.moduleScope(facet.getModule());
+    final GlobalSearchScope scope = facet.getDelegateSearchScope();
     final PsiJavaFile file = (PsiJavaFile)getElement().getContainingFile();
 
     if(file == null) {
@@ -144,7 +88,8 @@ public final class DefracPsiReference extends PsiReferenceBase<PsiLiteralExpress
     final Query<PsiClass> query;
 
     if(baseTypes.length == 0) {
-      // no base, no interfaces -- give up -- here comes everything!
+      // There is no filter (no bases or interfaces the delegate must implement)
+      // so we offer the user everything we got.
       query = AllClassesSearch.search(scope, project);
     } else {
       PsiClass base = null;
@@ -165,13 +110,8 @@ public final class DefracPsiReference extends PsiReferenceBase<PsiLiteralExpress
     }
 
     return variantsViaQuery(query, enclosingClass,
-        extendsTypes.length == 0 ? null : extendsTypes,
+        extendsTypes.length    == 0 ? null : extendsTypes,
         implementsTypes.length == 0 ? null : implementsTypes);
-  }
-
-  @NotNull
-  private Object[] variantsViaQuery(@NotNull final Query<PsiClass> query) {
-    return variantsViaQuery(query, null, null, null);
   }
 
   @NotNull
@@ -207,6 +147,7 @@ public final class DefracPsiReference extends PsiReferenceBase<PsiLiteralExpress
       try {
         variants.add(
             LookupElementBuilder.create(klass).
+                withInsertHandler(DefracQualifiedClassNameInsertHandler.INSTANCE).
                 withIcon(IconUtil.getIcon(klass.getContainingFile().getVirtualFile(), 0, project)).
                 withTypeText(klass.getContainingFile().getName())
         );
@@ -216,22 +157,6 @@ public final class DefracPsiReference extends PsiReferenceBase<PsiLiteralExpress
     }
 
     return variants.toArray(new Object[variants.size()]);
-  }
-
-  @NotNull
-  @Override
-  public ResolveResult[] multiResolve(final boolean incompleteCode) {
-    final Project project = getElement().getProject();
-    final GlobalSearchScope scope = GlobalSearchScope.allScope(project);
-    final PsiElement[] results = JavaPsiFacade.getInstance(project).findClasses(getValue(), scope);
-    final ResolveResult[] resolveResult = new ResolveResult[results.length];
-
-    for(int i = 0; i < results.length; i++) {
-      final PsiElement result = results[i];
-      resolveResult[i] = new PsiElementResolveResult(result);
-    }
-
-    return resolveResult;
   }
 
   private boolean typesEqual(@NotNull final PsiClassType[] thisType,

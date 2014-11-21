@@ -16,7 +16,14 @@
 
 package defrac.intellij.projectView;
 
+import com.google.common.collect.Maps;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
+import com.intellij.psi.util.PsiModificationTracker;
 import defrac.intellij.DefracPlatform;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -24,19 +31,46 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ConcurrentMap;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  *
  */
 final class DefracProjectPlatform {
   @NotNull
+  public static DefracProjectPlatform create(@NotNull final Project project,
+                                             @NotNull final DefracProject defracProject,
+                                             @NotNull final DefracPlatform platform) {
+    final PsiManager psiManager = PsiManager.getInstance(project);
+    final PsiFile psiFile = checkNotNull(psiManager.findFile(defracProject.getVirtualFile()));
+
+    @SuppressWarnings("UnnecessaryLocalVariable")
+    final ConcurrentMap<DefracPlatform, DefracProjectPlatform> result = CachedValuesManager.
+        getCachedValue(psiFile, new CachedValueProvider<ConcurrentMap<DefracPlatform, DefracProjectPlatform>>() {
+          @NotNull
+          public Result<ConcurrentMap<DefracPlatform, DefracProjectPlatform>> compute() {
+            return Result.create(
+                Maps.<DefracPlatform, DefracProjectPlatform>newConcurrentMap(),
+                psiFile, PsiModificationTracker.MODIFICATION_COUNT
+            );
+          }
+        });
+
+    final DefracProjectPlatform newValue = new DefracProjectPlatform(defracProject, platform);
+    final DefracProjectPlatform oldValue = result.putIfAbsent(platform, newValue);
+    return oldValue == null ? newValue : oldValue;
+  }
+
+  @NotNull
   private final WeakReference<DefracProject> project;
 
   @NotNull
   private final DefracPlatform platform;
 
-  public DefracProjectPlatform(@NotNull final DefracProject project,
-                               @NotNull final DefracPlatform platform) {
+  private DefracProjectPlatform(@NotNull final DefracProject project,
+                                @NotNull final DefracPlatform platform) {
     this.project = new WeakReference<DefracProject>(project);
     this.platform = platform;
   }

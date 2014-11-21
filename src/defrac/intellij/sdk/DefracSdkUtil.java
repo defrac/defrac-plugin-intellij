@@ -23,15 +23,15 @@ import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.SdkModificator;
 import com.intellij.openapi.projectRoots.SdkTypeId;
 import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil;
-import com.intellij.openapi.roots.AnnotationOrderRootType;
-import com.intellij.openapi.roots.JavadocOrderRootType;
-import com.intellij.openapi.roots.OrderRootType;
+import com.intellij.openapi.roots.*;
 import com.intellij.openapi.roots.libraries.ui.OrderRoot;
 import com.intellij.openapi.roots.ui.configuration.ProjectStructureConfigurable;
 import com.intellij.openapi.roots.ui.configuration.projectRoot.ProjectSdksModel;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
 import org.jetbrains.annotations.NotNull;
@@ -221,6 +221,35 @@ public final class DefracSdkUtil {
   public static ProjectSdksModel getSdkModel(@NotNull final Project project) {
     return ProjectStructureConfigurable.
         getInstance(project).getProjectJdksModel();
+  }
+
+  public static boolean isInDefracSdk(@NotNull final PsiElement element) {
+    final PsiFile psiFile = element.getContainingFile();
+
+    if(psiFile == null) {
+      return false;
+    }
+
+    final VirtualFile file = psiFile.getVirtualFile();
+
+    if(file == null) {
+      return false;
+    }
+
+    final ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(element.getProject()).getFileIndex();
+    final List<OrderEntry> entries = projectFileIndex.getOrderEntriesForFile(file);
+
+    for(final OrderEntry entry : entries) {
+      if(entry instanceof JdkOrderEntry) {
+        final Sdk sdk = ((JdkOrderEntry)entry).getJdk();
+
+        if(isDefracSdk(sdk)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   @NotNull

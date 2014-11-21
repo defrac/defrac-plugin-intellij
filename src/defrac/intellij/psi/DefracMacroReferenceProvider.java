@@ -19,6 +19,7 @@ package defrac.intellij.psi;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
+import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,16 +29,22 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 /**
  *
  */
-public final class DefracReferenceProvider extends PsiReferenceProvider {
-  public DefracReferenceProvider() {}
+public final class DefracMacroReferenceProvider extends PsiReferenceProvider {
+  public DefracMacroReferenceProvider() {}
 
   @NotNull
   @Override
   public PsiReference[] getReferencesByElement(@NotNull final PsiElement element,
                                                @Nullable final ProcessingContext context) {
+    final DefracFacet facet = DefracFacet.getInstance(element);
+
+    if(facet == null || facet.isMacroLibrary()) {
+      return PsiReference.EMPTY_ARRAY;
+    }
+
     final PsiFile file = element.getContainingFile();
 
-    if(null == file) {
+    if(file == null) {
       return PsiReference.EMPTY_ARRAY;
     }
 
@@ -57,38 +64,71 @@ public final class DefracReferenceProvider extends PsiReferenceProvider {
     }
 
     // (3) is this our annotation?
-    final String qname = annotation.getQualifiedName();
+    final String qualifiedName = annotation.getQualifiedName();
 
-    if(qname == null) {
+    if(qualifiedName == null) {
       return PsiReference.EMPTY_ARRAY;
     }
 
-    DefracPsiReferenceType referenceType = matchType(qname, Names.ALL_DELEGATES, DefracPsiReferenceType.DELEGATE);
-
-    if(referenceType == null) {
-      referenceType = matchType(qname, Names.ALL_MACROS, DefracPsiReferenceType.MACRO);
-
-      if(referenceType == null) {
-        return PsiReference.EMPTY_ARRAY;
-      }
+    if(!matchType(qualifiedName, Names.ALL_MACROS)) {
+      return PsiReference.EMPTY_ARRAY;
     }
 
+    final int indexOfHash = value.lastIndexOf('#');
+
+    if(indexOfHash == -1) {
+      return new PsiReference[] {
+          new DefracMacroClassReference(
+              (PsiLiteralExpression)element,
+              // We ignore the first ", so start-offset is 1
+              1,
+              // We ignore the last ", so length is fine (end is exclusive)
+              value.length()
+          )
+      };
+    }
+
+    final DefracMacroClassReference classReference = new DefracMacroClassReference(
+        (PsiLiteralExpression) element,
+        // We ignore the first "
+        1,
+        // We ignore the # so the length is the index of the hash
+        // minus one for the first " we ignore
+        //
+        // Example: "abc#foo" the indexOfHash is 4 and the length is 3, but exclusive
+        indexOfHash
+    );
+
+    /*if(indexOfHash >= value.length() - 2) {
+      // "foo.bar.Baz#"
+      return new PsiReference[] { classReference };
+    }*/
+
     return new PsiReference[] {
-        new DefracPsiReference(value, (PsiLiteralExpression)element, referenceType)
+        classReference,
+        new DefracMacroMethodReference(
+            classReference,
+            (PsiLiteralExpression)element,
+            // We start without the #
+            indexOfHash + 2,
+            // We ignore the # so the length is the index of the hash
+            // minus one for the first " we ignore
+            //
+            // We ignore the last ", so use length minus one for the hash
+            value.length() - indexOfHash - 1
+        )
     };
   }
 
-  @Nullable
-  private DefracPsiReferenceType matchType(@NotNull final String qname,
-                                           @NotNull final String[] availableNames,
-                                           @NotNull final DefracPsiReferenceType type) {
+  private boolean matchType(@NotNull final String qname,
+                                           @NotNull final String[] availableNames) {
     for(final String name : availableNames) {
       if(name.equals(qname)) {
-        return type;
+        return true;
       }
     }
 
-    return null;
+    return false;
   }
 
   @Override

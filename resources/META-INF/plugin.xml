@@ -38,10 +38,12 @@
     <facetType implementation="defrac.intellij.facet.DefracFacetType"/>
     <gotoDeclarationHandler implementation="defrac.intellij.DefracGotoMacroDeclarationHandler"/>
     <gotoDeclarationHandler implementation="defrac.intellij.DefracGotoDelegateDeclarationHandler"/>
-    <psi.referenceContributor implementation="defrac.intellij.psi.DefracReferenceContributor"/>
-    <referencesSearch implementation="defrac.intellij.findUsages.DefracReferencesSearch"/>
-    <sdkType implementation="defrac.intellij.sdk.DefracSdkType"/>
+    <methodReferencesSearch implementation="defrac.intellij.findUsages.DefracMacroMethodReferencesSearch"/>
     <projectViewPane implementation="defrac.intellij.projectView.DefracProjectViewPane"/>
+    <psi.referenceContributor implementation="defrac.intellij.psi.DefracReferenceContributor"/>
+    <referencesSearch implementation="defrac.intellij.findUsages.DefracDelegateClassReferencesSearch"/>
+    <referencesSearch implementation="defrac.intellij.findUsages.DefracMacroClassReferencesSearch"/>
+    <sdkType implementation="defrac.intellij.sdk.DefracSdkType"/>
   </extensions>
 
   <application-components/>

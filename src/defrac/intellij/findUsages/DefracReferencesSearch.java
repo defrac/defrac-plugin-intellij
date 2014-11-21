@@ -17,69 +17,106 @@
 package defrac.intellij.findUsages;
 
 import com.intellij.openapi.application.QueryExecutorBase;
-import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiReference;
-import com.intellij.psi.search.PsiSearchHelper;
-import com.intellij.psi.search.SearchScope;
-import com.intellij.psi.search.TextOccurenceProcessor;
-import com.intellij.psi.search.UsageSearchContext;
-import com.intellij.psi.search.searches.ReferencesSearch;
+import com.intellij.psi.search.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
-import defrac.intellij.psi.DefracPsiReference;
+import defrac.intellij.facet.DefracFacet;
 import org.jetbrains.annotations.NotNull;
 
 /**
  *
  */
-public final class DefracReferencesSearch extends QueryExecutorBase<PsiReference, ReferencesSearch.SearchParameters> {
-  public DefracReferencesSearch() {
+abstract class DefracReferencesSearch<E extends PsiElement, T> extends QueryExecutorBase<PsiReference, T> {
+  public static boolean useProvidedSearchScope(@NotNull final SearchScope scope) {
+    return scope instanceof LocalSearchScope;
+  }
+
+  DefracReferencesSearch() {
     super(true);
   }
 
-  @Override
-  public void processQuery(@NotNull final ReferencesSearch.SearchParameters queryParameters,
-                           @NotNull final Processor<PsiReference> consumer) {
-    final PsiElement element = queryParameters.getElementToSearch();
+  @NotNull
+  protected abstract E getElement(@NotNull final T queryParameter);
 
-    if(!(element instanceof PsiClass)) {
+  protected abstract boolean isSearchCandidate(@NotNull final E candidate,
+                                               @NotNull final DefracFacet facet);
+
+  @NotNull
+  protected abstract String getSearchString(@NotNull final E candidate,
+                                            @NotNull final DefracFacet facet);
+
+  @NotNull
+  protected abstract SearchScope getSearchScope(@NotNull final T queryParameter,
+                                                @NotNull final E element,
+                                                @NotNull final DefracFacet thisFacet);
+
+  protected abstract boolean isReferenceCandidate(@NotNull final PsiReference reference);
+
+  @Override
+  public final void processQuery(@NotNull final T queryParameter,
+                                 @NotNull final Processor<PsiReference> consumer) {
+    final E elementToSearch= getElement(queryParameter);
+    final DefracFacet facet = DefracFacet.getInstance(elementToSearch);
+
+    if(facet == null) {
       return;
     }
 
-    //TODO(joa): split this for @Macro and @Delegate, continue with @Macro only if extends defrac.macro.Macro
+    if(!isSearchCandidate(elementToSearch, facet)) {
+      return;
+    }
 
-    final PsiClass classToSearch = (PsiClass)element;
-    final SearchScope scope = queryParameters.getEffectiveSearchScope();
-    final PsiSearchHelper helper = PsiSearchHelper.SERVICE.getInstance(element.getProject());
-    final TextOccurenceProcessor processor = new TextOccurenceProcessor() {
-      @Override
-      public boolean execute(@NotNull final PsiElement element, final int offsetInElement) {
-        final PsiLiteralExpression literalExpression = PsiTreeUtil.getParentOfType(element, PsiLiteralExpression.class, false);
+    final SearchScope scope = getSearchScope(queryParameter, elementToSearch, facet);
+    final PsiSearchHelper helper = PsiSearchHelper.SERVICE.getInstance(elementToSearch.getProject());
+    final TextOccurenceProcessor processor = new DefracTextOccurenceProcessor(elementToSearch, consumer);
 
-        if(literalExpression == null) {
-          return true;
-        }
+    helper.processElementsWithWord(
+        processor,
+        scope,
+        getSearchString(elementToSearch, facet),
+        UsageSearchContext.IN_STRINGS,
+        /*caseSensitive=*/true
+    );
+  }
 
-        for(final PsiReference ref : literalExpression.getReferences()) {
-          if(!(ref instanceof DefracPsiReference)) {
-            continue;
-          }
+  private class DefracTextOccurenceProcessor implements TextOccurenceProcessor {
+    private final E elementToSearch;
+    private final Processor<PsiReference> consumer;
 
-          if(!ref.getRangeInElement().contains(offsetInElement)) {
-            continue;
-          }
+    public DefracTextOccurenceProcessor(final E elementToSearch, final Processor<PsiReference> consumer) {
+      this.elementToSearch = elementToSearch;
+      this.consumer = consumer;
+    }
 
-          if(ref.isReferenceTo(classToSearch)) {
-            return consumer.process(ref);
-          }
-        }
+    @Override
+    public boolean execute(@NotNull final PsiElement element, final int offsetInElement) {
+      final PsiLiteralExpression literalExpression =
+          PsiTreeUtil.getParentOfType(element, PsiLiteralExpression.class, false);
 
+      if(literalExpression == null) {
         return true;
       }
-    };
 
-    helper.processElementsWithWord(processor, scope, classToSearch.getName(), UsageSearchContext.IN_STRINGS, true);
+      final PsiReference[] references = literalExpression.getReferences();
+
+      for(final PsiReference reference : references) {
+        if(!isReferenceCandidate(reference)) {
+          continue;
+        }
+
+        if(!reference.getRangeInElement().contains(offsetInElement)) {
+          continue;
+        }
+
+        if(reference.isReferenceTo(elementToSearch)) {
+          return consumer.process(reference);
+        }
+      }
+
+      return true;
+    }
   }
 }

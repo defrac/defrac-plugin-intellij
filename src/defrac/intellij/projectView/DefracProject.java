@@ -18,8 +18,14 @@ package defrac.intellij.projectView;
 
 import com.google.common.collect.Lists;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
+import com.intellij.psi.util.PsiModificationTracker;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.config.DefracConfig;
 import defrac.intellij.facet.DefracFacet;
@@ -38,6 +44,32 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 final class DefracProject {
   @NotNull
+  public static DefracProject forSettings(@NotNull final Project project,
+                                          @NotNull final VirtualFile settings) {
+    final PsiManager psiManager = PsiManager.getInstance(project);
+    final PsiFile file = checkNotNull(psiManager.findFile(settings));
+
+    @SuppressWarnings("UnnecessaryLocalVariable")
+    final DefracProject result = CachedValuesManager.getCachedValue(file, new CachedValueProvider<DefracProject>() {
+      @NotNull
+      public Result<DefracProject> compute() {
+        return Result.create(
+            new DefracProject(settings),
+            file, PsiModificationTracker.MODIFICATION_COUNT
+        );
+      }
+    });
+
+    // NOTE: We need to clear the modules here since the DefracViewProjectNode has
+    //       no clue about the fact that we cache DefracProject instances and happily
+    //       adds modules -- we keep the cached name though since it shall be invalidated
+    //       by IntelliJ's internal mechanisms
+    result.modules.clear();
+
+    return result;
+  }
+
+  @NotNull
   private final VirtualFile settings;
 
   @NotNull
@@ -46,7 +78,7 @@ final class DefracProject {
   @Nullable
   private String nameCached;
 
-  DefracProject(@NotNull final VirtualFile settings) {
+  private DefracProject(@NotNull final VirtualFile settings) {
     this.settings = settings;
   }
 

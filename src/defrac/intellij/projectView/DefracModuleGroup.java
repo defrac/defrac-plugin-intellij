@@ -34,7 +34,7 @@ final class DefracModuleGroup {
   @NotNull
   private final String name;
 
-  DefracModuleGroup(@NotNull final String name, @NotNull final Collection<Module> modules) {
+  public DefracModuleGroup(@NotNull final String name, @NotNull final Collection<Module> modules) {
     this.name = name;
 
     for(final Module module : modules) {
