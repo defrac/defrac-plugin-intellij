@@ -92,7 +92,7 @@ final class DefracViewProjectNode extends AbstractProjectNode {
         DefracProject defracProject = defracModules.get(key);
 
         if(defracProject == null) {
-          defracProject = new DefracProject(checkNotNull(VfsUtil.findFileByIoFile(settingsFile, true)));
+          defracProject = DefracProject.forSettings(project, checkNotNull(VfsUtil.findFileByIoFile(settingsFile, true)));
           defracModules.put(key, defracProject);
         }
 

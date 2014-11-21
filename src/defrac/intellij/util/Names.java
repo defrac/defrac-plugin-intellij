@@ -34,7 +34,7 @@ public final class Names {
   @NotNull @NonNls public static final String defrac_annotation_MacroJVM = "defrac.annotation.MacroJVM";
   @NotNull @NonNls public static final String defrac_annotation_MacroWeb = "defrac.annotation.MacroWeb";
 
-  @NotNull @NonNls public static final String defrac_macro_Macro = "defrac.macro.Macro";
+  @NotNull @NonNls public static final String defrac_compiler_macro_Macro = "defrac.compiler.macro.Macro";
 
   @NotNull @NonNls public static final String settingsSuffix = ".settings";
   @NotNull @NonNls public static final String default_settings = "default"+settingsSuffix;

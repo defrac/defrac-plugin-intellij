@@ -65,7 +65,20 @@ final class DefracViewPlatformNode extends ProjectViewNode<DefracProjectPlatform
   @Nullable
   @Override
   public VirtualFile getVirtualFile() {
-    return null;
+    final DefracProjectPlatform projectWithPlatform = getValue();
+
+    if(projectWithPlatform == null || projectWithPlatform.isDisposed()) {
+      setValue(null);
+      return null;
+    }
+
+    final DefracProject project = projectWithPlatform.getProject();
+
+    if(project == null || project.isDisposed()) {
+      return null;
+    }
+
+    return project.getVirtualFile();
   }
 
   @NotNull
@@ -179,9 +192,12 @@ final class DefracViewPlatformNode extends ProjectViewNode<DefracProjectPlatform
       return;
     }
 
-    presentation.setPresentableText(projectWithPlatform.getPlatform().displayName);
-    presentation.addText(projectWithPlatform.getPlatform().displayName, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES);
-    presentation.setIcon(getPlatformIcon(projectWithPlatform.getPlatform()));
+    final DefracPlatform platform = projectWithPlatform.getPlatform();
+    final String name = platform.displayName;
+
+    presentation.setPresentableText(name);
+    presentation.addText(name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES);
+    presentation.setIcon(getPlatformIcon(platform));
   }
 
   @Nullable

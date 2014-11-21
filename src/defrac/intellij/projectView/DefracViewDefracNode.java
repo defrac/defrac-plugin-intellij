@@ -52,6 +52,19 @@ final class DefracViewDefracNode extends ProjectViewNode<DefracProject> implemen
     this(project, (DefracProject) value, viewSettings);
   }
 
+  @Nullable
+  @Override
+  public VirtualFile getVirtualFile() {
+    final DefracProject defracProject = getValue();
+
+    if(defracProject == null || defracProject.isDisposed()) {
+      setValue(null);
+      return null;
+    }
+
+    return defracProject.getVirtualFile();
+  }
+
   @NotNull
   @Override
   @SuppressWarnings("unchecked")
@@ -95,9 +108,12 @@ final class DefracViewDefracNode extends ProjectViewNode<DefracProject> implemen
         continue;
       }
 
-      // note: we can use getParentValue apparently and don't need DefracProjectPlatform
-      children.add(new DefracViewPlatformNode(getProject(),
-          new DefracProjectPlatform(defracProject, platform), getSettings()));
+      // note: we could use getParentValue apparently and don't need DefracProjectPlatform
+      children.add(
+          new DefracViewPlatformNode(
+              project,
+              DefracProjectPlatform.create(project, defracProject, platform),
+              getSettings()));
     }
 
     return children;

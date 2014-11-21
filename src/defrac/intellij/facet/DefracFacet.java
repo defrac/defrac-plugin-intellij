@@ -21,18 +21,16 @@ import com.intellij.facet.FacetManager;
 import com.intellij.facet.FacetTypeId;
 import com.intellij.facet.FacetTypeRegistry;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.roots.JdkOrderEntry;
-import com.intellij.openapi.roots.OrderEntry;
-import com.intellij.openapi.roots.ProjectFileIndex;
-import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.xml.ConvertContext;
 import com.intellij.util.xml.DomElement;
 import defrac.intellij.DefracPlatform;
@@ -44,9 +42,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.List;
-
-import static defrac.intellij.sdk.DefracSdkUtil.isDefracSdk;
 
 /**
  *
@@ -108,35 +103,6 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
     return getInstance(module);
   }
 
-  public static boolean isInDefracSdk(@NotNull final PsiElement element) {
-    final PsiFile psiFile = element.getContainingFile();
-
-    if(psiFile == null) {
-      return false;
-    }
-
-    final VirtualFile file = psiFile.getVirtualFile();
-
-    if(file == null) {
-      return false;
-    }
-
-    final ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(element.getProject()).getFileIndex();
-    final List<OrderEntry> entries = projectFileIndex.getOrderEntriesForFile(file);
-
-    for(final OrderEntry entry : entries) {
-      if(entry instanceof JdkOrderEntry) {
-        final Sdk sdk = ((JdkOrderEntry)entry).getJdk();
-
-        if(isDefracSdk(sdk)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
   public DefracFacet(@NotNull final Module module,
                      @NotNull final String name,
                      @NotNull final DefracFacetConfiguration configuration) {
@@ -183,5 +149,78 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
 
   public boolean skipJavac() {
     return getConfiguration().skipJavac();
+  }
+
+  @NotNull
+  public GlobalSearchScope getDelegateSearchScope() {
+    // Search only in non-macro-library modules that match the platform of the current
+    // module. If the current module is generic, we search in all eligible modules
+    final Module thisModule = getModule();
+    final Module[] modules = ModuleManager.getInstance(thisModule.getProject()).getModules();
+    GlobalSearchScope scope = GlobalSearchScope.EMPTY_SCOPE;
+
+    for(final Module thatModule : modules) {
+      final DefracFacet that = DefracFacet.getInstance(thatModule);
+      final GlobalSearchScope moduleScope;
+
+      if(thisModule == thatModule) {
+        // It's a me, Modulo!
+        moduleScope = GlobalSearchScope.moduleWithDependenciesAndLibrariesScope(thatModule, /*includeTests=*/false);
+      } else if(that == null) {
+        // Not a defrac module, no need to exclude though
+        moduleScope = GlobalSearchScope.moduleWithDependenciesAndLibrariesScope(thatModule, /*includeTests=*/false);
+      } else {
+        assert this != that;
+
+        if(that.isMacroLibrary()) {
+          continue;
+        }
+
+        if(!this.getPlatform().isGeneric() && that.getPlatform() != this.getPlatform()) {
+          continue;
+        }
+
+        moduleScope = GlobalSearchScope.moduleWithDependenciesAndLibrariesScope(thatModule, /*includeTests=*/false);
+      }
+
+      scope = scope.uniteWith(moduleScope);
+    }
+
+    return scope;
+  }
+
+  @NotNull
+  public GlobalSearchScope getMacroSearchScope() {
+    // Search only in macro-library modules that match the platform of the current
+    // module. If the current module is generic, we search in all macro modules
+    final Module[] modules = ModuleManager.getInstance(getModule().getProject()).getModules();
+    GlobalSearchScope scope = GlobalSearchScope.EMPTY_SCOPE;
+
+    for(final Module module : modules) {
+      final DefracFacet that = DefracFacet.getInstance(module);
+
+      if(that == null) {
+        continue;
+      }
+
+      if(this == that) {
+        continue;
+      }
+
+      if(!that.isMacroLibrary()) {
+        continue;
+      }
+
+      if(!this.getPlatform().isGeneric() && that.getPlatform() != this.getPlatform()) {
+        continue;
+      }
+
+      final GlobalSearchScope moduleScope =
+          GlobalSearchScope.moduleScope(module);
+
+      scope = scope.uniteWith(moduleScope);
+    }
+
+    return scope;
   }
 }

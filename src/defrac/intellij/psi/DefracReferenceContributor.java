@@ -36,7 +36,13 @@ public final class DefracReferenceContributor extends PsiReferenceContributor {
     registrar.registerReferenceProvider(
         psiElement(PsiLiteralExpression.class).
             withSuperParent(3, psiElement(PsiAnnotation.class)),
-        new DefracReferenceProvider()
+        new DefracDelegateReferenceProvider()
+    );
+
+    registrar.registerReferenceProvider(
+        psiElement(PsiLiteralExpression.class).
+            withSuperParent(3, psiElement(PsiAnnotation.class)),
+        new DefracMacroReferenceProvider()
     );
   }
 }
