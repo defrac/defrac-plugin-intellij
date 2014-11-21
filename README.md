@@ -31,9 +31,16 @@ TODO
   ( ) Support for @Unsupported
   (✓) Broken reference to @Delegate
   (✓) Broken reference to @Macro
-  ( ) Writing @ReadOnly field
+  (✓) Writing @ReadOnly field
   ( ) Reading @WriteOnly field
 [✓] GotoDeclarationHandler @Macro/@Delegate
 [✓] SafeDeleteProcessor @Macro/@Delegate
-[ ] Rename @Macro/@Delegate
+[ ] Rename @Macro/@Delegate (works already at declaration site)
+[ ] Web
+  ( ) @FunctionRef parameter
+  ( ) @FunctionalInterface
+[ ] iOS
+  ( ) @FunctionRef parameter
+  ( ) @FunctionArg parameter
+  ( ) @FunctionalInterface
 </pre>

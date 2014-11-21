@@ -201,4 +201,14 @@ public final class DefracPsiUtil {
 
     return result.toArray(new String[result.size()]);
   }
+
+  public static boolean isReadOnly(@NotNull final PsiModifierListOwner element) {
+    final PsiModifierList list = element.getModifierList();
+
+    if(list == null) {
+      return false;
+    }
+
+    return list.findAnnotation(Names.defrac_dni_ReadOnly) != null;
+  }
 }
