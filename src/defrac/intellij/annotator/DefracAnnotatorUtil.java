@@ -22,9 +22,10 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
+import defrac.intellij.annotator.quickfix.RemoveDelegateQuickFix;
+import defrac.intellij.annotator.quickfix.RemoveMacroQuickFix;
 import defrac.intellij.config.DefracConfig;
 import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -40,11 +41,13 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 public final class DefracAnnotatorUtil {
   public static void reportMoreGenericAnnotation(@NotNull final AnnotationHolder holder,
                                                  @NotNull final PsiAnnotation thisAnnotation,
-                                                 @NotNull final PsiModifierListOwner annotatedElement) {
+                                                 @NotNull final PsiModifierListOwner annotatedElement,
+                                                 @NotNull final String nameOfGenericAnnotation,
+                                                 @NotNull final DefracPlatform platform) {
     final PsiAnnotation[] thatAnnotations = checkNotNull(annotatedElement.getModifierList()).getAnnotations();
 
     for(final PsiAnnotation thatAnnotation : thatAnnotations) {
-      if(!Names.defrac_annotation_Macro.equals(thatAnnotation.getQualifiedName())) {
+      if(!nameOfGenericAnnotation.equals(thatAnnotation.getQualifiedName())) {
         continue;
       }
 
@@ -74,7 +77,12 @@ public final class DefracAnnotatorUtil {
       }
 
       if(thisLiteral.equals(thatLiteral)) {
-        holder.createWarningAnnotation(thisAnnotation, DefracBundle.message("annotator.platform.redundant"));
+        holder.
+            createWarningAnnotation(thisAnnotation, DefracBundle.message("annotator.platform.redundant")).
+            registerFix(
+                annotatedElement instanceof PsiClass
+                    ? new RemoveDelegateQuickFix((PsiClass)annotatedElement, platform)
+                    : new RemoveMacroQuickFix((PsiMethod)annotatedElement, platform));
       }
 
       return;

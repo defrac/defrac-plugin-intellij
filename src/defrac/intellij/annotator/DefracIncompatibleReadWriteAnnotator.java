@@ -16,11 +16,14 @@
 
 package defrac.intellij.annotator;
 
+import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
 import defrac.intellij.DefracBundle;
+import defrac.intellij.annotator.quickfix.RemoveReadOnlyQuickFix;
+import defrac.intellij.annotator.quickfix.RemoveWriteOnlyQuickFix;
 import defrac.intellij.psi.DefracPsiUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,7 +43,12 @@ public final class DefracIncompatibleReadWriteAnnotator implements Annotator {
     final PsiField field = (PsiField)element;
 
     if(DefracPsiUtil.isReadOnly(field) && DefracPsiUtil.isWriteOnly(field)) {
-      holder.createErrorAnnotation(element, DefracBundle.message("annotator.readWrite.both"));
+      final Annotation annotation =
+          holder.
+              createErrorAnnotation(element, DefracBundle.message("annotator.readWrite.both"));
+
+      annotation.registerFix(new RemoveWriteOnlyQuickFix(field));
+      annotation.registerFix(new RemoveReadOnlyQuickFix(field));
     }
   }
 }

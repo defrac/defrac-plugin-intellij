@@ -20,6 +20,7 @@ import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.psi.*;
 import defrac.intellij.DefracBundle;
+import defrac.intellij.annotator.quickfix.RemoveReadOnlyQuickFix;
 import defrac.intellij.psi.DefracPsiUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -52,9 +53,13 @@ public final class DefracReadOnlyAnnotator implements Annotator {
       return;
     }
 
-    if(DefracPsiUtil.isReadOnly((PsiField)referencedElement)) {
-      holder.createErrorAnnotation(element,
-          DefracBundle.message("annotator.readWrite.readOnly", ((PsiField)referencedElement).getName()));
+    final PsiField field = (PsiField)referencedElement;
+
+    if(DefracPsiUtil.isReadOnly(field)) {
+      holder.
+          createErrorAnnotation(element,
+              DefracBundle.message("annotator.readWrite.readOnly", field.getName())).
+          registerFix(new RemoveReadOnlyQuickFix(field));
     }
   }
 }

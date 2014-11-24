@@ -20,6 +20,7 @@ import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.psi.*;
 import defrac.intellij.DefracBundle;
+import defrac.intellij.annotator.quickfix.RemoveWriteOnlyQuickFix;
 import defrac.intellij.psi.DefracPsiUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -52,9 +53,13 @@ public final class DefracWriteOnlyAnnotator implements Annotator {
       return;
     }
 
-    if(DefracPsiUtil.isWriteOnly((PsiField)referencedElement)) {
-      holder.createErrorAnnotation(element,
-          DefracBundle.message("annotator.readWrite.writeOnly", ((PsiField)referencedElement).getName()));
+    final PsiField field = (PsiField)referencedElement;
+
+    if(DefracPsiUtil.isWriteOnly(field)) {
+      holder.
+          createErrorAnnotation(element,
+              DefracBundle.message("annotator.readWrite.writeOnly", field.getName())).
+          registerFix(new RemoveWriteOnlyQuickFix(field));
     }
   }
 }

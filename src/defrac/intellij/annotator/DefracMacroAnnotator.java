@@ -34,6 +34,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
@@ -140,7 +141,10 @@ public final class DefracMacroAnnotator implements Annotator {
           facet, method,
           platformImplementations, DefracPlatform.MACRO_ANNOTATION_TO_PLATFORM);
     } else {
-      DefracAnnotatorUtil.reportMoreGenericAnnotation(holder, annotation, method);
+      DefracAnnotatorUtil.reportMoreGenericAnnotation(
+          holder, annotation, method,
+          Names.defrac_annotation_Macro,
+          DefracPlatform.byMacroAnnotation(checkNotNull(annotation.getQualifiedName())));
     }
   }
 }

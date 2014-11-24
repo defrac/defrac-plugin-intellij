@@ -33,6 +33,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
@@ -119,7 +120,10 @@ public final class DefracDelegateAnnotator implements Annotator {
           klass, platformImplementations,
           DefracPlatform.DELEGATE_ANNOTATION_TO_PLATFORM);
     } else {
-      DefracAnnotatorUtil.reportMoreGenericAnnotation(holder, annotation, klass);
+      DefracAnnotatorUtil.reportMoreGenericAnnotation(
+          holder, annotation, klass,
+          Names.defrac_annotation_Delegate,
+          DefracPlatform.byDelegateAnnotation(checkNotNull(annotation.getQualifiedName())));
     }
   }
 }
