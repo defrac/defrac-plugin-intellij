@@ -20,6 +20,7 @@ import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
+import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.config.DefracConfig;
 import defrac.intellij.facet.DefracFacet;
@@ -73,7 +74,7 @@ public final class DefracAnnotatorUtil {
       }
 
       if(thisLiteral.equals(thatLiteral)) {
-        holder.createWarningAnnotation(thisAnnotation, "More generic annotation with same implementation exists");
+        holder.createWarningAnnotation(thisAnnotation, DefracBundle.message("annotator.platform.redundant"));
       }
 
       return;
@@ -115,7 +116,8 @@ public final class DefracAnnotatorUtil {
             }
 
             if(!implementations.contains(platform)) {
-              holder.createErrorAnnotation(element, "Missing implementation for " + platform.displayName);
+              holder.createErrorAnnotation(element,
+                  DefracBundle.message("annotator.platform.missing", platform.displayName));
             }
           }
         }

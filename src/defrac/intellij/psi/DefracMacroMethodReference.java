@@ -22,6 +22,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import defrac.intellij.DefracPlatform;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,6 +34,16 @@ import java.util.List;
  *
  */
 public final class DefracMacroMethodReference extends PsiReferenceBase<PsiLiteralExpression> implements PsiPolyVariantReference, DefracReference {
+  @Nullable
+  @Contract("null -> null")
+  public static DefracMacroMethodReference getInstance(@Nullable final PsiAnnotation annotation) {
+    if(!DefracPsiUtil.isMacroAnnotation(annotation)) {
+      return null;
+    }
+
+    return DefracPsiUtil.findReference(annotation, DefracMacroMethodReference.class);
+  }
+
   @NotNull
   private final DefracMacroClassReference parent;
 

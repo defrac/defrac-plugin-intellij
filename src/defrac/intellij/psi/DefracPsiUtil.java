@@ -211,4 +211,33 @@ public final class DefracPsiUtil {
     final PsiModifierList list = element.getModifierList();
     return list != null && list.findAnnotation(Names.defrac_dni_WriteOnly) != null;
   }
+
+  @Nullable
+  public static <T extends DefracReference> T findReference(
+      @NotNull final PsiAnnotation annotation,
+      @NotNull final Class<T> referenceClass) {
+    final PsiAnnotationParameterList parameterList = annotation.getParameterList();
+    final PsiNameValuePair[] values = parameterList.getAttributes();
+
+    if(values.length < 1) {
+      return null;
+    }
+
+    final PsiAnnotationMemberValue value = values[0].getValue();
+
+    if(!(value instanceof PsiLiteralExpression)) {
+      return null;
+    }
+
+    final PsiLiteralExpression literal = (PsiLiteralExpression)value;
+    final PsiReference[] references = literal.getReferences();
+
+    for(final PsiReference reference : references) {
+      if(referenceClass.isInstance(reference)) {
+        return referenceClass.cast(reference);
+      }
+    }
+
+    return null;
+  }
 }

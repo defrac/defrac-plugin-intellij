@@ -18,7 +18,8 @@ package defrac.intellij.annotator;
 
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiField;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.psi.DefracPsiUtil;
 import org.jetbrains.annotations.NotNull;
@@ -26,35 +27,20 @@ import org.jetbrains.annotations.NotNull;
 /**
  *
  */
-public final class DefracReadOnlyAnnotator implements Annotator {
-  public DefracReadOnlyAnnotator() {}
+public final class DefracIncompatibleReadWriteAnnotator implements Annotator {
+  public DefracIncompatibleReadWriteAnnotator() {}
 
   @Override
   public void annotate(@NotNull final PsiElement element,
                        @NotNull final AnnotationHolder holder) {
-    if(!(element instanceof PsiAssignmentExpression)) {
+    if(!(element instanceof PsiField)) {
       return;
     }
 
-    final PsiAssignmentExpression assignmentExpression =
-        (PsiAssignmentExpression)element;
+    final PsiField field = (PsiField)element;
 
-    final PsiExpression lhs = assignmentExpression.getLExpression();
-
-    if(!(lhs instanceof PsiReferenceExpression)) {
-      return;
-    }
-
-    final PsiReferenceExpression referenceExpression = (PsiReferenceExpression)lhs;
-    final PsiElement referencedElement = referenceExpression.resolve();
-
-    if(!(referencedElement instanceof PsiField)) {
-      return;
-    }
-
-    if(DefracPsiUtil.isReadOnly((PsiField)referencedElement)) {
-      holder.createErrorAnnotation(element,
-          DefracBundle.message("annotator.readWrite.readOnly", ((PsiField)referencedElement).getName()));
+    if(DefracPsiUtil.isReadOnly(field) && DefracPsiUtil.isWriteOnly(field)) {
+      holder.createErrorAnnotation(element, DefracBundle.message("annotator.readWrite.both"));
     }
   }
 }

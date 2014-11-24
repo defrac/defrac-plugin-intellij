@@ -19,6 +19,7 @@ package defrac.intellij.annotator;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.psi.*;
+import defrac.intellij.DefracBundle;
 import defrac.intellij.psi.DefracPsiUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -52,7 +53,8 @@ public final class DefracWriteOnlyAnnotator implements Annotator {
     }
 
     if(DefracPsiUtil.isWriteOnly((PsiField)referencedElement)) {
-      holder.createErrorAnnotation(element, "Cannot read a value from write-only variable '"+((PsiField)referencedElement).getName()+'\'');
+      holder.createErrorAnnotation(element,
+          DefracBundle.message("annotator.readWrite.writeOnly", ((PsiField)referencedElement).getName()));
     }
   }
 }
