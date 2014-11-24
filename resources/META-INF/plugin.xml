@@ -37,10 +37,14 @@
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.DefracDelegateAnnotator"/>
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.DefracMacroAnnotator"/>
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.DefracReadOnlyAnnotator"/>
+    <annotator language="JAVA" implementationClass="defrac.intellij.annotator.DefracWriteOnlyAnnotator"/>
+    <annotator language="JAVA" implementationClass="defrac.intellij.annotator.DefracIncompatibleReadWriteAnnotator"/>
     <configurationType implementation="defrac.intellij.run.DefracConfigurationType"/>
     <facetType implementation="defrac.intellij.facet.DefracFacetType"/>
     <gotoDeclarationHandler implementation="defrac.intellij.gotoDeclaration.DefracGotoMacroDeclarationHandler" order="first"/>
     <gotoDeclarationHandler implementation="defrac.intellij.gotoDeclaration.DefracGotoDelegateDeclarationHandler" order="first"/>
+    <gotoRelatedProvider implementation="defrac.intellij.gotoDeclaration.DefracRelatedDeclarationProvider"/>
+    <lang.refactoringSupport order="first" language="JAVA" implementationClass="defrac.intellij.psi.DefracRefactoringSupport"/>
     <methodReferencesSearch implementation="defrac.intellij.findUsages.DefracMacroMethodReferencesSearch"/>
     <projectViewPane implementation="defrac.intellij.projectView.DefracProjectViewPane"/>
     <psi.referenceContributor implementation="defrac.intellij.psi.DefracReferenceContributor"/>

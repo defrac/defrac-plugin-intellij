@@ -21,6 +21,7 @@ import com.intellij.lang.annotation.Annotator;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtil;
+import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.psi.DefracMacroClassReference;
@@ -33,6 +34,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
@@ -78,7 +80,7 @@ public final class DefracMacroAnnotator implements Annotator {
         final DefracMacroClassReference defracRef = (DefracMacroClassReference)reference;
 
         if(isNullOrEmpty(defracRef.getValue())) {
-          holder.createErrorAnnotation(element, "Qualified class name expected");
+          holder.createErrorAnnotation(element, DefracBundle.message("annotator.expect.qualifiedName"));
           return;
         }
 
@@ -88,10 +90,10 @@ public final class DefracMacroAnnotator implements Annotator {
           final String value = defracRef.getValue();
 
           if(isNullOrEmpty(value)) {
-            holder.createErrorAnnotation(element, "Qualified class name expected");
+            holder.createErrorAnnotation(element, DefracBundle.message("annotator.expect.qualifiedName"));
             return;
           } else {
-            holder.createErrorAnnotation(element, "Cannot resolve symbol '"+defracRef.getValue()+'\'');
+            holder.createErrorAnnotation(element, DefracBundle.message("annotator.unresolved", defracRef.getValue()));
             return;
           }
         } else {
@@ -100,7 +102,7 @@ public final class DefracMacroAnnotator implements Annotator {
 
             if(elementFacet != null) {
               if(!platformImplementations.add(elementFacet.getPlatform())) {
-                holder.createErrorAnnotation(element, "Ambiguous reference to '" + defracRef.getValue() + "' for " + elementFacet.getPlatform().displayName);
+                holder.createErrorAnnotation(element, DefracBundle.message("annotator.ambiguous", defracRef.getValue(), elementFacet.getPlatform().displayName));
               }
             }
           }
@@ -109,7 +111,7 @@ public final class DefracMacroAnnotator implements Annotator {
         final DefracMacroMethodReference defracRef = (DefracMacroMethodReference)reference;
 
         if(isNullOrEmpty(defracRef.getValue())) {
-          holder.createErrorAnnotation(element, "Method name expected");
+          holder.createErrorAnnotation(element, DefracBundle.message("annotator.expect.identifier"));
           return;
         }
 
@@ -119,10 +121,10 @@ public final class DefracMacroAnnotator implements Annotator {
           final String value = defracRef.getValue();
 
           if(isNullOrEmpty(value)) {
-            holder.createErrorAnnotation(element, "Method name expected");
+            holder.createErrorAnnotation(element, DefracBundle.message("annotator.expect.identifier"));
             return;
           } else {
-            holder.createErrorAnnotation(element, "Cannot resolve symbol '"+defracRef.getValue()+'\'');
+            holder.createErrorAnnotation(element, DefracBundle.message("annotator.unresolved", defracRef.getValue()));
             return;
           }
         } else {
@@ -139,7 +141,10 @@ public final class DefracMacroAnnotator implements Annotator {
           facet, method,
           platformImplementations, DefracPlatform.MACRO_ANNOTATION_TO_PLATFORM);
     } else {
-      DefracAnnotatorUtil.reportMoreGenericAnnotation(holder, annotation, method);
+      DefracAnnotatorUtil.reportMoreGenericAnnotation(
+          holder, annotation, method,
+          Names.defrac_annotation_Macro,
+          DefracPlatform.byMacroAnnotation(checkNotNull(annotation.getQualifiedName())));
     }
   }
 }

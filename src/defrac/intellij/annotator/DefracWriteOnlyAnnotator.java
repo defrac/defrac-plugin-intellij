@@ -20,33 +20,33 @@ import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.psi.*;
 import defrac.intellij.DefracBundle;
-import defrac.intellij.annotator.quickfix.RemoveReadOnlyQuickFix;
+import defrac.intellij.annotator.quickfix.RemoveWriteOnlyQuickFix;
 import defrac.intellij.psi.DefracPsiUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**
  *
  */
-public final class DefracReadOnlyAnnotator implements Annotator {
-  public DefracReadOnlyAnnotator() {}
+public final class DefracWriteOnlyAnnotator implements Annotator {
+  public DefracWriteOnlyAnnotator() {}
 
   @Override
   public void annotate(@NotNull final PsiElement element,
                        @NotNull final AnnotationHolder holder) {
-    if(!(element instanceof PsiAssignmentExpression)) {
+    if(!(element instanceof PsiReferenceExpression)) {
       return;
     }
 
-    final PsiAssignmentExpression assignmentExpression =
-        (PsiAssignmentExpression)element;
+    if(element.getParent() instanceof PsiAssignmentExpression) {
+      final PsiAssignmentExpression assignmentExpression =
+          (PsiAssignmentExpression)element.getParent();
 
-    final PsiExpression lhs = assignmentExpression.getLExpression();
-
-    if(!(lhs instanceof PsiReferenceExpression)) {
-      return;
+      if(assignmentExpression.getParent() instanceof PsiExpressionStatement) {
+        return;
+      }
     }
 
-    final PsiReferenceExpression referenceExpression = (PsiReferenceExpression)lhs;
+    final PsiReferenceExpression referenceExpression = (PsiReferenceExpression)element;
     final PsiElement referencedElement = referenceExpression.resolve();
 
     if(!(referencedElement instanceof PsiField)) {
@@ -55,11 +55,11 @@ public final class DefracReadOnlyAnnotator implements Annotator {
 
     final PsiField field = (PsiField)referencedElement;
 
-    if(DefracPsiUtil.isReadOnly(field)) {
+    if(DefracPsiUtil.isWriteOnly(field)) {
       holder.
           createErrorAnnotation(element,
-              DefracBundle.message("annotator.readWrite.readOnly", field.getName())).
-          registerFix(new RemoveReadOnlyQuickFix(field));
+              DefracBundle.message("annotator.readWrite.writeOnly", field.getName())).
+          registerFix(new RemoveWriteOnlyQuickFix(field));
     }
   }
 }

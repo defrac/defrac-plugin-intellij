@@ -24,6 +24,7 @@ import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.psi.util.MethodSignature;
 import com.intellij.psi.util.PsiModificationTracker;
+import defrac.intellij.DefracPlatform;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -93,37 +94,57 @@ public final class DefracPsiUtil {
 
   @Contract("null -> false")
   public static boolean isDelegateAnnotation(@Nullable final PsiAnnotation annotation) {
+    return isDelegateAnnotation(annotation, null);
+  }
+
+  @Contract("null, _ -> false")
+  public static boolean isDelegateAnnotation(@Nullable final PsiAnnotation annotation,
+                                             @Nullable final DefracPlatform platform) {
     if(annotation == null) {
       return false;
     }
 
     final String qualifiedName = annotation.getQualifiedName();
-    return qualifiedName != null && isDelegateAnnotation(qualifiedName);
+    return qualifiedName != null
+        && isDelegateAnnotation(qualifiedName, DefracPlatform.PLATFORM_TO_DELEGATE_ANNOTATION.get(platform));
   }
 
-  @Contract("null -> false")
-  public static boolean isDelegateAnnotation(@Nullable final String qualifiedName) {
-    return Names.ALL_DELEGATES.contains(qualifiedName);
+  @Contract("null, _ -> false")
+  public static boolean isDelegateAnnotation(@Nullable final String qualifiedName,
+                                             @Nullable final String nameOfAnnotation) {
+    return nameOfAnnotation == null
+        ? Names.ALL_DELEGATES.contains(qualifiedName)
+        : nameOfAnnotation.equals(qualifiedName);
   }
 
   @Contract("null -> false")
   public static boolean isMacroAnnotation(@Nullable final PsiElement element) {
-    return element instanceof PsiAnnotation && isMacroAnnotation((PsiAnnotation) element);
+    return element instanceof PsiAnnotation && isMacroAnnotation((PsiAnnotation)element);
   }
 
   @Contract("null -> false")
   public static boolean isMacroAnnotation(@Nullable final PsiAnnotation annotation) {
+    return isMacroAnnotation(annotation, null);
+  }
+
+  @Contract("null, _ -> false")
+  public static boolean isMacroAnnotation(@Nullable final PsiAnnotation annotation,
+                                          @Nullable final DefracPlatform platform) {
     if(annotation == null) {
       return false;
     }
 
     final String qualifiedName = annotation.getQualifiedName();
-    return qualifiedName != null && isMacroAnnotation(qualifiedName);
+    return qualifiedName != null
+        && isMacroAnnotation(qualifiedName, DefracPlatform.PLATFORM_TO_MACRO_ANNOTATION.get(platform));
   }
 
-  @Contract("null -> false")
-  public static boolean isMacroAnnotation(@Nullable final String qualifiedName) {
-    return Names.ALL_MACROS.contains(qualifiedName);
+  @Contract("null, _ -> false")
+  public static boolean isMacroAnnotation(@Nullable final String qualifiedName,
+                                          @Nullable final String nameOfAnnotation) {
+    return nameOfAnnotation == null
+        ? Names.ALL_MACROS.contains(qualifiedName)
+        : nameOfAnnotation.equals(qualifiedName);
   }
 
   public static boolean isSignatureEqual(@NotNull final PsiMethod thisMethod,
@@ -204,11 +225,82 @@ public final class DefracPsiUtil {
 
   public static boolean isReadOnly(@NotNull final PsiModifierListOwner element) {
     final PsiModifierList list = element.getModifierList();
+    return list != null && list.findAnnotation(Names.defrac_dni_ReadOnly) != null;
+  }
 
-    if(list == null) {
+  public static boolean isWriteOnly(@NotNull final PsiModifierListOwner element) {
+    final PsiModifierList list = element.getModifierList();
+    return list != null && list.findAnnotation(Names.defrac_dni_WriteOnly) != null;
+  }
+
+  public static boolean hasMacro(@NotNull final PsiModifierListOwner element,
+                                 @NotNull final DefracPlatform platform) {
+    final PsiModifierList list = element.getModifierList();
+    return list != null && list.findAnnotation(DefracPlatform.PLATFORM_TO_MACRO_ANNOTATION.get(platform)) != null;
+  }
+
+  public static boolean hasDelegate(@NotNull final PsiModifierListOwner element,
+                                 @NotNull final DefracPlatform platform) {
+    final PsiModifierList list = element.getModifierList();
+    return list != null && list.findAnnotation(DefracPlatform.PLATFORM_TO_DELEGATE_ANNOTATION.get(platform)) != null;
+  }
+
+  @Nullable
+  public static <T extends DefracReference> T findReference(
+      @NotNull final PsiAnnotation annotation,
+      @NotNull final Class<T> referenceClass) {
+    final PsiAnnotationParameterList parameterList = annotation.getParameterList();
+    final PsiNameValuePair[] values = parameterList.getAttributes();
+
+    if(values.length < 1) {
+      return null;
+    }
+
+    final PsiAnnotationMemberValue value = values[0].getValue();
+
+    if(!(value instanceof PsiLiteralExpression)) {
+      return null;
+    }
+
+    final PsiLiteralExpression literal = (PsiLiteralExpression)value;
+    final PsiReference[] references = literal.getReferences();
+
+    for(final PsiReference reference : references) {
+      if(referenceClass.isInstance(reference)) {
+        return referenceClass.cast(reference);
+      }
+    }
+
+    return null;
+  }
+
+  @Contract("null -> false")
+  public static boolean isWriteOnlyAnnotation(@Nullable final PsiAnnotation annotation) {
+    if(annotation == null) {
       return false;
     }
 
-    return list.findAnnotation(Names.defrac_dni_ReadOnly) != null;
+    final String qualifiedName = annotation.getQualifiedName();
+    return qualifiedName != null && isWriteOnlyAnnotation(qualifiedName);
+  }
+
+  @Contract("null -> false")
+  public static boolean isWriteOnlyAnnotation(@Nullable final String qualifiedName) {
+    return Names.defrac_dni_WriteOnly.equals(qualifiedName);
+  }
+
+  @Contract("null -> false")
+  public static boolean isReadOnlyAnnotation(@Nullable final PsiAnnotation annotation) {
+    if(annotation == null) {
+      return false;
+    }
+
+    final String qualifiedName = annotation.getQualifiedName();
+    return qualifiedName != null && isReadOnlyAnnotation(qualifiedName);
+  }
+
+  @Contract("null -> false")
+  public static boolean isReadOnlyAnnotation(@Nullable final String qualifiedName) {
+    return Names.defrac_dni_ReadOnly.equals(qualifiedName);
   }
 }

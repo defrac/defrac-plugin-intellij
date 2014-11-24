@@ -16,50 +16,39 @@
 
 package defrac.intellij.annotator;
 
+import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiField;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.annotator.quickfix.RemoveReadOnlyQuickFix;
+import defrac.intellij.annotator.quickfix.RemoveWriteOnlyQuickFix;
 import defrac.intellij.psi.DefracPsiUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**
  *
  */
-public final class DefracReadOnlyAnnotator implements Annotator {
-  public DefracReadOnlyAnnotator() {}
+public final class DefracIncompatibleReadWriteAnnotator implements Annotator {
+  public DefracIncompatibleReadWriteAnnotator() {}
 
   @Override
   public void annotate(@NotNull final PsiElement element,
                        @NotNull final AnnotationHolder holder) {
-    if(!(element instanceof PsiAssignmentExpression)) {
+    if(!(element instanceof PsiField)) {
       return;
     }
 
-    final PsiAssignmentExpression assignmentExpression =
-        (PsiAssignmentExpression)element;
+    final PsiField field = (PsiField)element;
 
-    final PsiExpression lhs = assignmentExpression.getLExpression();
+    if(DefracPsiUtil.isReadOnly(field) && DefracPsiUtil.isWriteOnly(field)) {
+      final Annotation annotation =
+          holder.
+              createErrorAnnotation(element, DefracBundle.message("annotator.readWrite.both"));
 
-    if(!(lhs instanceof PsiReferenceExpression)) {
-      return;
-    }
-
-    final PsiReferenceExpression referenceExpression = (PsiReferenceExpression)lhs;
-    final PsiElement referencedElement = referenceExpression.resolve();
-
-    if(!(referencedElement instanceof PsiField)) {
-      return;
-    }
-
-    final PsiField field = (PsiField)referencedElement;
-
-    if(DefracPsiUtil.isReadOnly(field)) {
-      holder.
-          createErrorAnnotation(element,
-              DefracBundle.message("annotator.readWrite.readOnly", field.getName())).
-          registerFix(new RemoveReadOnlyQuickFix(field));
+      annotation.registerFix(new RemoveWriteOnlyQuickFix(field));
+      annotation.registerFix(new RemoveReadOnlyQuickFix(field));
     }
   }
 }

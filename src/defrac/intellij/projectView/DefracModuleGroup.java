@@ -18,9 +18,11 @@ package defrac.intellij.projectView;
 
 import com.google.common.collect.Lists;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.util.Comparing;
+import defrac.intellij.util.WeakReference2;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.List;
 
@@ -29,7 +31,7 @@ import java.util.List;
  */
 final class DefracModuleGroup {
   @NotNull
-  private final List<WeakReference<Module>> modules = Lists.newLinkedList();
+  private final List<WeakReference2<Module>> modules = Lists.newLinkedList();
 
   @NotNull
   private final String name;
@@ -38,7 +40,7 @@ final class DefracModuleGroup {
     this.name = name;
 
     for(final Module module : modules) {
-      this.modules.add(new WeakReference<Module>(module));
+      this.modules.add(WeakReference2.create(module));
     }
   }
 
@@ -49,5 +51,32 @@ final class DefracModuleGroup {
 
   public List<Module> getModules() {
     return DefracProjectViewUtil.extractLiveModules(modules);
+  }
+
+  @Override
+  public boolean equals(@Nullable final Object object) {
+    if(this == object) {
+      return true;
+    }
+
+    if(object == null || getClass() != object.getClass()) {
+      return false;
+    }
+
+    final DefracModuleGroup that = (DefracModuleGroup)object;
+
+    return Comparing.haveEqualElements(this.modules, that.modules)
+        && Comparing.equal(this.name, that.name);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = name.hashCode();
+
+    for(final WeakReference2<Module> module : modules) {
+      result = 31 * result + module.hashCode();
+    }
+
+    return result;
   }
 }

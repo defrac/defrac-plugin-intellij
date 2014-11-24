@@ -31,10 +31,10 @@ import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiManager;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.facet.DefracFacet;
+import defrac.intellij.util.WeakReference2;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -53,19 +53,19 @@ final class DefracProjectViewUtil {
   }
 
   @NotNull
-  public static List<Module> extractLiveModules(@NotNull final Collection<WeakReference<Module>> modules) {
+  public static List<Module> extractLiveModules(@NotNull final Collection<WeakReference2<Module>> modules) {
     return getModules(modules, null);
   }
 
   @NotNull
-  public static List<Module> getModules(@NotNull final Collection<WeakReference<Module>> modules,
+  public static List<Module> getModules(@NotNull final Collection<WeakReference2<Module>> modules,
                                         @Nullable final Condition<Module> filter) {
-    final Iterator<WeakReference<Module>> iterator = modules.iterator();
+    final Iterator<WeakReference2<Module>> iterator = modules.iterator();
     final List<Module> result =
         Lists.newArrayListWithExpectedSize(modules.size());
 
     while(iterator.hasNext()) {
-      final WeakReference<Module> moduleRef = iterator.next();
+      final WeakReference2<Module> moduleRef = iterator.next();
       final Module module = moduleRef.get();
 
       if(module == null || module.isDisposed()) {

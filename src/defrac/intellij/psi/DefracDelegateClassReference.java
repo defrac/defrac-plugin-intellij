@@ -31,6 +31,7 @@ import com.intellij.util.IconUtil;
 import com.intellij.util.Query;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,6 +52,16 @@ public final class DefracDelegateClassReference extends DefracClassReferenceBase
       return a.getClassName().compareTo(b.getClassName());
     }
   };
+
+  @Nullable
+  @Contract("null -> null")
+  public static DefracDelegateClassReference getInstance(@Nullable final PsiAnnotation annotation) {
+    if(!DefracPsiUtil.isDelegateAnnotation(annotation)) {
+      return null;
+    }
+
+    return DefracPsiUtil.findReference(annotation, DefracDelegateClassReference.class);
+  }
 
   public DefracDelegateClassReference(@NotNull final String value,
                                       @NotNull final PsiLiteralExpression element,

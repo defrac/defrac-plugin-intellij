@@ -21,6 +21,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTypesUtil;
+import defrac.intellij.DefracBundle;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -36,7 +37,7 @@ public final class DefracMacroValidator {
                               @NotNull final PsiMethod thisMethod,
                               @Nullable final PsiElement thatElement) {
     if(!(thatElement instanceof PsiMethod)) {
-      holder.createErrorAnnotation(element, "Method expected");
+      holder.createErrorAnnotation(element, DefracBundle.message("annotator.expect.method"));
       return;
     }
 
@@ -54,7 +55,8 @@ public final class DefracMacroValidator {
     final int arity = thisMethod.getParameterList().getParametersCount();
 
     if(arity != thatMethod.getParameterList().getParametersCount()) {
-      holder.createErrorAnnotation(element, "Macro must accept "+arity+" parameter"+(arity != 1 ? "s" : ""));
+      holder.createErrorAnnotation(element,
+          DefracBundle.message("annotator.macro.arity", arity, arity == 1 ? "" : "s"));
       return;
     }
 
@@ -82,13 +84,16 @@ public final class DefracMacroValidator {
 
     for(final PsiParameter parameter : parameterList.getParameters()) {
       if(!PsiTypesUtil.compareTypes(parameter.getType(), typeOfParameter, true)) {
-        holder.createErrorAnnotation(element, "Parameter '"+parameter.getName()+"' must be of type "+classOfParameter.getName()+" ("+thatMethod.getName()+')');
+        holder.createErrorAnnotation(element,
+            DefracBundle.message("annotator.macro.parameterType",
+                parameter.getName(), classOfParameter.getName(), thatMethod.getName()));
       }
     }
 
     // (3)
     if(!PsiTypesUtil.compareTypes(thatMethod.getReturnType(), typeOfMethodBody, true)) {
-      holder.createErrorAnnotation(element, thatMethod.getName()+" must return "+classOfMethodBody.getName());
+      holder.createErrorAnnotation(element,
+          DefracBundle.message("annotator.macro.returnType", thatMethod.getName(), classOfMethodBody.getName()));
     }
 
     // (4)
@@ -101,7 +106,8 @@ public final class DefracMacroValidator {
     final PsiClass thatClass = thatMethod.getContainingClass();
 
     if(thatClass != null && !thatClass.isInheritor(classOfMacro, true)) {
-      holder.createErrorAnnotation(element, thatClass.getName()+" must extend "+classOfMacro.getName());
+      holder.createErrorAnnotation(element,
+          DefracBundle.message("annotator.macro.mustExtend", thatClass.getName(), classOfMacro.getName()));
     }
   }
 
