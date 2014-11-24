@@ -204,11 +204,11 @@ public final class DefracPsiUtil {
 
   public static boolean isReadOnly(@NotNull final PsiModifierListOwner element) {
     final PsiModifierList list = element.getModifierList();
+    return list != null && list.findAnnotation(Names.defrac_dni_ReadOnly) != null;
+  }
 
-    if(list == null) {
-      return false;
-    }
-
-    return list.findAnnotation(Names.defrac_dni_ReadOnly) != null;
+  public static boolean isWriteOnly(@NotNull final PsiModifierListOwner element) {
+    final PsiModifierList list = element.getModifierList();
+    return list != null && list.findAnnotation(Names.defrac_dni_WriteOnly) != null;
   }
 }

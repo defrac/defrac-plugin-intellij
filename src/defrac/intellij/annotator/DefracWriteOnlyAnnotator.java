@@ -25,34 +25,34 @@ import org.jetbrains.annotations.NotNull;
 /**
  *
  */
-public final class DefracReadOnlyAnnotator implements Annotator {
-  public DefracReadOnlyAnnotator() {}
+public final class DefracWriteOnlyAnnotator implements Annotator {
+  public DefracWriteOnlyAnnotator() {}
 
   @Override
   public void annotate(@NotNull final PsiElement element,
                        @NotNull final AnnotationHolder holder) {
-    if(!(element instanceof PsiAssignmentExpression)) {
+    if(!(element instanceof PsiReferenceExpression)) {
       return;
     }
 
-    final PsiAssignmentExpression assignmentExpression =
-        (PsiAssignmentExpression)element;
+    if(element.getParent() instanceof PsiAssignmentExpression) {
+      final PsiAssignmentExpression assignmentExpression =
+          (PsiAssignmentExpression)element.getParent();
 
-    final PsiExpression lhs = assignmentExpression.getLExpression();
-
-    if(!(lhs instanceof PsiReferenceExpression)) {
-      return;
+      if(assignmentExpression.getParent() instanceof PsiExpressionStatement) {
+        return;
+      }
     }
 
-    final PsiReferenceExpression referenceExpression = (PsiReferenceExpression)lhs;
+    final PsiReferenceExpression referenceExpression = (PsiReferenceExpression)element;
     final PsiElement referencedElement = referenceExpression.resolve();
 
     if(!(referencedElement instanceof PsiField)) {
       return;
     }
 
-    if(DefracPsiUtil.isReadOnly((PsiField)referencedElement)) {
-      holder.createErrorAnnotation(element, "Cannot assign a value to read-only variable '"+((PsiField)referencedElement).getName()+'\'');
+    if(DefracPsiUtil.isWriteOnly((PsiField)referencedElement)) {
+      holder.createErrorAnnotation(element, "Cannot read a value from write-only variable '"+((PsiField)referencedElement).getName()+'\'');
     }
   }
 }

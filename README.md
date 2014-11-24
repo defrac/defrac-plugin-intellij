@@ -32,7 +32,7 @@ TODO
   (✓) Broken reference to @Delegate
   (✓) Broken reference to @Macro
   (✓) Writing @ReadOnly field
-  ( ) Reading @WriteOnly field
+  (✓) Reading @WriteOnly field
 [✓] GotoDeclarationHandler @Macro/@Delegate
 [✓] SafeDeleteProcessor @Macro/@Delegate
 [ ] Rename @Macro/@Delegate (works already at declaration site)
