@@ -19,16 +19,17 @@ package defrac.intellij.projectView;
 import com.google.common.collect.Maps;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Comparing;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.psi.util.PsiModificationTracker;
 import defrac.intellij.DefracPlatform;
+import defrac.intellij.util.WeakReference2;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
@@ -64,14 +65,14 @@ final class DefracProjectPlatform {
   }
 
   @NotNull
-  private final WeakReference<DefracProject> project;
+  private final WeakReference2<DefracProject> project;
 
   @NotNull
   private final DefracPlatform platform;
 
   private DefracProjectPlatform(@NotNull final DefracProject project,
                                 @NotNull final DefracPlatform platform) {
-    this.project = new WeakReference<DefracProject>(project);
+    this.project = WeakReference2.create(project);
     this.platform = platform;
   }
 
@@ -99,5 +100,28 @@ final class DefracProjectPlatform {
   public boolean isDisposed() {
     final DefracProject project = getProject();
     return project == null || project.isDisposed();
+  }
+
+  @Override
+  public boolean equals(@Nullable final Object object) {
+    if(this == object) {
+      return true;
+    }
+
+    if(object == null || getClass() != object.getClass()) {
+      return false;
+    }
+
+    final DefracProjectPlatform that = (DefracProjectPlatform)object;
+
+    return Comparing.equal(this.platform, that.platform)
+        && Comparing.equal(this.project, that.project);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = project.hashCode();
+    result = 31 * result + platform.hashCode();
+    return result;
   }
 }

@@ -19,6 +19,7 @@ package defrac.intellij.projectView;
 import com.google.common.collect.Lists;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
@@ -29,11 +30,11 @@ import com.intellij.psi.util.PsiModificationTracker;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.config.DefracConfig;
 import defrac.intellij.facet.DefracFacet;
+import defrac.intellij.util.WeakReference2;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.List;
 
@@ -73,7 +74,7 @@ final class DefracProject {
   private final VirtualFile settings;
 
   @NotNull
-  private final List<WeakReference<Module>> modules = Lists.newLinkedList();
+  private final List<WeakReference2<Module>> modules = Lists.newLinkedList();
 
   @Nullable
   private String nameCached;
@@ -84,7 +85,7 @@ final class DefracProject {
 
   public void addModule(@NotNull final Module module) {
     assert DefracFacet.getInstance(module) != null;
-    modules.add(new WeakReference<Module>(module));
+    modules.add(WeakReference2.create(module));
   }
 
   @NotNull
@@ -113,10 +114,10 @@ final class DefracProject {
       return true;
     }
 
-    final Iterator<WeakReference<Module>> iterator = modules.iterator();
+    final Iterator<WeakReference2<Module>> iterator = modules.iterator();
 
     while(iterator.hasNext()) {
-      final WeakReference<Module> moduleRef = iterator.next();
+      final WeakReference2<Module> moduleRef = iterator.next();
       final Module module = moduleRef.get();
 
       if(module == null || module.isDisposed()) {
@@ -144,5 +145,33 @@ final class DefracProject {
     }
 
     return nameCached;
+  }
+
+  @Override
+  public boolean equals(@Nullable final Object object) {
+    if(this == object) {
+      return true;
+    }
+
+    if(object == null || getClass() != object.getClass()) {
+      return false;
+    }
+
+    final DefracProject that = (DefracProject)object;
+
+    return Comparing.haveEqualElements(this.modules, that.modules)
+        && Comparing.equal(this.settings, that.settings);
+
+  }
+
+  @Override
+  public int hashCode() {
+    int result = settings.hashCode();
+
+    for(final WeakReference2<Module> module : modules) {
+      result = 31 * result + module.hashCode();
+    }
+
+    return result;
   }
 }
