@@ -117,7 +117,6 @@ final class DefracViewPlatformNode extends ProjectViewNode<DefracProjectPlatform
       return children;
     }
 
-
     final List<Module> sourceModules = Lists.newArrayList();
     final List<Module> macroModules = Lists.newArrayList();
 

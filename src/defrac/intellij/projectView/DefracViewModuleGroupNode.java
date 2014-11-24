@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static defrac.intellij.projectView.DefracProjectViewUtil.createModuleNode;
+
 /**
  *
  */
@@ -51,8 +53,8 @@ final class DefracViewModuleGroupNode extends ProjectViewNode<DefracModuleGroup>
     final List<AbstractTreeNode> result = new ArrayList<AbstractTreeNode>();
     final Collection<Module> modules = getValue().getModules();
 
-    for(Module module : modules) {
-      result.add(DefracProjectViewUtil.createModuleNode(project, module, getSettings()));
+    for(final Module module : modules) {
+      result.add(createModuleNode(project, module, getSettings()));
     }
 
     return result;

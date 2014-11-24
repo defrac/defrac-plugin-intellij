@@ -87,6 +87,19 @@ public final class DefracDelegateValidator {
       return;
     }
 
+    final Set<String> thisInterfaceQnames = ImmutableSet.copyOf(mapQualifiedName(thisInterfaces));
+    for(final String thatQname : thatInterfaces) {
+      if(!thisInterfaceQnames.contains(thatQname)) {
+        holder.createErrorAnnotation(element,
+            DefracBundle.message("annotator.delegate.mustNotImplement", thatClass.getName(), thatQname));
+        interfacesHaveError = true;
+      }
+    }
+
+    if(interfacesHaveError) {
+      return;
+    }
+
     // (3)
     final PsiField[] thisFields = thisClass.getFields();
 
