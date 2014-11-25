@@ -43,7 +43,7 @@ import java.util.List;
 /**
  *
  */
-public final class DefracDelegateClassReference extends DefracClassReferenceBase {
+public final class DelegateClassReference extends ClassReferenceBase {
   @NotNull
   public static final Comparator<PsiClassType> TYPE_COMPARATOR = new Comparator<PsiClassType>() {
     @Override
@@ -55,17 +55,17 @@ public final class DefracDelegateClassReference extends DefracClassReferenceBase
 
   @Nullable
   @Contract("null -> null")
-  public static DefracDelegateClassReference getInstance(@Nullable final PsiAnnotation annotation) {
+  public static DelegateClassReference getInstance(@Nullable final PsiAnnotation annotation) {
     if(!DefracPsiUtil.isDelegateAnnotation(annotation)) {
       return null;
     }
 
-    return DefracPsiUtil.findReference(annotation, DefracDelegateClassReference.class);
+    return DefracPsiUtil.findReference(annotation, DelegateClassReference.class);
   }
 
-  public DefracDelegateClassReference(@NotNull final String value,
-                                      @NotNull final PsiLiteralExpression element,
-                                      @NotNull final DefracPlatform platform) {
+  public DelegateClassReference(@NotNull final String value,
+                                @NotNull final PsiLiteralExpression element,
+                                @NotNull final DefracPlatform platform) {
     super(element, new TextRange(1, 1 + value.length()), platform);
   }
 
@@ -160,7 +160,7 @@ public final class DefracDelegateClassReference extends DefracClassReferenceBase
       try {
         variants.add(
             LookupElementBuilder.create(klass).
-                withInsertHandler(DefracQualifiedClassNameInsertHandler.INSTANCE).
+                withInsertHandler(QualifiedClassNameInsertHandler.INSTANCE).
                 withIcon(IconUtil.getIcon(klass.getContainingFile().getVirtualFile(), 0, project)).
                 withTypeText(klass.getContainingFile().getName())
         );

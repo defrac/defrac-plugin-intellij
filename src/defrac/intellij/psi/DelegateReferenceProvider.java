@@ -31,8 +31,8 @@ import static defrac.intellij.psi.DefracPsiUtil.isDelegateAnnotation;
 /**
  *
  */
-public final class DefracDelegateReferenceProvider extends PsiReferenceProvider {
-  public DefracDelegateReferenceProvider() {}
+public final class DelegateReferenceProvider extends PsiReferenceProvider {
+  public DelegateReferenceProvider() {}
 
   @NotNull
   @Override
@@ -69,7 +69,7 @@ public final class DefracDelegateReferenceProvider extends PsiReferenceProvider 
         DefracPlatform.byDelegateAnnotation(checkNotNull(annotation.getQualifiedName()));
 
     return new PsiReference[] {
-        new DefracDelegateClassReference(
+        new DelegateClassReference(
             value,
             (PsiLiteralExpression)element,
             targetPlatform)

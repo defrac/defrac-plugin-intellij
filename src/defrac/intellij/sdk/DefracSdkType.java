@@ -26,7 +26,7 @@ import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.ui.Messages;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracIcons;
-import defrac.intellij.sdk.ui.DefracNewSdkDialog;
+import defrac.intellij.sdk.ui.NewDefracSdkDialog;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -195,7 +195,7 @@ public final class DefracSdkType extends JavaDependentSdkType implements JavaSdk
     }
 
     // (4) let user select jdk and defrac version
-    final DefracNewSdkDialog dialog = new DefracNewSdkDialog(
+    final NewDefracSdkDialog dialog = new NewDefracSdkDialog(
         null, javaSdks, javaSdks.get(0),
         versionNames,
         currentVersion == null ? versionNames.get(0) : currentVersion.getName());

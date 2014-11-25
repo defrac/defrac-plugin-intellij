@@ -17,22 +17,22 @@
 package defrac.intellij.gotoDeclaration;
 
 import com.intellij.psi.PsiReference;
-import defrac.intellij.psi.DefracMacroClassReference;
-import defrac.intellij.psi.DefracMacroMethodReference;
+import defrac.intellij.psi.MacroClassReference;
+import defrac.intellij.psi.MacroMethodReference;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 
 /**
  *
  */
-public final class DefracGotoMacroDeclarationHandler extends DefracGotoDeclarationHandlerBase {
-  public DefracGotoMacroDeclarationHandler() {
+public final class GotoMacroDeclarationHandler extends GotoDeclarationHandlerBase {
+  public GotoMacroDeclarationHandler() {
     super(Names.ALL_MACROS, false);
   }
 
   @Override
   protected boolean isDefracReference(@NotNull final PsiReference reference) {
-    return reference instanceof DefracMacroClassReference
-        || reference instanceof DefracMacroMethodReference;
+    return reference instanceof MacroClassReference
+        || reference instanceof MacroMethodReference;
   }
 }

@@ -28,14 +28,14 @@ import java.util.List;
 /**
  *
  */
-public final class DefracNewSdkDialog extends DialogWrapper {
+public final class NewDefracSdkDialog extends DialogWrapper {
   private JPanel contentPanel;
   private JComboBox<String> internalJdkComboBox;
   private JComboBox<String> defracVersionComboBox;
   private JLabel internalJdkLabel;
   private JLabel defracSdkLabel;
 
-  public DefracNewSdkDialog(@Nullable final Project project,
+  public NewDefracSdkDialog(@Nullable final Project project,
                             @NotNull final List<String> javaSdkNames,
                             @NotNull final String selectedJavaSdk,
                             @NotNull final List<String> defracVersionNames,

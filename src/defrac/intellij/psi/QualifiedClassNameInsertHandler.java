@@ -26,7 +26,7 @@ import org.jetbrains.annotations.NotNull;
 /**
 *
 */
-enum DefracQualifiedClassNameInsertHandler implements InsertHandler<LookupElement> {
+enum QualifiedClassNameInsertHandler implements InsertHandler<LookupElement> {
   INSTANCE;
 
   @Override

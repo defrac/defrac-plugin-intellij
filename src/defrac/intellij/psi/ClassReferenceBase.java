@@ -28,16 +28,16 @@ import org.jetbrains.annotations.Nullable;
 /**
  *
  */
-abstract class DefracClassReferenceBase extends PsiReferenceBase<PsiLiteralExpression> implements PsiPolyVariantReference, DefracReference {
+abstract class ClassReferenceBase extends PsiReferenceBase<PsiLiteralExpression> implements PsiPolyVariantReference, DefracReference {
   @NotNull
   static final Object[] NO_VARIANTS = new Object[0];
 
   @NotNull
   protected final DefracPlatform platform;
 
-  public DefracClassReferenceBase(@NotNull final PsiLiteralExpression element,
-                                  @NotNull final TextRange range,
-                                  @NotNull final DefracPlatform platform) {
+  public ClassReferenceBase(@NotNull final PsiLiteralExpression element,
+                            @NotNull final TextRange range,
+                            @NotNull final DefracPlatform platform) {
     super(element, range, false);
     this.platform = platform;
   }

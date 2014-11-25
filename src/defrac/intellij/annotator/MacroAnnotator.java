@@ -24,9 +24,9 @@ import com.intellij.psi.util.PsiUtil;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.psi.DefracMacroClassReference;
-import defrac.intellij.psi.DefracMacroMethodReference;
 import defrac.intellij.psi.DefracPsiUtil;
+import defrac.intellij.psi.MacroClassReference;
+import defrac.intellij.psi.MacroMethodReference;
 import defrac.intellij.psi.validation.DefracMacroValidator;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
@@ -40,8 +40,8 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 /**
  *
  */
-public final class DefracMacroAnnotator implements Annotator {
-  public DefracMacroAnnotator() {}
+public final class MacroAnnotator implements Annotator {
+  public MacroAnnotator() {}
 
   @Override
   public void annotate(@NotNull final PsiElement element,
@@ -76,8 +76,8 @@ public final class DefracMacroAnnotator implements Annotator {
     final Set<DefracPlatform> platformImplementations = new HashSet<DefracPlatform>();
 
     for(final PsiReference reference : references) {
-      if(reference instanceof DefracMacroClassReference) {
-        final DefracMacroClassReference defracRef = (DefracMacroClassReference)reference;
+      if(reference instanceof MacroClassReference) {
+        final MacroClassReference defracRef = (MacroClassReference)reference;
 
         if(isNullOrEmpty(defracRef.getValue())) {
           holder.createErrorAnnotation(element, DefracBundle.message("annotator.expect.qualifiedName"));
@@ -107,8 +107,8 @@ public final class DefracMacroAnnotator implements Annotator {
             }
           }
         }
-      } else if(reference instanceof DefracMacroMethodReference) {
-        final DefracMacroMethodReference defracRef = (DefracMacroMethodReference)reference;
+      } else if(reference instanceof MacroMethodReference) {
+        final MacroMethodReference defracRef = (MacroMethodReference)reference;
 
         if(isNullOrEmpty(defracRef.getValue())) {
           holder.createErrorAnnotation(element, DefracBundle.message("annotator.expect.identifier"));
@@ -139,12 +139,14 @@ public final class DefracMacroAnnotator implements Annotator {
       DefracAnnotatorUtil.reportMissingImplementations(
           element, holder,
           facet, method,
-          platformImplementations, DefracPlatform.MACRO_ANNOTATION_TO_PLATFORM);
+          platformImplementations, DefracPlatform.MACRO_ANNOTATION_TO_PLATFORM,
+          /*isDelegate=*/true);
     } else {
       DefracAnnotatorUtil.reportMoreGenericAnnotation(
           holder, annotation, method,
           Names.defrac_annotation_Macro,
-          DefracPlatform.byMacroAnnotation(checkNotNull(annotation.getQualifiedName())));
+          DefracPlatform.byMacroAnnotation(checkNotNull(annotation.getQualifiedName())),
+          /*isDelegate=*/true);
     }
   }
 }

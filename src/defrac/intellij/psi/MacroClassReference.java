@@ -39,11 +39,11 @@ import java.util.List;
 /**
  *
  */
-public final class DefracMacroClassReference extends DefracClassReferenceBase {
-  public DefracMacroClassReference(@NotNull final PsiLiteralExpression element,
-                                   final int offset,
-                                   final int length,
-                                   @NotNull final DefracPlatform platform) {
+public final class MacroClassReference extends ClassReferenceBase {
+  public MacroClassReference(@NotNull final PsiLiteralExpression element,
+                             final int offset,
+                             final int length,
+                             @NotNull final DefracPlatform platform) {
     super(element, new TextRange(offset, offset + length), platform);
   }
 
@@ -86,7 +86,7 @@ public final class DefracMacroClassReference extends DefracClassReferenceBase {
       try {
         variants.add(
             LookupElementBuilder.create(klass).
-                withInsertHandler(DefracQualifiedClassNameInsertHandler.INSTANCE).
+                withInsertHandler(QualifiedClassNameInsertHandler.INSTANCE).
                 withIcon(IconUtil.getIcon(klass.getContainingFile().getVirtualFile(), 0, project)).
                 withTypeText(klass.getContainingFile().getName())
         );

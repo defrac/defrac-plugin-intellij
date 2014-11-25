@@ -25,8 +25,8 @@ import org.jetbrains.annotations.NotNull;
 /**
  *
  */
-public final class DefracRefactoringSupport extends JavaRefactoringSupportProvider {
-  public DefracRefactoringSupport() {}
+public final class RefactoringSupport extends JavaRefactoringSupportProvider {
+  public RefactoringSupport() {}
 
   @Override
   public boolean isMemberInplaceRenameAvailable(@NotNull final PsiElement elementToRename,

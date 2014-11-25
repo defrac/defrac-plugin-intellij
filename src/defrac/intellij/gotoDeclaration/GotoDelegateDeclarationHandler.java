@@ -17,20 +17,20 @@
 package defrac.intellij.gotoDeclaration;
 
 import com.intellij.psi.PsiReference;
-import defrac.intellij.psi.DefracDelegateClassReference;
+import defrac.intellij.psi.DelegateClassReference;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 
 /**
  *
  */
-public final class DefracGotoDelegateDeclarationHandler extends DefracGotoDeclarationHandlerBase {
-  public DefracGotoDelegateDeclarationHandler() {
+public final class GotoDelegateDeclarationHandler extends GotoDeclarationHandlerBase {
+  public GotoDelegateDeclarationHandler() {
     super(Names.ALL_DELEGATES, false);
   }
 
   @Override
   protected boolean isDefracReference(@NotNull final PsiReference reference) {
-    return reference instanceof DefracDelegateClassReference;
+    return reference instanceof DelegateClassReference;
   }
 }

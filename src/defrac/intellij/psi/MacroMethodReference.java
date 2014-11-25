@@ -33,24 +33,24 @@ import java.util.List;
 /**
  *
  */
-public final class DefracMacroMethodReference extends PsiReferenceBase<PsiLiteralExpression> implements PsiPolyVariantReference, DefracReference {
+public final class MacroMethodReference extends PsiReferenceBase<PsiLiteralExpression> implements PsiPolyVariantReference, DefracReference {
   @Nullable
   @Contract("null -> null")
-  public static DefracMacroMethodReference getInstance(@Nullable final PsiAnnotation annotation) {
+  public static MacroMethodReference getInstance(@Nullable final PsiAnnotation annotation) {
     if(!DefracPsiUtil.isMacroAnnotation(annotation)) {
       return null;
     }
 
-    return DefracPsiUtil.findReference(annotation, DefracMacroMethodReference.class);
+    return DefracPsiUtil.findReference(annotation, MacroMethodReference.class);
   }
 
   @NotNull
-  private final DefracMacroClassReference parent;
+  private final MacroClassReference parent;
 
-  public DefracMacroMethodReference(@NotNull final DefracMacroClassReference parent,
-                                    @NotNull final PsiLiteralExpression element,
-                                    final int offset,
-                                    final int length) {
+  public MacroMethodReference(@NotNull final MacroClassReference parent,
+                              @NotNull final PsiLiteralExpression element,
+                              final int offset,
+                              final int length) {
     super(element, new TextRange(offset, offset + length));
     this.parent = parent;
   }

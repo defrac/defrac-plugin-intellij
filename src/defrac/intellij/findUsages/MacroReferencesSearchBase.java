@@ -27,8 +27,8 @@ import org.jetbrains.annotations.NotNull;
 /**
  *
  */
-abstract class DefracMacroReferencesSearchBase<E extends PsiElement, T> extends DefracReferencesSearchBase<E, T> {
-  DefracMacroReferencesSearchBase() {}
+abstract class MacroReferencesSearchBase<E extends PsiElement, T> extends ReferencesSearchBase<E, T> {
+  MacroReferencesSearchBase() {}
 
   @NotNull
   @Override

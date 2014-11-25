@@ -31,8 +31,8 @@ import static defrac.intellij.psi.DefracPsiUtil.isMacroAnnotation;
 /**
  *
  */
-public final class DefracMacroReferenceProvider extends PsiReferenceProvider {
-  public DefracMacroReferenceProvider() {}
+public final class MacroReferenceProvider extends PsiReferenceProvider {
+  public MacroReferenceProvider() {}
 
   @NotNull
   @Override
@@ -73,7 +73,7 @@ public final class DefracMacroReferenceProvider extends PsiReferenceProvider {
 
     if(indexOfHash == -1) {
       return new PsiReference[] {
-          new DefracMacroClassReference(
+          new MacroClassReference(
               (PsiLiteralExpression)element,
               // We ignore the first ", so start-offset is 1
               1,
@@ -84,7 +84,7 @@ public final class DefracMacroReferenceProvider extends PsiReferenceProvider {
       };
     }
 
-    final DefracMacroClassReference classReference = new DefracMacroClassReference(
+    final MacroClassReference classReference = new MacroClassReference(
         (PsiLiteralExpression) element,
         // We ignore the first "
         1,
@@ -98,7 +98,7 @@ public final class DefracMacroReferenceProvider extends PsiReferenceProvider {
 
     return new PsiReference[] {
         classReference,
-        new DefracMacroMethodReference(
+        new MacroMethodReference(
             classReference,
             (PsiLiteralExpression)element,
             // We start without the #

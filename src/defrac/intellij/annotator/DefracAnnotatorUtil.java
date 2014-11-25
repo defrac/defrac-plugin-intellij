@@ -43,7 +43,8 @@ public final class DefracAnnotatorUtil {
                                                  @NotNull final PsiAnnotation thisAnnotation,
                                                  @NotNull final PsiModifierListOwner annotatedElement,
                                                  @NotNull final String nameOfGenericAnnotation,
-                                                 @NotNull final DefracPlatform platform) {
+                                                 @NotNull final DefracPlatform platform,
+                                                 final boolean isDelegate) {
     final PsiAnnotation[] thatAnnotations = checkNotNull(annotatedElement.getModifierList()).getAnnotations();
 
     for(final PsiAnnotation thatAnnotation : thatAnnotations) {
@@ -80,7 +81,7 @@ public final class DefracAnnotatorUtil {
         holder.
             createWarningAnnotation(thisAnnotation, DefracBundle.message("annotator.platform.redundant")).
             registerFix(
-                annotatedElement instanceof PsiClass
+                isDelegate
                     ? new RemoveDelegateQuickFix((PsiClass)annotatedElement, platform)
                     : new RemoveMacroQuickFix((PsiMethod)annotatedElement, platform));
       }
@@ -94,7 +95,8 @@ public final class DefracAnnotatorUtil {
                                                   @NotNull final DefracFacet facet,
                                                   @NotNull final PsiModifierListOwner annotatedElement,
                                                   @NotNull final Set<DefracPlatform> implementations,
-                                                  @NotNull final Map<String, DefracPlatform> nameToPlatform) {
+                                                  @NotNull final Map<String, DefracPlatform> nameToPlatform,
+                                                  final boolean isDelegate) {
     // don't report that some class is missing for a platform if
     // the more specific annotation is present
     final PsiAnnotation[] otherAnnotations = checkNotNull(annotatedElement.getModifierList()).getAnnotations();

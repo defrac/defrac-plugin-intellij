@@ -24,8 +24,8 @@ import com.intellij.psi.util.PsiUtil;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.psi.DefracDelegateClassReference;
 import defrac.intellij.psi.DefracPsiUtil;
+import defrac.intellij.psi.DelegateClassReference;
 import defrac.intellij.psi.validation.DefracDelegateValidator;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
@@ -39,8 +39,8 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 /**
  *
  */
-public final class DefracDelegateAnnotator implements Annotator {
-  public DefracDelegateAnnotator() {}
+public final class DelegateAnnotator implements Annotator {
+  public DelegateAnnotator() {}
 
   @Override
   public void annotate(@NotNull final PsiElement element,
@@ -75,11 +75,11 @@ public final class DefracDelegateAnnotator implements Annotator {
     final Set<DefracPlatform> platformImplementations = new HashSet<DefracPlatform>();
 
     for(final PsiReference reference : references) {
-      if(!(reference instanceof DefracDelegateClassReference)) {
+      if(!(reference instanceof DelegateClassReference)) {
         continue;
       }
 
-      final DefracDelegateClassReference defracRef = (DefracDelegateClassReference)reference;
+      final DelegateClassReference defracRef = (DelegateClassReference)reference;
 
       if(isNullOrEmpty(defracRef.getValue())) {
         holder.createErrorAnnotation(element, DefracBundle.message("annotator.expect.qualifiedName"));
@@ -118,12 +118,14 @@ public final class DefracDelegateAnnotator implements Annotator {
           element, holder,
           facet,
           klass, platformImplementations,
-          DefracPlatform.DELEGATE_ANNOTATION_TO_PLATFORM);
+          DefracPlatform.DELEGATE_ANNOTATION_TO_PLATFORM,
+          /*isDelegate=*/true);
     } else {
       DefracAnnotatorUtil.reportMoreGenericAnnotation(
           holder, annotation, klass,
           Names.defrac_annotation_Delegate,
-          DefracPlatform.byDelegateAnnotation(checkNotNull(annotation.getQualifiedName())));
+          DefracPlatform.byDelegateAnnotation(checkNotNull(annotation.getQualifiedName())),
+          /*isDelegate=*/true);
     }
   }
 }

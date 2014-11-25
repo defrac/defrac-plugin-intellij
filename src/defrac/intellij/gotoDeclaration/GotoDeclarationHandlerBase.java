@@ -35,14 +35,14 @@ import static com.intellij.psi.PsiElement.EMPTY_ARRAY;
 /**
  *
  */
-abstract class DefracGotoDeclarationHandlerBase implements GotoDeclarationHandler {
+abstract class GotoDeclarationHandlerBase implements GotoDeclarationHandler {
   @NotNull
   private final Set<String> allowedQualifiedNames;
 
   private final boolean onlyInDefracModule;
 
-  DefracGotoDeclarationHandlerBase(@NotNull final Set<String> allowedQualifiedNames,
-                                   final boolean onlyInDefracModule) {
+  GotoDeclarationHandlerBase(@NotNull final Set<String> allowedQualifiedNames,
+                             final boolean onlyInDefracModule) {
     this.allowedQualifiedNames = allowedQualifiedNames;
     this.onlyInDefracModule = onlyInDefracModule;
   }

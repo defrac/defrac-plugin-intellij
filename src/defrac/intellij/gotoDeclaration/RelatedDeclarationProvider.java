@@ -21,9 +21,9 @@ import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.navigation.GotoRelatedProvider;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiUtil;
-import defrac.intellij.psi.DefracDelegateClassReference;
-import defrac.intellij.psi.DefracMacroMethodReference;
 import defrac.intellij.psi.DefracPsiUtil;
+import defrac.intellij.psi.DelegateClassReference;
+import defrac.intellij.psi.MacroMethodReference;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -33,8 +33,8 @@ import java.util.List;
 /**
  *
  */
-public final class DefracRelatedDeclarationProvider extends GotoRelatedProvider {
-  public DefracRelatedDeclarationProvider() {}
+public final class RelatedDeclarationProvider extends GotoRelatedProvider {
+  public RelatedDeclarationProvider() {}
 
   @NotNull
   @Override
@@ -74,8 +74,8 @@ public final class DefracRelatedDeclarationProvider extends GotoRelatedProvider 
         continue;
       }
 
-      final DefracMacroMethodReference reference =
-          DefracMacroMethodReference.getInstance(annotation);
+      final MacroMethodReference reference =
+          MacroMethodReference.getInstance(annotation);
 
       if(reference == null) {
         continue;
@@ -104,8 +104,8 @@ public final class DefracRelatedDeclarationProvider extends GotoRelatedProvider 
         continue;
       }
 
-      final DefracDelegateClassReference reference =
-          DefracDelegateClassReference.getInstance(annotation);
+      final DelegateClassReference reference =
+          DelegateClassReference.getInstance(annotation);
 
       if(reference == null) {
         continue;
