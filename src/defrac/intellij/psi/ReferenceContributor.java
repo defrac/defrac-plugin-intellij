@@ -27,8 +27,8 @@ import static com.intellij.patterns.PlatformPatterns.psiElement;
 /**
  *
  */
-public final class DefracReferenceContributor extends PsiReferenceContributor {
-  public DefracReferenceContributor() {}
+public final class ReferenceContributor extends PsiReferenceContributor {
+  public ReferenceContributor() {}
 
   @Override
   public void registerReferenceProviders(@NotNull final PsiReferenceRegistrar registrar) {
@@ -36,13 +36,13 @@ public final class DefracReferenceContributor extends PsiReferenceContributor {
     registrar.registerReferenceProvider(
         psiElement(PsiLiteralExpression.class).
             withSuperParent(3, psiElement(PsiAnnotation.class)),
-        new DefracDelegateReferenceProvider()
+        new DelegateReferenceProvider()
     );
 
     registrar.registerReferenceProvider(
         psiElement(PsiLiteralExpression.class).
             withSuperParent(3, psiElement(PsiAnnotation.class)),
-        new DefracMacroReferenceProvider()
+        new MacroReferenceProvider()
     );
   }
 }

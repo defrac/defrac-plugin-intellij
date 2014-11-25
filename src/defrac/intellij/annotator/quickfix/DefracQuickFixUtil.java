@@ -14,23 +14,24 @@
  * limitations under the License.
  */
 
-package defrac.intellij.gotoDeclaration;
+package defrac.intellij.annotator.quickfix;
 
-import com.intellij.psi.PsiReference;
-import defrac.intellij.psi.DefracDelegateClassReference;
-import defrac.intellij.util.Names;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import defrac.intellij.facet.DefracFacet;
+import defrac.intellij.sdk.DefracSdkUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**
  *
  */
-public final class DefracGotoDelegateDeclarationHandler extends DefracGotoDeclarationHandlerBase {
-  public DefracGotoDelegateDeclarationHandler() {
-    super(Names.ALL_DELEGATES, false);
+public final class DefracQuickFixUtil {
+  public static boolean isAvailable(@NotNull final PsiElement element,
+                                    @NotNull final PsiFile file) {
+    return DefracFacet.getInstance(element) != null
+        && element.getManager().isInProject(file)
+        && !DefracSdkUtil.isInDefracSdk(element);
   }
 
-  @Override
-  protected boolean isDefracReference(@NotNull final PsiReference reference) {
-    return reference instanceof DefracDelegateClassReference;
-  }
+  private DefracQuickFixUtil() {}
 }

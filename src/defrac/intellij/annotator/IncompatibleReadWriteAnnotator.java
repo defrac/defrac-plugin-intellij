@@ -30,8 +30,8 @@ import org.jetbrains.annotations.NotNull;
 /**
  *
  */
-public final class DefracIncompatibleReadWriteAnnotator implements Annotator {
-  public DefracIncompatibleReadWriteAnnotator() {}
+public final class IncompatibleReadWriteAnnotator implements Annotator {
+  public IncompatibleReadWriteAnnotator() {}
 
   @Override
   public void annotate(@NotNull final PsiElement element,

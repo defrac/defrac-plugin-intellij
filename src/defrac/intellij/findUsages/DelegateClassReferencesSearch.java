@@ -25,7 +25,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.SearchScope;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.psi.DefracDelegateClassReference;
+import defrac.intellij.psi.DelegateClassReference;
 import org.jetbrains.annotations.NotNull;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -33,8 +33,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  *
  */
-public final class DefracDelegateClassReferencesSearch extends DefracReferencesSearchBase<PsiElement, ReferencesSearch.SearchParameters> {
-  public DefracDelegateClassReferencesSearch() {}
+public final class DelegateClassReferencesSearch extends ReferencesSearchBase<PsiElement, ReferencesSearch.SearchParameters> {
+  public DelegateClassReferencesSearch() {}
 
   @NotNull
   @Override
@@ -55,7 +55,7 @@ public final class DefracDelegateClassReferencesSearch extends DefracReferencesS
 
   @Override
   protected boolean isReferenceCandidate(@NotNull final PsiReference reference) {
-    return reference instanceof DefracDelegateClassReference;
+    return reference instanceof DelegateClassReference;
   }
 
   @NotNull

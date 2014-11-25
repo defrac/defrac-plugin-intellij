@@ -16,17 +16,21 @@
 
 package defrac.intellij.annotator;
 
+import com.intellij.codeInsight.daemon.impl.quickfix.CreateMethodQuickFix;
+import com.intellij.codeInsight.daemon.quickFix.CreateClassOrPackageFix;
+import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.psi.*;
+import com.intellij.psi.util.ClassKind;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtil;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.psi.DefracMacroClassReference;
-import defrac.intellij.psi.DefracMacroMethodReference;
 import defrac.intellij.psi.DefracPsiUtil;
+import defrac.intellij.psi.MacroClassReference;
+import defrac.intellij.psi.MacroMethodReference;
 import defrac.intellij.psi.validation.DefracMacroValidator;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
@@ -40,8 +44,8 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 /**
  *
  */
-public final class DefracMacroAnnotator implements Annotator {
-  public DefracMacroAnnotator() {}
+public final class MacroAnnotator implements Annotator {
+  public MacroAnnotator() {}
 
   @Override
   public void annotate(@NotNull final PsiElement element,
@@ -74,10 +78,11 @@ public final class DefracMacroAnnotator implements Annotator {
         element.getReferences();
 
     final Set<DefracPlatform> platformImplementations = new HashSet<DefracPlatform>();
+    String target = null;
 
     for(final PsiReference reference : references) {
-      if(reference instanceof DefracMacroClassReference) {
-        final DefracMacroClassReference defracRef = (DefracMacroClassReference)reference;
+      if(reference instanceof MacroClassReference) {
+        final MacroClassReference defracRef = (MacroClassReference)reference;
 
         if(isNullOrEmpty(defracRef.getValue())) {
           holder.createErrorAnnotation(element, DefracBundle.message("annotator.expect.qualifiedName"));
@@ -93,7 +98,21 @@ public final class DefracMacroAnnotator implements Annotator {
             holder.createErrorAnnotation(element, DefracBundle.message("annotator.expect.qualifiedName"));
             return;
           } else {
-            holder.createErrorAnnotation(element, DefracBundle.message("annotator.unresolved", defracRef.getValue()));
+            final Annotation errorAnnotation = holder.createErrorAnnotation(element, DefracBundle.message("annotator.unresolved", defracRef.getValue()));
+            final String qualifiedClassName = MacroMethodReference.getQualifiedClassName(value);
+            final CreateClassOrPackageFix fix = CreateClassOrPackageFix.createFix(
+                qualifiedClassName == null ? "" : qualifiedClassName,
+                checkNotNull(DefracFacet.getInstance(method)).
+                    getMacroSearchScope(DefracPlatform.byMacroAnnotation(annotation.getQualifiedName())),
+                element,
+                JavaDirectoryService.getInstance().getPackage(method.getContainingFile().getContainingDirectory()),
+                ClassKind.CLASS,
+                Names.defrac_compiler_macro_Macro,
+                null);
+
+            if(fix != null) {
+              errorAnnotation.registerFix(fix);
+            }
             return;
           }
         } else {
@@ -107,13 +126,15 @@ public final class DefracMacroAnnotator implements Annotator {
             }
           }
         }
-      } else if(reference instanceof DefracMacroMethodReference) {
-        final DefracMacroMethodReference defracRef = (DefracMacroMethodReference)reference;
+      } else if(reference instanceof MacroMethodReference) {
+        final MacroMethodReference defracRef = (MacroMethodReference)reference;
 
         if(isNullOrEmpty(defracRef.getValue())) {
           holder.createErrorAnnotation(element, DefracBundle.message("annotator.expect.identifier"));
           return;
         }
+
+        target = defracRef.getValue();
 
         final ResolveResult[] resolveResults = defracRef.multiResolve();
 
@@ -124,7 +145,29 @@ public final class DefracMacroAnnotator implements Annotator {
             holder.createErrorAnnotation(element, DefracBundle.message("annotator.expect.identifier"));
             return;
           } else {
-            holder.createErrorAnnotation(element, DefracBundle.message("annotator.unresolved", defracRef.getValue()));
+            final Annotation errorAnnotation = holder.
+                createErrorAnnotation(element, DefracBundle.message("annotator.unresolved", value));
+
+            final ResolveResult[] classes = defracRef.getClassReference().multiResolve();
+
+            for(final PsiElement klass : PsiUtil.mapElements(classes)) {
+              if(!(klass instanceof PsiClass)) {
+                continue;
+              }
+
+              if(((PsiClass)klass).findMethodsByName(value, true).length == 0) {
+                final CreateMethodQuickFix fix = CreateMethodQuickFix.createFix(
+                    (PsiClass)klass,
+                    getMacroSignature(value, method),
+                    "return MethodBody(Return());"
+                );
+
+                if(fix != null) {
+                  errorAnnotation.registerFix(fix);
+                }
+              }
+            }
+
             return;
           }
         } else {
@@ -139,12 +182,41 @@ public final class DefracMacroAnnotator implements Annotator {
       DefracAnnotatorUtil.reportMissingImplementations(
           element, holder,
           facet, method,
-          platformImplementations, DefracPlatform.MACRO_ANNOTATION_TO_PLATFORM);
+          platformImplementations, DefracPlatform.MACRO_ANNOTATION_TO_PLATFORM,
+          target,
+          /*isDelegate=*/false);
     } else {
       DefracAnnotatorUtil.reportMoreGenericAnnotation(
           holder, annotation, method,
           Names.defrac_annotation_Macro,
-          DefracPlatform.byMacroAnnotation(checkNotNull(annotation.getQualifiedName())));
+          DefracPlatform.byMacroAnnotation(checkNotNull(annotation.getQualifiedName())),
+          /*isDelegate=*/false);
     }
+  }
+
+  private static String getMacroSignature(final String name, final PsiMethod method) {
+    final PsiParameter[] parameters = method.getParameterList().getParameters();
+    final StringBuilder signatureBuilder = new StringBuilder("@Nonnull ");
+    signatureBuilder.
+        append(PsiModifier.PUBLIC).append(' ').
+        append(PsiModifier.FINAL).
+        append(" MethodBody ").append(name).
+        append('(');
+
+    boolean peelMe = true;
+
+    for(final PsiParameter parameter : parameters) {
+      if(!peelMe) {
+        signatureBuilder.append(", ");
+      }
+
+      signatureBuilder.append("@Nonnull final Parameter ").append(parameter.getName());
+      peelMe = false;
+    }
+
+    signatureBuilder.
+        append(')');
+
+    return signatureBuilder.toString();
   }
 }

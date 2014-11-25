@@ -27,8 +27,8 @@ import org.jetbrains.annotations.NotNull;
 /**
  *
  */
-public final class DefracReadOnlyAnnotator implements Annotator {
-  public DefracReadOnlyAnnotator() {}
+public final class ReadOnlyAnnotator implements Annotator {
+  public ReadOnlyAnnotator() {}
 
   @Override
   public void annotate(@NotNull final PsiElement element,

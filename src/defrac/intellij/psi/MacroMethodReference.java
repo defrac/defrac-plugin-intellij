@@ -30,27 +30,60 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+
 /**
  *
  */
-public final class DefracMacroMethodReference extends PsiReferenceBase<PsiLiteralExpression> implements PsiPolyVariantReference, DefracReference {
+public final class MacroMethodReference extends PsiReferenceBase<PsiLiteralExpression> implements PsiPolyVariantReference, DefracReference {
   @Nullable
   @Contract("null -> null")
-  public static DefracMacroMethodReference getInstance(@Nullable final PsiAnnotation annotation) {
+  public static MacroMethodReference getInstance(@Nullable final PsiAnnotation annotation) {
     if(!DefracPsiUtil.isMacroAnnotation(annotation)) {
       return null;
     }
 
-    return DefracPsiUtil.findReference(annotation, DefracMacroMethodReference.class);
+    return DefracPsiUtil.findReference(annotation, MacroMethodReference.class);
+  }
+
+  @Contract("null -> null")
+  @Nullable
+  public static String getMethodName(@Nullable final String value) {
+    if(isNullOrEmpty(value)) {
+      return null;
+    }
+
+    final int indexOfHash = value.lastIndexOf('#');
+
+    if(indexOfHash == -1 || indexOfHash == (value.length() - 1)) {
+      return null;
+    } else {
+      return value.substring(indexOfHash + 1);
+    }
+  }
+
+  @Nullable
+  public static String getQualifiedClassName(@Nullable final String value) {
+    if(isNullOrEmpty(value)) {
+      return null;
+    }
+
+    final int indexOfHash = value.lastIndexOf('#');
+
+    if(indexOfHash == -1) {
+      return value;
+    } else {
+      return value.substring(0, indexOfHash);
+    }
   }
 
   @NotNull
-  private final DefracMacroClassReference parent;
+  private final MacroClassReference parent;
 
-  public DefracMacroMethodReference(@NotNull final DefracMacroClassReference parent,
-                                    @NotNull final PsiLiteralExpression element,
-                                    final int offset,
-                                    final int length) {
+  public MacroMethodReference(@NotNull final MacroClassReference parent,
+                              @NotNull final PsiLiteralExpression element,
+                              final int offset,
+                              final int length) {
     super(element, new TextRange(offset, offset + length));
     this.parent = parent;
   }
@@ -76,6 +109,11 @@ public final class DefracMacroMethodReference extends PsiReferenceBase<PsiLitera
     }
 
     return variants.toArray(new Object[variants.size()]);
+  }
+
+  @NotNull
+  public MacroClassReference getClassReference() {
+    return parent;
   }
 
   @Nullable

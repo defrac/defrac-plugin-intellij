@@ -16,12 +16,15 @@
 
 package defrac.intellij.psi.validation;
 
+import com.intellij.codeInsight.daemon.impl.quickfix.ExtendsListFix;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTypesUtil;
 import defrac.intellij.DefracBundle;
+import defrac.intellij.annotator.quickfix.ChangeMacroSignatureQuickFix;
+import defrac.intellij.annotator.quickfix.ChangeReturnTypeQuickFix;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -55,8 +58,10 @@ public final class DefracMacroValidator {
     final int arity = thisMethod.getParameterList().getParametersCount();
 
     if(arity != thatMethod.getParameterList().getParametersCount()) {
-      holder.createErrorAnnotation(element,
-          DefracBundle.message("annotator.macro.arity", arity, arity == 1 ? "" : "s"));
+      holder.
+          createErrorAnnotation(element,
+              DefracBundle.message("annotator.macro.arity", arity, arity == 1 ? "" : "s")).
+          registerFix(new ChangeMacroSignatureQuickFix(thatMethod, thisMethod));
       return;
     }
 
@@ -64,7 +69,7 @@ public final class DefracMacroValidator {
 
     final Project project = element.getProject();
     final PsiParameterList parameterList = thatMethod.getParameterList();
-    final JavaPsiFacade javaPsiFacade = JavaPsiFacade.getInstance(element.getProject());
+    final JavaPsiFacade javaPsiFacade = JavaPsiFacade.getInstance(project);
     final GlobalSearchScope scope = GlobalSearchScope.allScope(project);
     final PsiClass classOfParameter = javaPsiFacade.findClass(Names.defrac_compiler_macro_Parameter, scope);
 
@@ -84,16 +89,20 @@ public final class DefracMacroValidator {
 
     for(final PsiParameter parameter : parameterList.getParameters()) {
       if(!PsiTypesUtil.compareTypes(parameter.getType(), typeOfParameter, true)) {
-        holder.createErrorAnnotation(element,
-            DefracBundle.message("annotator.macro.parameterType",
-                parameter.getName(), classOfParameter.getName(), thatMethod.getName()));
+        holder.
+            createErrorAnnotation(element,
+                DefracBundle.message("annotator.macro.parameterType",
+                    parameter.getName(), classOfParameter.getName(), thatMethod.getName())).
+            registerFix(new ChangeMacroSignatureQuickFix(thatMethod, thisMethod));
       }
     }
 
     // (3)
     if(!PsiTypesUtil.compareTypes(thatMethod.getReturnType(), typeOfMethodBody, true)) {
-      holder.createErrorAnnotation(element,
-          DefracBundle.message("annotator.macro.returnType", thatMethod.getName(), classOfMethodBody.getName()));
+      holder.
+          createErrorAnnotation(element,
+              DefracBundle.message("annotator.macro.returnType", thatMethod.getName(), classOfMethodBody.getName())).
+          registerFix(new ChangeReturnTypeQuickFix(thatMethod, typeOfMethodBody));
     }
 
     // (4)
@@ -106,8 +115,10 @@ public final class DefracMacroValidator {
     final PsiClass thatClass = thatMethod.getContainingClass();
 
     if(thatClass != null && !thatClass.isInheritor(classOfMacro, true)) {
-      holder.createErrorAnnotation(element,
-          DefracBundle.message("annotator.macro.mustExtend", thatClass.getName(), classOfMacro.getName()));
+      holder.
+          createErrorAnnotation(element,
+              DefracBundle.message("annotator.macro.mustExtend", thatClass.getName(), classOfMacro.getName())).
+          registerFix(new ExtendsListFix(thatClass, classOfMacro, true));
     }
   }
 

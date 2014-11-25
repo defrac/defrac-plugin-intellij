@@ -21,15 +21,15 @@ import com.intellij.psi.PsiReference;
 import com.intellij.psi.search.SearchScope;
 import com.intellij.psi.search.searches.MethodReferencesSearch;
 import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.psi.DefracMacroMethodReference;
 import defrac.intellij.psi.DefracPsiUtil;
+import defrac.intellij.psi.MacroMethodReference;
 import org.jetbrains.annotations.NotNull;
 
 /**
  *
  */
-public final class DefracMacroMethodReferencesSearch extends DefracMacroReferencesSearchBase<PsiMethod, MethodReferencesSearch.SearchParameters> {
-  public DefracMacroMethodReferencesSearch() {}
+public final class MacroMethodReferencesSearch extends MacroReferencesSearchBase<PsiMethod, MethodReferencesSearch.SearchParameters> {
+  public MacroMethodReferencesSearch() {}
 
   @NotNull
   @Override
@@ -45,7 +45,7 @@ public final class DefracMacroMethodReferencesSearch extends DefracMacroReferenc
 
   @Override
   protected boolean isReferenceCandidate(@NotNull final PsiReference reference) {
-    return reference instanceof DefracMacroMethodReference;
+    return reference instanceof MacroMethodReference;
   }
 
   @NotNull

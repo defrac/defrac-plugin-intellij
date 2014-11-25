@@ -24,8 +24,6 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.PsiModifierListOwner;
 import com.intellij.util.IncorrectOperationException;
-import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.sdk.DefracSdkUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -47,10 +45,8 @@ abstract class RemoveAnnotationQuickFix extends BaseIntentionAction {
 
   @Override
   public boolean isAvailable(@NotNull final Project project, final Editor editor, final PsiFile file) {
-    return DefracFacet.getInstance(element) != null
-        && element.getManager().isInProject(file)
-        && element.getModifierList() != null
-        && !DefracSdkUtil.isInDefracSdk(element);
+    return DefracQuickFixUtil.isAvailable(element, file)
+        && element.getModifierList() != null;
   }
 
   @Override
