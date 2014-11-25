@@ -17,10 +17,14 @@
 package defrac.intellij.psi.validation;
 
 import com.google.common.collect.ImmutableSet;
+import com.intellij.codeInsight.daemon.impl.quickfix.CreateMethodQuickFix;
+import com.intellij.codeInsight.daemon.impl.quickfix.ExtendsListFix;
+import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTypesUtil;
 import defrac.intellij.DefracBundle;
+import defrac.intellij.annotator.quickfix.*;
 import defrac.intellij.psi.DefracPsiUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -58,27 +62,32 @@ public final class DefracDelegateValidator {
 
     if(thisSuper == null) {
       if(thatSuper != null) {
-        holder.createErrorAnnotation(element,
-            DefracBundle.message("annotator.delegate.mustNotExtend", thatClass.getName(), thatSuper.getName()));
+        holder.
+            createErrorAnnotation(element,
+                DefracBundle.message("annotator.delegate.mustNotExtend", thatClass.getName(), thatSuper.getName())).
+            registerFix(new ChangeSuperClassQuickFix(thatClass, null));
         return;
       }
     } else {
       if(thatSuper == null || !DefracPsiUtil.isQualifiedNameEqual(thisSuper, thatSuper)) {
-        holder.createErrorAnnotation(element,
-            DefracBundle.message("annotator.delegate.mustExtend", thatClass.getName(), thisSuper.getName()));
+        holder.
+            createErrorAnnotation(element,
+                DefracBundle.message("annotator.delegate.mustExtend", thatClass.getName(), thisSuper.getName())).
+            registerFix(new ChangeSuperClassQuickFix(thatClass, thisSuper));
         return;
       }
     }
 
     // (2)
     final PsiClass[] thisInterfaces = thisClass.getInterfaces();
-    final Set<String> thatInterfaces = ImmutableSet.copyOf(mapQualifiedName(thatClass.getInterfaces()));
+    final Set<String> thatInterfaceQnames = ImmutableSet.copyOf(mapQualifiedName(thatClass.getInterfaces()));
     boolean interfacesHaveError = false;
 
     for(final PsiClass thisInterface : thisInterfaces) {
-      if(!thatInterfaces.contains(thisInterface.getQualifiedName())) {
+      if(!thatInterfaceQnames.contains(thisInterface.getQualifiedName())) {
         holder.createErrorAnnotation(element,
-            DefracBundle.message("annotator.delegate.mustImplement", thatClass.getName(), thisInterface.getName()));
+            DefracBundle.message("annotator.delegate.mustImplement", thatClass.getName(), thisInterface.getName())).
+            registerFix(new ExtendsListFix(thatClass, thisInterface, true));
         interfacesHaveError = true;
       }
     }
@@ -87,11 +96,13 @@ public final class DefracDelegateValidator {
       return;
     }
 
+    final PsiClass[] thatInterfaces = thatClass.getInterfaces();
     final Set<String> thisInterfaceQnames = ImmutableSet.copyOf(mapQualifiedName(thisInterfaces));
-    for(final String thatQname : thatInterfaces) {
-      if(!thisInterfaceQnames.contains(thatQname)) {
+    for(final PsiClass thatInterface: thatInterfaces) {
+      if(!thisInterfaceQnames.contains(thatInterface.getQualifiedName())) {
         holder.createErrorAnnotation(element,
-            DefracBundle.message("annotator.delegate.mustNotImplement", thatClass.getName(), thatQname));
+            DefracBundle.message("annotator.delegate.mustNotImplement", thatClass.getName(), thatInterface.getName())).
+            registerFix(new ExtendsListFix(thatClass, thatInterface, false));
         interfacesHaveError = true;
       }
     }
@@ -114,22 +125,40 @@ public final class DefracDelegateValidator {
           thatClass.findFieldByName(thisField.getName(), false);
 
       if(thatField == null) {
-        holder.createErrorAnnotation(element,
-            DefracBundle.message("annotator.delegate.field.missing", thatClass.getName(), thisField.getName()));
+        /*
+        why is this quickfix always creating a getter/setter/field trio?
+
+            new CreateFieldOrPropertyFix(
+                    thatClass,
+                    thisField.getName(),
+                    thisField.getType(),
+                    PropertyMemberType.FIELD,
+                    thisField.getModifierList() == null ? PsiAnnotation.EMPTY_ARRAY : thisField.getModifierList().getAnnotations())
+         */
+        holder.
+            createErrorAnnotation(element,
+                DefracBundle.message("annotator.delegate.field.missing", thatClass.getName(), thisField.getName())).
+            registerFix(new CreateFieldQuickFix(thatClass, thisField));
         continue;
       }
 
       if(!PsiTypesUtil.compareTypes(thisField.getType(), thatField.getType(), true)) {
-        holder.createErrorAnnotation(element,
-            DefracBundle.message("annotator.delegate.field.type",
-                buildGenitive(thatClass.getName()), thisField.getName(), thisField.getType().getPresentableText()));
+        holder.
+            createErrorAnnotation(element,
+                DefracBundle.message("annotator.delegate.field.type",
+                    buildGenitive(thatClass.getName()), thisField.getName(), thisField.getType().getPresentableText())).
+        registerFix(new ChangeVariableTypeQuickFix(thatField, thisField.getType()));
         continue;
       }
 
       if(!DefracPsiUtil.isEqualVisibility(thisField, thatField)) {
-        holder.createErrorAnnotation(element,
-            DefracBundle.message("annotator.delegate.field.visibility",
-                buildGenitive(thatClass.getName()), thisField.getName(), DefracPsiUtil.getVisibility(thisField)));
+        final String visibility = DefracPsiUtil.getVisibility(thisField);
+
+        holder.
+            createErrorAnnotation(element,
+                DefracBundle.message("annotator.delegate.field.visibility",
+                    buildGenitive(thatClass.getName()), thisField.getName(), visibility)).
+            registerFix(new ChangeVisibilityQuickFix(thatField, visibility));
       }
     }
 
@@ -147,8 +176,16 @@ public final class DefracDelegateValidator {
           thatClass.findMethodsByName(thisMethod.getName(), false);
 
       if(thatMethods.length == 0) {
-        holder.createErrorAnnotation(element,
-            DefracBundle.message("annotator.delegate.method.missing", thatClass.getName(), thisMethod.getName()));
+        final Annotation annotation = holder.
+            createErrorAnnotation(element,
+                DefracBundle.message("annotator.delegate.method.missing", thatClass.getName(), thisMethod.getName()));
+
+        final CreateMethodQuickFix fix = CreateMethodQuickFix.createFix(thatClass, getMethodSignature(thisMethod), "");
+
+        if(fix != null) {
+          annotation.registerFix(fix);
+        }
+
         continue;
       }
 
@@ -161,17 +198,25 @@ public final class DefracDelegateValidator {
           final PsiType thisReturnType = thisMethod.getReturnType();
 
           if(!PsiTypesUtil.compareTypes(thisReturnType, thatMethod.getReturnType(), true)) {
-            holder.createErrorAnnotation(element,
-                DefracBundle.message("annotator.delegate.method.returnType",
-                    buildGenitive(thatClass.getName()), thisMethod.getName(),
-                    thisReturnType == null ? "?" : thisReturnType.getPresentableText()));
+            final Annotation annotation = holder.
+                createErrorAnnotation(element,
+                    DefracBundle.message("annotator.delegate.method.returnType",
+                        buildGenitive(thatClass.getName()), thisMethod.getName(),
+                        thisReturnType == null ? "?" : thisReturnType.getPresentableText()));
+            if(thisReturnType != null) {
+              annotation.
+                  registerFix(new ChangeReturnTypeQuickFix(thatMethod, thisReturnType));
+            }
             break;
           }
 
           if(!DefracPsiUtil.isEqualVisibility(thisMethod, thatMethod)) {
-            holder.createErrorAnnotation(element,
-                DefracBundle.message("annotator.delegate.method.visibility",
-                    buildGenitive(thatClass.getName()), thisMethod.getName(), DefracPsiUtil.getVisibility(thisMethod)));
+            final String visibility = DefracPsiUtil.getVisibility(thisMethod);
+            holder.
+                createErrorAnnotation(element,
+                    DefracBundle.message("annotator.delegate.method.visibility",
+                        buildGenitive(thatClass.getName()), thisMethod.getName(), visibility)).
+                registerFix(new ChangeVisibilityQuickFix(thatMethod, visibility));
           }
 
           break;
@@ -179,11 +224,43 @@ public final class DefracDelegateValidator {
       }
 
       if(!isSignatureEqual) {
-        holder.createErrorAnnotation(element,
-            DefracBundle.message("annotator.delegate.method.signature",
-                buildGenitive(thatClass.getName()), thisMethod.getName()));
+        final Annotation annotation = holder.
+            createErrorAnnotation(element,
+                DefracBundle.message("annotator.delegate.method.signature",
+                    buildGenitive(thatClass.getName()), thisMethod.getName()));
+
+        if(thatMethods.length == 1) {
+          annotation.registerFix(new ChangeMethodSignatureQuickFix(thatMethods[0], thisMethod));
+        }
       }
     }
+  }
+
+  private static String getMethodSignature(@NotNull final PsiMethod method) {
+    final PsiParameter[] parameters = method.getParameterList().getParameters();
+    final StringBuilder signatureBuilder = new StringBuilder(DefracPsiUtil.getVisibility(method));
+    final PsiType returnType = method.getReturnType();
+
+    signatureBuilder.
+        append(' ').append(returnType == null ? "" : returnType.getPresentableText()).
+        append(' ').append(method.getName()).
+        append('(');
+
+    boolean peelMe = true;
+
+    for(final PsiParameter parameter : parameters) {
+      if(!peelMe) {
+        signatureBuilder.append(", ");
+      }
+
+      signatureBuilder.append(parameter.getType().getPresentableText()).append(' ').append(parameter.getName());
+      peelMe = false;
+    }
+
+    signatureBuilder.
+        append(')');
+
+    return signatureBuilder.toString();
   }
 
   private DefracDelegateValidator() {}

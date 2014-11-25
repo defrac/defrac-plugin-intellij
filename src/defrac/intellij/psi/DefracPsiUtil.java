@@ -20,10 +20,7 @@ import com.google.common.collect.Lists;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.CachedValueProvider;
-import com.intellij.psi.util.CachedValuesManager;
-import com.intellij.psi.util.MethodSignature;
-import com.intellij.psi.util.PsiModificationTracker;
+import com.intellij.psi.util.*;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.Contract;
@@ -190,6 +187,18 @@ public final class DefracPsiUtil {
     }
 
     throw new IllegalStateException("No visibility modifier for "+owner);
+  }
+
+  public static void setVisibility(@NotNull final PsiMember member, @NotNull final String newVisibility) {
+    for(final String modifier : VISIBILITY_MODIFIERS) {
+      if(PsiModifier.PACKAGE_LOCAL.equals(modifier)) {
+        continue;
+      }
+
+      PsiUtil.setModifierProperty(member, modifier, false);
+    }
+
+    PsiUtil.setModifierProperty(member, newVisibility, true);
   }
 
   public static boolean isQualifiedNameEqual(@NotNull final PsiClass thisClass,

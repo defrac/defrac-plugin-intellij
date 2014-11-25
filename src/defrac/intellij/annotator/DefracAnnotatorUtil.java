@@ -16,17 +16,23 @@
 
 package defrac.intellij.annotator;
 
+import com.intellij.codeInsight.daemon.quickFix.CreateClassOrPackageFix;
+import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
+import com.intellij.psi.util.ClassKind;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.annotator.quickfix.RemoveDelegateQuickFix;
 import defrac.intellij.annotator.quickfix.RemoveMacroQuickFix;
 import defrac.intellij.config.DefracConfig;
 import defrac.intellij.facet.DefracFacet;
+import defrac.intellij.psi.MacroMethodReference;
+import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.Map;
@@ -96,6 +102,7 @@ public final class DefracAnnotatorUtil {
                                                   @NotNull final PsiModifierListOwner annotatedElement,
                                                   @NotNull final Set<DefracPlatform> implementations,
                                                   @NotNull final Map<String, DefracPlatform> nameToPlatform,
+                                                  @Nullable final String target,
                                                   final boolean isDelegate) {
     // don't report that some class is missing for a platform if
     // the more specific annotation is present
@@ -126,8 +133,42 @@ public final class DefracAnnotatorUtil {
             }
 
             if(!implementations.contains(platform)) {
-              holder.createErrorAnnotation(element,
-                  DefracBundle.message("annotator.platform.missing", platform.displayName));
+              final Annotation annotation =
+                  holder.
+                      createErrorAnnotation(element,
+                          DefracBundle.message("annotator.platform.missing", platform.displayName));
+
+              if(isDelegate) {
+                if(target != null) {
+                  final PsiClass superClass = ((PsiClass)annotatedElement).getSuperClass();
+                  final CreateClassOrPackageFix fix = CreateClassOrPackageFix.createFix(
+                      target,
+                      checkNotNull(DefracFacet.getInstance(annotatedElement)).getDelegateSearchScope(platform),
+                      element,
+                      JavaDirectoryService.getInstance().getPackage(annotatedElement.getContainingFile().getContainingDirectory()),
+                      ClassKind.CLASS,
+                      superClass == null ? null : checkNotNull(superClass.getQualifiedName()),
+                      null);
+
+                  if(fix != null) {
+                    annotation.registerFix(fix);
+                  }
+                }
+              } else {
+                final String qualifiedClassName = MacroMethodReference.getQualifiedClassName(target);
+                final CreateClassOrPackageFix fix = CreateClassOrPackageFix.createFix(
+                    qualifiedClassName == null ? "" : qualifiedClassName,
+                    checkNotNull(DefracFacet.getInstance(annotatedElement)).getMacroSearchScope(platform),
+                    element,
+                    JavaDirectoryService.getInstance().getPackage(annotatedElement.getContainingFile().getContainingDirectory()),
+                    ClassKind.CLASS,
+                    Names.defrac_compiler_macro_Macro,
+                    null);
+
+                if(fix != null) {
+                  annotation.registerFix(fix);
+                }
+              }
             }
           }
         }

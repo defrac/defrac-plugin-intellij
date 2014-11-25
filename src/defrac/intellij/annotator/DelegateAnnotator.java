@@ -16,9 +16,12 @@
 
 package defrac.intellij.annotator;
 
+import com.intellij.codeInsight.daemon.quickFix.CreateClassOrPackageFix;
+import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.psi.*;
+import com.intellij.psi.util.ClassKind;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtil;
 import defrac.intellij.DefracBundle;
@@ -73,6 +76,7 @@ public final class DelegateAnnotator implements Annotator {
         element.getReferences();
 
     final Set<DefracPlatform> platformImplementations = new HashSet<DefracPlatform>();
+    String target = null;
 
     for(final PsiReference reference : references) {
       if(!(reference instanceof DelegateClassReference)) {
@@ -86,6 +90,8 @@ public final class DelegateAnnotator implements Annotator {
         return;
       }
 
+      target = defracRef.getValue();
+
       final ResolveResult[] resolveResults = defracRef.multiResolve();
 
       if(resolveResults.length == 0) {
@@ -95,7 +101,22 @@ public final class DelegateAnnotator implements Annotator {
           holder.createErrorAnnotation(element, DefracBundle.message("annotator.expect.qualifiedName"));
           return;
         } else {
-          holder.createErrorAnnotation(element, DefracBundle.message("annotator.unresolved", defracRef.getValue()));
+          final Annotation errorAnnotation = holder.
+              createErrorAnnotation(element, DefracBundle.message("annotator.unresolved", defracRef.getValue()));
+          final PsiClass superClass = klass.getSuperClass();
+          final CreateClassOrPackageFix fix = CreateClassOrPackageFix.createFix(
+              target,
+              checkNotNull(DefracFacet.getInstance(klass)).
+                  getDelegateSearchScope(DefracPlatform.byDelegateAnnotation(annotation.getQualifiedName())),
+              element,
+              JavaDirectoryService.getInstance().getPackage(klass.getContainingFile().getContainingDirectory()),
+              ClassKind.CLASS,
+              superClass == null ? null : checkNotNull(superClass.getQualifiedName()),
+              null);
+
+          if(fix != null) {
+            errorAnnotation.registerFix(fix);
+          }
           return;
         }
       } else {
@@ -119,6 +140,7 @@ public final class DelegateAnnotator implements Annotator {
           facet,
           klass, platformImplementations,
           DefracPlatform.DELEGATE_ANNOTATION_TO_PLATFORM,
+          target,
           /*isDelegate=*/true);
     } else {
       DefracAnnotatorUtil.reportMoreGenericAnnotation(
