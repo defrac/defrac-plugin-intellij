@@ -209,7 +209,7 @@ public final class DefracDelegateValidator {
 
           final PsiType thisReturnType = thisMethod.getReturnType();
 
-          if(!PsiTypesUtil.compareTypes(thisReturnType, thatMethod.getReturnType(), true)) {
+          if(!DefracPsiUtil.isTypeParameter(thisReturnType) && !PsiTypesUtil.compareTypes(thisReturnType, thatMethod.getReturnType(), true)) {
             final Annotation annotation = holder.
                 createErrorAnnotation(element,
                     DefracBundle.message("annotator.delegate.method.returnType",
@@ -295,11 +295,14 @@ public final class DefracDelegateValidator {
         if(!isSignatureEqual) {
           final Annotation annotation = holder.
               createErrorAnnotation(element,
-                  DefracBundle.message("annotator.delegate.constructor.signature",
-                      buildGenitive(thatClass.getName())));
+                  DefracBundle.message("annotator.delegate.constructor.missing",
+                      thatClass.getName(), getParameterTypes(thisConstructor)));
 
-          if(thatConstructors.length == 1) {
-            annotation.registerFix(new ChangeMethodSignatureQuickFix(thatConstructors[0], thisConstructor));
+          final CreateMethodQuickFix fix = CreateMethodQuickFix.
+              createFix(thatClass, getConstructorSignature(thatClass, thisConstructor), "");
+
+          if(fix != null) {
+            annotation.registerFix(fix);
           }
         }
       }

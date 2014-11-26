@@ -100,12 +100,11 @@ public final class MacroAnnotator implements Annotator {
           } else {
             final Annotation errorAnnotation = holder.createErrorAnnotation(element, DefracBundle.message("annotator.unresolved", defracRef.getValue()));
             final String qualifiedClassName = MacroMethodReference.getQualifiedClassName(value);
-            final CreateClassOrPackageFix fix = CreateClassOrPackageFix.createFix(
+            final CreateClassOrPackageFix fix = DefracAnnotatorUtil.createCreateClassOrPackageFix(
                 qualifiedClassName == null ? "" : qualifiedClassName,
                 checkNotNull(DefracFacet.getInstance(method)).
                     getMacroSearchScope(DefracPlatform.byMacroAnnotation(annotation.getQualifiedName())),
                 element,
-                JavaDirectoryService.getInstance().getPackage(method.getContainingFile().getContainingDirectory()),
                 ClassKind.CLASS,
                 Names.defrac_compiler_macro_Macro,
                 null);

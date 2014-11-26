@@ -104,12 +104,12 @@ public final class DelegateAnnotator implements Annotator {
           final Annotation errorAnnotation = holder.
               createErrorAnnotation(element, DefracBundle.message("annotator.unresolved", defracRef.getValue()));
           final PsiClass superClass = klass.getSuperClass();
-          final CreateClassOrPackageFix fix = CreateClassOrPackageFix.createFix(
+
+          final CreateClassOrPackageFix fix = DefracAnnotatorUtil.createCreateClassOrPackageFix(
               target,
               checkNotNull(DefracFacet.getInstance(klass)).
                   getDelegateSearchScope(DefracPlatform.byDelegateAnnotation(annotation.getQualifiedName())),
               element,
-              JavaDirectoryService.getInstance().getPackage(klass.getContainingFile().getContainingDirectory()),
               ClassKind.CLASS,
               superClass == null ? null : checkNotNull(superClass.getQualifiedName()),
               null);

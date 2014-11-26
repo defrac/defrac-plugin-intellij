@@ -18,6 +18,7 @@ package defrac.intellij.psi;
 
 import com.google.common.collect.Lists;
 import com.intellij.psi.*;
+import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.*;
 import defrac.intellij.DefracPlatform;
@@ -145,6 +146,9 @@ public final class DefracPsiUtil {
 
   public static boolean isSignatureEqual(@NotNull final PsiMethod thisMethod,
                                          @NotNull final PsiMethod thatMethod) {
+    // there is no check for type parameters here due to erasure
+    // and all casts are at call site
+
     final MethodSignature thisSignature = thisMethod.getSignature(PsiSubstitutor.EMPTY);
     final MethodSignature thatSignature = thatMethod.getSignature(PsiSubstitutor.EMPTY);
 
@@ -159,23 +163,30 @@ public final class DefracPsiUtil {
       return false;
     }
 
-    final PsiTypeParameter[] thisTypeParameters = thisSignature.getTypeParameters();
-    final PsiTypeParameter[] thatTypeParameters = thatSignature.getTypeParameters();
-
-    if(thisTypeParameters.length != thatTypeParameters.length) {
-      return false;
-    }
-
     for(int i = 0; i < thisTypes.length; ++i) {
-      // no substitution, also no bounds checks
-      if(!PsiTypesUtil.compareTypes(thisTypes[i], thatTypes[i], true)) {
+      final PsiType thisType = thisTypes[i];
+      final PsiType thatType = thatTypes[i];
+
+      if(isTypeParameter(thisType)) {
+        if(isTypeParameter(thatType) /*|| PsiTypesUtil.compareTypes(thatType, j.l.Object*/) {
+          continue;
+        } else {
+          return false;
+        }
+      }
+
+      if(!PsiTypesUtil.compareTypes(thisType, thatType, true)) {
         return false;
       }
     }
 
-    // there is no check for type parameters here due to erasure
-
     return true;
+  }
+
+  @Contract("null -> false")
+  public static boolean isTypeParameter(@Nullable final PsiType type) {
+    return type instanceof PsiClassReferenceType
+        && ((PsiClassReferenceType)type).resolveGenerics().getElement() instanceof PsiTypeParameter;
   }
 
   public static boolean isEqualVisibility(@NotNull final PsiModifierListOwner thisOwner,

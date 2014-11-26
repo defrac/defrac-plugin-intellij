@@ -20,6 +20,7 @@ import com.intellij.openapi.application.QueryExecutorBase;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiReference;
+import com.intellij.psi.PsiTypeParameter;
 import com.intellij.psi.search.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
@@ -62,6 +63,10 @@ abstract class ReferencesSearchBase<E extends PsiElement, T> extends QueryExecut
                                  @NotNull final Processor<PsiReference> consumer) {
     final E elementToSearch= getElement(queryParameter);
     final DefracFacet facet = DefracFacet.getInstance(elementToSearch);
+
+    if(elementToSearch instanceof PsiTypeParameter) {
+      return;
+    }
 
     if(facet == null) {
       return;
