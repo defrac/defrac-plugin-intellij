@@ -16,8 +16,8 @@
 
 <idea-plugin version="2">
   <id>defrac.intellij</id>
-  <name>defrac IntelliJ IDEA Plug-In</name>
-  <version>1.0</version>
+  <name>defrac Support</name>
+  <version>0.0.3</version>
   <vendor email="team@defrac.com" url="https://www.defrac.com">defrac inc.</vendor>
 
   <description>
@@ -25,13 +25,16 @@
   </description>
 
   <change-notes>
-    <![CDATA[<ol>
+    <![CDATA[<ul>
+      <li>2014-11-26 - Fix for SDK chooser in Facet configuration</li>
+      <li>2014-11-25 - Restrict to IntelliJ IDEA 139.463</li>
+      <li>2014-11-25 - Initial release of 0.0.1</li>
       <li>2014-11-10 - Start of IntelliJ IDEA plugin development</li>
-    </ol>]]>
+    </ul>]]>
   </change-notes>
 
   <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="131"/>
+  <idea-version since-build="139.463"/>
 
   <extensions defaultExtensionNs="com.intellij">
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.DelegateAnnotator"/>

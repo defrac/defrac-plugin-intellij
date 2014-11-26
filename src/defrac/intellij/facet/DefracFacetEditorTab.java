@@ -117,6 +117,11 @@ public final class DefracFacetEditorTab extends FacetEditorTab {
     //
 
     final Sdk sdk = form.getSelectedSdk();
+
+    if(sdk == null) {
+      throw new ConfigurationException("SDK is not configured");
+    }
+
     final SdkAdditionalData arbitraryData = sdk.getSdkAdditionalData();
 
     if(!(arbitraryData instanceof DefracSdkAdditionalData)) {

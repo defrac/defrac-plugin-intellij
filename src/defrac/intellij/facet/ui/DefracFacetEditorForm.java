@@ -21,6 +21,7 @@ import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ui.configuration.JdkComboBox;
+import com.intellij.openapi.roots.ui.configuration.projectRoot.ProjectSdksModel;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.io.FileUtil;
@@ -58,6 +59,8 @@ public final class DefracFacetEditorForm {
   private JdkComboBox defracSdkComboBox;
   private JCheckBox macroLibraryCheckBox;
   private JCheckBox skipJavacCheckBox;
+  private JButton newSdkButton;
+  private ProjectSdksModel projectSdksModel;
 
   @NotNull
   private final DefaultComboBoxModel<DefracPlatform> platformModel = new DefaultComboBoxModel<DefracPlatform>();
@@ -81,6 +84,9 @@ public final class DefracFacetEditorForm {
                 settingsField,
                 DefracRootUtil.getBaseDir(facet),
                 DefaultSettingsFilter.INSTANCE));
+
+    defracSdkComboBox.setSetupButton(
+        newSdkButton, null, projectSdksModel, new JdkComboBox.NoneJdkComboBoxItem(), null, false);
   }
 
   public void addPlatform(@NotNull final DefracPlatform platform) {
@@ -115,6 +121,7 @@ public final class DefracFacetEditorForm {
     defracSdkComboBox.setSelectedJdk(sdk);
   }
 
+  @Nullable
   public Sdk getSelectedSdk() {
     return defracSdkComboBox.getSelectedJdk();
   }
@@ -143,12 +150,9 @@ public final class DefracFacetEditorForm {
   }
 
   private void createUIComponents() {
-    //TODO(joa): is there a different way to get the ProjectSdksModel?
-    // well... i give up. can't create in ctor due to magic form initialization,
-    // and cant create here since sdkModel would be null.
-    // -> DefracSdkUtil.getSdkModel is probably broken and evil
+    projectSdksModel = DefracSdkUtil.getSdkModel(null);
     defracSdkComboBox = new JdkComboBox(
-        DefracSdkUtil.getSdkModel(),
+        projectSdksModel,
         DefracSdkUtil.IS_DEFRAC_VERSION);
   }
 

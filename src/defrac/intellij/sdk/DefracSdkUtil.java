@@ -18,14 +18,12 @@ package defrac.intellij.sdk;
 
 import com.google.common.collect.Lists;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.SdkModificator;
 import com.intellij.openapi.projectRoots.SdkTypeId;
 import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil;
 import com.intellij.openapi.roots.*;
 import com.intellij.openapi.roots.libraries.ui.OrderRoot;
-import com.intellij.openapi.roots.ui.configuration.ProjectStructureConfigurable;
 import com.intellij.openapi.roots.ui.configuration.projectRoot.ProjectSdksModel;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -212,15 +210,10 @@ public final class DefracSdkUtil {
   }
 
   @NotNull
-  public static ProjectSdksModel getSdkModel() {
-    // TODO(joa): this can't be correct
-    return getSdkModel(ProjectManager.getInstance().getOpenProjects()[0]);
-  }
-
-  @NotNull
-  public static ProjectSdksModel getSdkModel(@NotNull final Project project) {
-    return ProjectStructureConfigurable.
-        getInstance(project).getProjectJdksModel();
+  public static ProjectSdksModel getSdkModel(@Nullable final Project project) {
+    final ProjectSdksModel model = new ProjectSdksModel();
+    model.reset(project);
+    return model;
   }
 
   public static boolean isInDefracSdk(@NotNull final PsiElement element) {
