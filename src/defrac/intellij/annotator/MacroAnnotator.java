@@ -180,9 +180,11 @@ public final class MacroAnnotator implements Annotator {
 
     if(isGeneric) {
       DefracAnnotatorUtil.reportMissingImplementations(
-          element, holder,
+          element,
+          holder,
           facet, method,
-          platformImplementations, DefracPlatform.MACRO_ANNOTATION_TO_PLATFORM,
+          platformImplementations,
+          DefracPlatform.MACRO_ANNOTATION_TO_PLATFORM,
           target,
           /*isDelegate=*/false);
     } else {

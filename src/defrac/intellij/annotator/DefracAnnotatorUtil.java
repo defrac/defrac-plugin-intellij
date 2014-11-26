@@ -104,6 +104,12 @@ public final class DefracAnnotatorUtil {
                                                   @NotNull final Map<String, DefracPlatform> nameToPlatform,
                                                   @Nullable final String target,
                                                   final boolean isDelegate) {
+    // don't report that a platform is missing if the project is not
+    // generic since it's not required!
+    if(!facet.getPlatform().isGeneric()) {
+      return;
+    }
+
     // don't report that some class is missing for a platform if
     // the more specific annotation is present
     final PsiAnnotation[] otherAnnotations = checkNotNull(annotatedElement.getModifierList()).getAnnotations();

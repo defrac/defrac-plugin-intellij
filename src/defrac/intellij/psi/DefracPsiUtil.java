@@ -17,7 +17,6 @@
 package defrac.intellij.psi;
 
 import com.google.common.collect.Lists;
-import com.intellij.openapi.util.Comparing;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.*;
@@ -148,7 +147,35 @@ public final class DefracPsiUtil {
                                          @NotNull final PsiMethod thatMethod) {
     final MethodSignature thisSignature = thisMethod.getSignature(PsiSubstitutor.EMPTY);
     final MethodSignature thatSignature = thatMethod.getSignature(PsiSubstitutor.EMPTY);
-    return Comparing.equal(thisSignature, thatSignature);
+
+    if(thisSignature.isConstructor() != thatSignature.isConstructor()) {
+      return false;
+    }
+
+    final PsiType[] thisTypes = thisSignature.getParameterTypes();
+    final PsiType[] thatTypes = thatSignature.getParameterTypes();
+
+    if(thisTypes.length != thatTypes.length) {
+      return false;
+    }
+
+    final PsiTypeParameter[] thisTypeParameters = thisSignature.getTypeParameters();
+    final PsiTypeParameter[] thatTypeParameters = thatSignature.getTypeParameters();
+
+    if(thisTypeParameters.length != thatTypeParameters.length) {
+      return false;
+    }
+
+    for(int i = 0; i < thisTypes.length; ++i) {
+      // no substitution, also no bounds checks
+      if(!PsiTypesUtil.compareTypes(thisTypes[i], thatTypes[i], true)) {
+        return false;
+      }
+    }
+
+    // there is no check for type parameters here due to erasure
+
+    return true;
   }
 
   public static boolean isEqualVisibility(@NotNull final PsiModifierListOwner thisOwner,

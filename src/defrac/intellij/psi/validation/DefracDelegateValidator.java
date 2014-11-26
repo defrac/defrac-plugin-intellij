@@ -17,6 +17,7 @@
 package defrac.intellij.psi.validation;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.intellij.codeInsight.daemon.impl.quickfix.CreateMethodQuickFix;
 import com.intellij.codeInsight.daemon.impl.quickfix.ExtendsListFix;
 import com.intellij.lang.annotation.Annotation;
@@ -55,6 +56,7 @@ public final class DefracDelegateValidator {
     // (2) Check all interfaces implemented
     // (3) Check all non-private fields exist with same signature
     // (4) Check all non-private method exists with same signature
+    // (5) Check all constructors have a pendant with equal parameters
 
     // (1)
     final PsiClass thisSuper = thisClass.getSuperClass();
@@ -164,11 +166,21 @@ public final class DefracDelegateValidator {
 
     // (4)
     final PsiMethod[] thisMethods = thisClass.getMethods();
+    Set<PsiMethod> visibleConstructors = null;
 
     for(final PsiMethod thisMethod : thisMethods) {
       final PsiModifierList modifierList = thisMethod.getModifierList();
 
       if(modifierList.hasModifierProperty(PsiModifier.PRIVATE)) {
+        continue;
+      }
+
+      if(thisMethod.isConstructor()) {
+        if(visibleConstructors == null) {
+          visibleConstructors = Sets.newHashSet();
+        }
+
+        visibleConstructors.add(thisMethod);
         continue;
       }
 
@@ -234,8 +246,67 @@ public final class DefracDelegateValidator {
         }
       }
     }
+
+    // (5)
+    if(visibleConstructors != null) {
+      assert !visibleConstructors.isEmpty();
+
+      final PsiMethod[] thatConstructors = thatClass.findMethodsByName(thatClass.getName(), false);
+      final boolean thatHasNoConstructors = thatConstructors.length == 0;
+
+      for(final PsiMethod thisConstructor : visibleConstructors) {
+        if(thatHasNoConstructors) {
+          final Annotation annotation = holder.
+              createErrorAnnotation(element,
+                  DefracBundle.message("annotator.delegate.constructor.missing",
+                      thatClass.getName(), getParameterTypes(thisConstructor)));
+
+          final CreateMethodQuickFix fix = CreateMethodQuickFix.
+              createFix(thatClass, getConstructorSignature(thatClass, thisConstructor), "");
+
+          if(fix != null) {
+            annotation.registerFix(fix);
+          }
+
+          continue;
+        }
+
+        boolean isSignatureEqual = false;
+
+        for(final PsiMethod thatConstructor : thatConstructors) {
+          if(DefracPsiUtil.isSignatureEqual(thisConstructor, thatConstructor)) {
+            isSignatureEqual = true;
+
+            if(!DefracPsiUtil.isEqualVisibility(thisConstructor, thatConstructor)) {
+              final String visibility = DefracPsiUtil.getVisibility(thisConstructor);
+              holder.
+                  createErrorAnnotation(element,
+                      DefracBundle.message("annotator.delegate.constructor.visibility",
+                          buildGenitive(thatClass.getName()), thisConstructor.getName(),
+                          getMethodSignature(thatConstructor),
+                          visibility)).
+                  registerFix(new ChangeVisibilityQuickFix(thatConstructor, visibility));
+            }
+
+            break;
+          }
+        }
+
+        if(!isSignatureEqual) {
+          final Annotation annotation = holder.
+              createErrorAnnotation(element,
+                  DefracBundle.message("annotator.delegate.constructor.signature",
+                      buildGenitive(thatClass.getName())));
+
+          if(thatConstructors.length == 1) {
+            annotation.registerFix(new ChangeMethodSignatureQuickFix(thatConstructors[0], thisConstructor));
+          }
+        }
+      }
+    }
   }
 
+  @NotNull
   private static String getMethodSignature(@NotNull final PsiMethod method) {
     final PsiParameter[] parameters = method.getParameterList().getParameters();
     final StringBuilder signatureBuilder = new StringBuilder(DefracPsiUtil.getVisibility(method));
@@ -254,6 +325,58 @@ public final class DefracDelegateValidator {
       }
 
       signatureBuilder.append(parameter.getType().getPresentableText()).append(' ').append(parameter.getName());
+      peelMe = false;
+    }
+
+    signatureBuilder.
+        append(')');
+
+    return signatureBuilder.toString();
+  }
+
+  @NotNull
+  private static String getConstructorSignature(@NotNull final PsiClass targetClass,
+                                                @NotNull final PsiMethod method) {
+    final PsiParameter[] parameters = method.getParameterList().getParameters();
+    final StringBuilder signatureBuilder = new StringBuilder(DefracPsiUtil.getVisibility(method));
+
+    signatureBuilder.
+        append(' ').append(targetClass.getName()).
+        append('(');
+
+    boolean peelMe = true;
+
+    for(final PsiParameter parameter : parameters) {
+      if(!peelMe) {
+        signatureBuilder.append(", ");
+      }
+
+      signatureBuilder.append(parameter.getType().getPresentableText()).append(' ').append(parameter.getName());
+      peelMe = false;
+    }
+
+    signatureBuilder.
+        append(')');
+
+    return signatureBuilder.toString();
+  }
+
+  @NotNull
+  private static String getParameterTypes(@NotNull final PsiMethod method) {
+    final PsiParameter[] parameters = method.getParameterList().getParameters();
+    final StringBuilder signatureBuilder = new StringBuilder();
+
+    signatureBuilder.
+        append('(');
+
+    boolean peelMe = true;
+
+    for(final PsiParameter parameter : parameters) {
+      if(!peelMe) {
+        signatureBuilder.append(", ");
+      }
+
+      signatureBuilder.append(parameter.getType().getPresentableText());
       peelMe = false;
     }
 
