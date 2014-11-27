@@ -144,6 +144,36 @@ public final class DefracPsiUtil {
         : nameOfAnnotation.equals(qualifiedName);
   }
 
+  @Contract("null -> false")
+  public static boolean isUnsupportedAnnotation(@Nullable final PsiElement element) {
+    return element instanceof PsiAnnotation && isUnsupportedAnnotation((PsiAnnotation)element);
+  }
+
+  @Contract("null -> false")
+  public static boolean isUnsupportedAnnotation(@Nullable final PsiAnnotation annotation) {
+    return isUnsupportedAnnotation(annotation, null);
+  }
+
+  @Contract("null, _ -> false")
+  public static boolean isUnsupportedAnnotation(@Nullable final PsiAnnotation annotation,
+                                                @Nullable final DefracPlatform platform) {
+    if(annotation == null) {
+      return false;
+    }
+
+    final String qualifiedName = annotation.getQualifiedName();
+    return qualifiedName != null
+        && isUnsupportedAnnotation(qualifiedName, DefracPlatform.PLATFORM_TO_UNSUPPORTED_ANNOTATION.get(platform));
+  }
+
+  @Contract("null, _ -> false")
+  public static boolean isUnsupportedAnnotation(@Nullable final String qualifiedName,
+                                                @Nullable final String nameOfAnnotation) {
+    return nameOfAnnotation == null
+        ? Names.ALL_UNSUPPORTED.contains(qualifiedName)
+        : nameOfAnnotation.equals(qualifiedName);
+  }
+
   public static boolean isSignatureEqual(@NotNull final PsiMethod thisMethod,
                                          @NotNull final PsiMethod thatMethod) {
     // there is no check for type parameters here due to erasure
@@ -278,6 +308,26 @@ public final class DefracPsiUtil {
   public static boolean isWriteOnly(@NotNull final PsiModifierListOwner element) {
     final PsiModifierList list = element.getModifierList();
     return list != null && list.findAnnotation(Names.defrac_dni_WriteOnly) != null;
+  }
+
+  public static boolean isUnsupported(@NotNull final PsiModifierListOwner element, @NotNull DefracPlatform platform) {
+    final PsiModifierList list = element.getModifierList();
+    return list != null && list.findAnnotation(DefracPlatform.PLATFORM_TO_UNSUPPORTED_ANNOTATION.get(platform)) != null;
+  }
+
+  public static boolean hasUnsupported(@NotNull final PsiModifierListOwner element) {
+    final PsiModifierList list = element.getModifierList();
+    if(list == null) {
+      return false;
+    }
+
+    for(final String name : Names.ALL_UNSUPPORTED) {
+      if(list.findAnnotation(name) != null) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   public static boolean hasMacro(@NotNull final PsiModifierListOwner element,

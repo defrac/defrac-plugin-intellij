@@ -19,8 +19,6 @@ package defrac.intellij.annotator;
 import com.intellij.codeInsight.daemon.quickFix.CreateClassOrPackageFix;
 import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.ClassKind;
@@ -35,7 +33,6 @@ import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
@@ -157,62 +154,51 @@ public final class DefracAnnotatorUtil {
     }
 
     // now report all missing implementations for configured targets
-    try {
-      final VirtualFile settingsFile = VfsUtil.findFileByIoFile(facet.getSettingsFile(), false);
-      final PsiManager psiManager = PsiManager.getInstance(element.getProject());
+    final DefracConfig config = facet.getConfig();
 
-      if(settingsFile != null) {
-        final PsiFile file = checkNotNull(psiManager.findFile(settingsFile));
+    if(config != null) {
+      for(final DefracPlatform platform : config.getTargets()) {
+        if(platform.isGeneric()) {
+          continue;
+        }
 
-        if(file != null) {
-          final DefracConfig config = DefracConfig.fromJson(file);
+        if(!implementations.contains(platform)) {
+          final Annotation annotation =
+              holder.
+                  createErrorAnnotation(element,
+                      DefracBundle.message("annotator.platform.missing", platform.displayName));
 
-          for(final DefracPlatform platform : config.getTargets()) {
-            if(platform.isGeneric()) {
-              continue;
-            }
+          if(isDelegate) {
+            if(target != null) {
+              final PsiClass superClass = ((PsiClass) annotatedElement).getSuperClass();
+              final CreateClassOrPackageFix fix = DefracAnnotatorUtil.createCreateClassOrPackageFix(
+                  target,
+                  checkNotNull(DefracFacet.getInstance(annotatedElement)).getDelegateSearchScope(platform),
+                  element,
+                  ClassKind.CLASS,
+                  superClass == null ? null : checkNotNull(superClass.getQualifiedName()),
+                  null);
 
-            if(!implementations.contains(platform)) {
-              final Annotation annotation =
-                  holder.
-                      createErrorAnnotation(element,
-                          DefracBundle.message("annotator.platform.missing", platform.displayName));
-
-              if(isDelegate) {
-                if(target != null) {
-                  final PsiClass superClass = ((PsiClass)annotatedElement).getSuperClass();
-                  final CreateClassOrPackageFix fix = DefracAnnotatorUtil.createCreateClassOrPackageFix(
-                      target,
-                      checkNotNull(DefracFacet.getInstance(annotatedElement)).getDelegateSearchScope(platform),
-                      element,
-                      ClassKind.CLASS,
-                      superClass == null ? null : checkNotNull(superClass.getQualifiedName()),
-                      null);
-
-                  if(fix != null) {
-                    annotation.registerFix(fix);
-                  }
-                }
-              } else {
-                final String qualifiedClassName = MacroMethodReference.getQualifiedClassName(target);
-                final CreateClassOrPackageFix fix = DefracAnnotatorUtil.createCreateClassOrPackageFix(
-                    qualifiedClassName == null ? "" : qualifiedClassName,
-                    checkNotNull(DefracFacet.getInstance(annotatedElement)).getMacroSearchScope(platform),
-                    element,
-                    ClassKind.CLASS,
-                    Names.defrac_compiler_macro_Macro,
-                    null);
-
-                if(fix != null) {
-                  annotation.registerFix(fix);
-                }
+              if(fix != null) {
+                annotation.registerFix(fix);
               }
+            }
+          } else {
+            final String qualifiedClassName = MacroMethodReference.getQualifiedClassName(target);
+            final CreateClassOrPackageFix fix = DefracAnnotatorUtil.createCreateClassOrPackageFix(
+                qualifiedClassName == null ? "" : qualifiedClassName,
+                checkNotNull(DefracFacet.getInstance(annotatedElement)).getMacroSearchScope(platform),
+                element,
+                ClassKind.CLASS,
+                Names.defrac_compiler_macro_Macro,
+                null);
+
+            if(fix != null) {
+              annotation.registerFix(fix);
             }
           }
         }
       }
-    } catch(final IOException ioException) {
-      // ignored
     }
   }
 

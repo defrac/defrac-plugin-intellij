@@ -36,6 +36,11 @@ public final class Names {
   @NotNull @NonNls public static final String defrac_annotation_MacroIOS = "defrac.annotation.MacroIOS";
   @NotNull @NonNls public static final String defrac_annotation_MacroJVM = "defrac.annotation.MacroJVM";
   @NotNull @NonNls public static final String defrac_annotation_MacroWeb = "defrac.annotation.MacroWeb";
+  @NotNull @NonNls public static final String defrac_annotation_UnsupportedA5D = "defrac.annotation.UnsupportedA5D";
+  @NotNull @NonNls public static final String defrac_annotation_UnsupportedIOS = "defrac.annotation.UnsupportedIOS";
+  @NotNull @NonNls public static final String defrac_annotation_UnsupportedJVM = "defrac.annotation.UnsupportedJVM";
+  @NotNull @NonNls public static final String defrac_annotation_UnsupportedWeb = "defrac.annotation.UnsupportedWeb";
+
 
   @NotNull @NonNls public static final String defrac_compiler_macro_Macro = "defrac.compiler.macro.Macro";
   @NotNull @NonNls public static final String defrac_compiler_macro_Parameter = "defrac.compiler.macro.Parameter";
@@ -61,6 +66,13 @@ public final class Names {
       defrac_annotation_MacroIOS,
       defrac_annotation_MacroJVM,
       defrac_annotation_MacroWeb
+  );
+
+  @NotNull public static final Set<String> ALL_UNSUPPORTED = ImmutableSet.of(
+      defrac_annotation_UnsupportedA5D,
+      defrac_annotation_UnsupportedIOS,
+      defrac_annotation_UnsupportedJVM,
+      defrac_annotation_UnsupportedWeb
   );
 
   private Names() {}

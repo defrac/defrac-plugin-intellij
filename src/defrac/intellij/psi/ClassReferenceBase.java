@@ -55,7 +55,7 @@ abstract class ClassReferenceBase extends PsiReferenceBase<PsiLiteralExpression>
     final ElementManipulator<PsiLiteralExpression> manipulator = ElementManipulators.getManipulator(getElement());
 
     return manipulator.
-        handleContentChange(element, getRangeInElement(), ((PsiClass) klass).getQualifiedName());
+        handleContentChange(element, getRangeInElement(), ((PsiClass)klass).getQualifiedName());
   }
 
   @Nullable

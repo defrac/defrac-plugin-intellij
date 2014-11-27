@@ -54,6 +54,22 @@ public enum DefracPlatform {
   );
 
   @NotNull
+  public static final Map<String, DefracPlatform> UNSUPPORTED_ANNOTATION_TO_PLATFORM = ImmutableMap.of(
+      Names.defrac_annotation_UnsupportedA5D, ANDROID,
+      Names.defrac_annotation_UnsupportedIOS, IOS,
+      Names.defrac_annotation_UnsupportedJVM, JVM,
+      Names.defrac_annotation_UnsupportedWeb, WEB
+  );
+
+  @NotNull
+  public static final Map<DefracPlatform, String> PLATFORM_TO_UNSUPPORTED_ANNOTATION = ImmutableMap.of(
+      ANDROID, Names.defrac_annotation_UnsupportedA5D,
+      IOS    , Names.defrac_annotation_UnsupportedIOS,
+      JVM    , Names.defrac_annotation_UnsupportedJVM,
+      WEB    , Names.defrac_annotation_UnsupportedWeb
+  );
+
+  @NotNull
   public static final Map<String, DefracPlatform> DELEGATE_ANNOTATION_TO_PLATFORM = ImmutableMap.of(
       Names.defrac_annotation_Delegate   , GENERIC,
       Names.defrac_annotation_DelegateA5D, ANDROID,

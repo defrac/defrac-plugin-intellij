@@ -25,15 +25,18 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.xml.ConvertContext;
 import com.intellij.util.xml.DomElement;
 import defrac.intellij.DefracPlatform;
+import defrac.intellij.config.DefracConfig;
 import defrac.intellij.jps.model.impl.JpsDefracModuleProperties;
 import defrac.intellij.sdk.DefracVersion;
 import defrac.intellij.util.Names;
@@ -42,6 +45,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  *
@@ -126,6 +130,33 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
     }
 
     return VfsUtilCore.virtualToIoFile(settingsFile);
+  }
+
+  @Nullable
+  public DefracConfig getConfig() {
+    try {
+      return readConfig();
+    } catch(final IOException ioException) {
+      return null;
+    }
+  }
+
+  @Nullable
+  public DefracConfig readConfig() throws IOException {
+    final VirtualFile settingsFile = VfsUtil.findFileByIoFile(getSettingsFile(), false);
+
+    if(settingsFile == null) {
+      return null;
+    }
+
+    final PsiManager psiManager = PsiManager.getInstance(getModule().getProject());
+    final PsiFile file = psiManager.findFile(settingsFile);
+
+    if(file == null) {
+      return null;
+    }
+
+    return DefracConfig.fromJson(file);
   }
 
   @NotNull
