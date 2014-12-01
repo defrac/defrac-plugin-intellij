@@ -19,6 +19,7 @@ package defrac.intellij.annotator;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.psi.*;
+import com.intellij.psi.util.PsiUtil;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.config.DefracConfig;
@@ -44,43 +45,49 @@ public final class UnsupportedAnnotator implements Annotator {
 
     final DefracPlatform platform  = facet.getPlatform();
 
-    if(element instanceof PsiClass) {
-      final PsiClass klass = (PsiClass)element;
-
-      if(DefracPsiUtil.isUnsupported(klass, platform)) {
-        holder.
-            createErrorAnnotation(element,
-                DefracBundle.message("annotator.unsupported.class"));
-        return;
-      }
-
-      final PsiClass superClass = klass.getSuperClass();
-      final PsiReferenceList interfaces = klass.getImplementsList();
-
-      annotate(element, holder, facet, superClass);
-
-      if(interfaces != null) {
-        final PsiClassType[] types = interfaces.getReferencedTypes();
-
-        for(final PsiClassType type : types) {
-          annotate(element, holder, facet, type.resolve());
-        }
-      }
+   if(element instanceof PsiClass) {
+      annotateClass(element, (PsiClass)element, holder, platform);
     } else if(element instanceof PsiMethod) {
+      final PsiMethod method = (PsiMethod)element;
 
-    } else if(element instanceof PsiVariable) {
-
+      if(method.isConstructor()) {
+        annotateClass(element, method.getContainingClass(), holder, platform);
+      } else if(DefracPsiUtil.isUnsupported(method, platform)) {
+        holder.
+            createErrorAnnotation(element, DefracBundle.message("annotator.unsupported.method"));
+      }
     } else if(element instanceof PsiReferenceExpression) {
       final PsiReferenceExpression referenceExpression = (PsiReferenceExpression)element;
       final PsiElement referencedElement = referenceExpression.resolve();
-      annotate(element, holder, facet, referencedElement);
+      annotateReference(element, holder, facet, referencedElement);
+    } else if(element instanceof PsiJavaCodeReferenceElement) {
+      final PsiJavaCodeReferenceElement referenceElement = (PsiJavaCodeReferenceElement)element;
+      final JavaResolveResult[] results = referenceElement.multiResolve(false);
+      for(final PsiElement resolvedElement : PsiUtil.mapElements(results)) {
+        annotateReference(element, holder, facet, resolvedElement);
+      }
     }
   }
 
-  private void annotate(@NotNull final PsiElement element,
-                        @NotNull final AnnotationHolder holder,
-                        @NotNull final DefracFacet facet,
-                        @Nullable final PsiElement referencedElement) {
+  private void annotateClass(@NotNull final PsiElement element,
+                             @Nullable final PsiClass klass,
+                             @NotNull final AnnotationHolder holder,
+                             @NotNull final DefracPlatform platform) {
+    if(klass == null) {
+      return;
+    }
+
+    if(DefracPsiUtil.isUnsupported(klass, platform)) {
+      holder.
+          createErrorAnnotation(element,
+              DefracBundle.message("annotator.unsupported.class"));
+    }
+  }
+
+  private void annotateReference(@NotNull final PsiElement element,
+                                 @NotNull final AnnotationHolder holder,
+                                 @NotNull final DefracFacet facet,
+                                 @Nullable final PsiElement referencedElement) {
     if(!(referencedElement instanceof PsiModifierListOwner)) {
       return;
     }

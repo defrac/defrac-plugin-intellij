@@ -41,6 +41,7 @@
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.DelegateAnnotator"/>
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.MacroAnnotator"/>
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.ReadOnlyAnnotator"/>
+    <annotator language="JAVA" implementationClass="defrac.intellij.annotator.UnsupportedAnnotator"/>
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.WriteOnlyAnnotator"/>
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.IncompatibleReadWriteAnnotator"/>
     <configurationType implementation="defrac.intellij.run.DefracConfigurationType"/>

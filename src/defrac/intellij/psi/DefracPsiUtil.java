@@ -311,6 +311,10 @@ public final class DefracPsiUtil {
   }
 
   public static boolean isUnsupported(@NotNull final PsiModifierListOwner element, @NotNull DefracPlatform platform) {
+    if(platform.isGeneric()) {
+      return false;
+    }
+
     final PsiModifierList list = element.getModifierList();
     return list != null && list.findAnnotation(DefracPlatform.PLATFORM_TO_UNSUPPORTED_ANNOTATION.get(platform)) != null;
   }
