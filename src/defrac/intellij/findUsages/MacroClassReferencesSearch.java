@@ -23,12 +23,12 @@ import com.intellij.psi.PsiReference;
 import com.intellij.psi.search.SearchScope;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.psi.DefracPsiUtil;
 import defrac.intellij.psi.MacroClassReference;
 import defrac.intellij.psi.MacroMethodReference;
 import org.jetbrains.annotations.NotNull;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static defrac.intellij.psi.DefracPsiUtil.isMacro;
 
 /**
  *
@@ -51,10 +51,10 @@ public final class MacroClassReferencesSearch extends MacroReferencesSearchBase<
 
     if(candidate instanceof PsiClass) {
       final PsiClass classToSearch = (PsiClass)candidate;
-      return DefracPsiUtil.isMacro(classToSearch);
+      return isMacro(classToSearch);
     } else if(candidate instanceof PsiMethod) {
       final PsiMethod methodToSearch = (PsiMethod)candidate;
-      return DefracPsiUtil.isMacro(methodToSearch.getParent());
+      return isMacro(methodToSearch.getParent());
     } else {
       return false;
     }

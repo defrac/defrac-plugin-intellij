@@ -21,8 +21,9 @@ import com.intellij.lang.annotation.Annotator;
 import com.intellij.psi.*;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.annotator.quickfix.RemoveWriteOnlyQuickFix;
-import defrac.intellij.psi.DefracPsiUtil;
 import org.jetbrains.annotations.NotNull;
+
+import static defrac.intellij.psi.DefracPsiUtil.isWriteOnly;
 
 /**
  *
@@ -55,7 +56,7 @@ public final class WriteOnlyAnnotator implements Annotator {
 
     final PsiField field = (PsiField)referencedElement;
 
-    if(DefracPsiUtil.isWriteOnly(field)) {
+    if(isWriteOnly(field)) {
       holder.
           createErrorAnnotation(element,
               DefracBundle.message("annotator.readWrite.writeOnly", field.getName())).

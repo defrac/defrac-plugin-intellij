@@ -18,10 +18,14 @@ package defrac.intellij.psi;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.*;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
+import com.intellij.psi.util.MethodSignature;
+import com.intellij.psi.util.PsiModificationTracker;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.Contract;
@@ -31,6 +35,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import static com.intellij.psi.util.PsiTypesUtil.compareTypes;
+import static com.intellij.psi.util.PsiUtil.setModifierProperty;
 
 /**
  *
@@ -200,20 +207,93 @@ public final class DefracPsiUtil {
       final PsiType thisType = thisTypes[i];
       final PsiType thatType = thatTypes[i];
 
-      if(isTypeParameter(thisType)) {
-        if(isTypeParameter(thatType) /*|| PsiTypesUtil.compareTypes(thatType, j.l.Object*/) {
-          continue;
-        } else {
-          return false;
-        }
-      }
-
-      if(!PsiTypesUtil.compareTypes(thisType, thatType, true)) {
+      if(!compareBytecodeTypes(thisType, thatType)) {
         return false;
       }
     }
 
     return true;
+  }
+
+  /**
+   * Compares two types for equality in Java bytecode
+   *
+   * Two types are equal in bytecode if they have the same erasure and
+   * point to a class with equal qualified name.
+   *
+   * That is {@code java.lang.Iterator&lt;A&gt;} equals {@code java.lang.Iterator&lt;B&gt;}
+   * since both types represent only {@code java.lang.Iterator} when compiled to Java bytecode.
+   *
+   * @param a The first type to compare
+   * @param b The second type to compare
+   * @return {@literal true} if both types are equal in bytecode; {@literal false} otherwise
+   */
+  public static boolean compareBytecodeTypes(@Nullable PsiType a,
+                                             @Nullable PsiType b) {
+    if(a == null) {
+      return b == null;
+    } else if(b == null) {
+      return false;
+    }
+
+    if(a instanceof PsiEllipsisType) {
+      a = ((PsiEllipsisType)a).toArrayType();
+    }
+
+    if(b instanceof PsiEllipsisType) {
+      b = ((PsiEllipsisType)b).toArrayType();
+    }
+
+    if(isTypeParameter(a)) {
+      if(isTypeParameter(b)) {
+        // both are type parameters, always equal
+        return true;
+      }
+
+      // if b itself is not a type parameter, we have to check if it
+      // matches j.l.Object
+      return isJavaLangObject(b);
+    } else if(isTypeParameter(b)) {
+      // if a is not a type parameter but b is, we have to check if
+      // a itself matches j.l.Object
+      return isJavaLangObject(a);
+    }
+
+    // we know both a and b are not type parameters, but they might
+    // contain type parameters. in that case we do not care about them
+    // and only want to know if the referenced class is equal
+    if(a instanceof PsiClassReferenceType && b instanceof PsiClassReferenceType) {
+      final PsiClass classA = ((PsiClassReferenceType)a).resolve();
+      final PsiClass classB = ((PsiClassReferenceType)b).resolve();
+
+      if(classA == null) {
+        return classB == null;
+      } else if(classB == null) {
+        return false;
+      }
+
+      return isQualifiedNameEqual(classA, classB);
+    }
+
+    // primitive types, go with default behaviour of IntelliJ
+    return compareTypes(a, b, /*ignoreEllipsis=*/false);
+  }
+
+  private static boolean isJavaLangObject(final PsiType b) {
+    final GlobalSearchScope scope = b.getResolveScope();
+
+    if(scope == null) {
+      return false;
+    }
+
+    final Project project = scope.getProject();
+
+    if(project == null) {
+      return false;
+    }
+
+    final PsiManager manager = PsiManager.getInstance(project);
+    return b.equals(PsiType.getJavaLangObject(manager, scope));
   }
 
   @Contract("null -> false")
@@ -266,10 +346,10 @@ public final class DefracPsiUtil {
         continue;
       }
 
-      PsiUtil.setModifierProperty(member, modifier, false);
+      setModifierProperty(member, modifier, false);
     }
 
-    PsiUtil.setModifierProperty(member, newVisibility, true);
+    setModifierProperty(member, newVisibility, true);
   }
 
   public static boolean isQualifiedNameEqual(@NotNull final PsiClass thisClass,

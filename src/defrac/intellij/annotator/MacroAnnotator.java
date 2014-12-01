@@ -30,7 +30,6 @@ import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.annotator.quickfix.ChangeMacroSignatureQuickFix;
 import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.psi.DefracPsiUtil;
 import defrac.intellij.psi.MacroClassReference;
 import defrac.intellij.psi.MacroMethodReference;
 import defrac.intellij.psi.validation.DefracMacroValidator;
@@ -43,6 +42,8 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static defrac.intellij.psi.DefracPsiUtil.isMacroAnnotation;
+import static defrac.intellij.psi.DefracPsiUtil.mapToContainingClasses;
 
 /**
  *
@@ -66,7 +67,7 @@ public final class MacroAnnotator implements Annotator {
     final PsiAnnotation annotation =
         PsiTreeUtil.getParentOfType(element, PsiAnnotation.class, /*strict=*/false);
 
-    if(!DefracPsiUtil.isMacroAnnotation(annotation)) {
+    if(!isMacroAnnotation(annotation)) {
       return;
     }
 
@@ -204,8 +205,7 @@ public final class MacroAnnotator implements Annotator {
                   registerFix(new ChangeMacroSignatureQuickFix(candidates.get(0), method));
             }
 
-            final Set<PsiClass> containingClasses =
-                DefracPsiUtil.mapToContainingClasses(candidates);
+            final Set<PsiClass> containingClasses = mapToContainingClasses(candidates);
 
             for(final PsiClass klass : containingClasses) {
               final CreateMethodQuickFix fix = CreateMethodQuickFix.createFix(

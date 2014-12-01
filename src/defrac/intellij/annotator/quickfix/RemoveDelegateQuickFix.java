@@ -22,8 +22,10 @@ import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import defrac.intellij.DefracPlatform;
-import defrac.intellij.psi.DefracPsiUtil;
 import org.jetbrains.annotations.NotNull;
+
+import static defrac.intellij.psi.DefracPsiUtil.hasDelegate;
+import static defrac.intellij.psi.DefracPsiUtil.isDelegateAnnotation;
 
 /**
  *
@@ -58,11 +60,11 @@ public final class RemoveDelegateQuickFix extends RemoveAnnotationQuickFix {
   @Override
   public boolean isAvailable(@NotNull final Project project, final Editor editor, final PsiFile file) {
     return super.isAvailable(project, editor, file)
-        && DefracPsiUtil.hasDelegate(element, platform);
+        && hasDelegate(element, platform);
   }
 
   @Override
   protected boolean isAnnotation(@NotNull final PsiAnnotation annotation) {
-    return DefracPsiUtil.isDelegateAnnotation(annotation, platform);
+    return isDelegateAnnotation(annotation, platform);
   }
 }

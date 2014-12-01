@@ -23,16 +23,14 @@ import com.intellij.codeInsight.daemon.impl.quickfix.ExtendsListFix;
 import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.psi.*;
-import com.intellij.psi.util.PsiTypesUtil;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.annotator.quickfix.*;
-import defrac.intellij.psi.DefracPsiUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
 
-import static defrac.intellij.psi.DefracPsiUtil.mapQualifiedName;
+import static defrac.intellij.psi.DefracPsiUtil.*;
 import static defrac.intellij.util.Grammar.buildGenitive;
 
 /**
@@ -71,7 +69,7 @@ public final class DefracDelegateValidator {
         return;
       }
     } else {
-      if(thatSuper == null || !DefracPsiUtil.isQualifiedNameEqual(thisSuper, thatSuper)) {
+      if(thatSuper == null || !isQualifiedNameEqual(thisSuper, thatSuper)) {
         holder.
             createErrorAnnotation(element,
                 DefracBundle.message("annotator.delegate.mustExtend", thatClass.getName(), thisSuper.getName())).
@@ -144,7 +142,7 @@ public final class DefracDelegateValidator {
         continue;
       }
 
-      if(!PsiTypesUtil.compareTypes(thisField.getType(), thatField.getType(), true)) {
+      if(!compareBytecodeTypes(thisField.getType(), thatField.getType())) {
         holder.
             createErrorAnnotation(element,
                 DefracBundle.message("annotator.delegate.field.type",
@@ -153,8 +151,8 @@ public final class DefracDelegateValidator {
         continue;
       }
 
-      if(!DefracPsiUtil.isEqualVisibility(thisField, thatField)) {
-        final String visibility = DefracPsiUtil.getVisibility(thisField);
+      if(!isEqualVisibility(thisField, thatField)) {
+        final String visibility = getVisibility(thisField);
 
         holder.
             createErrorAnnotation(element,
@@ -204,12 +202,12 @@ public final class DefracDelegateValidator {
       boolean isSignatureEqual = false;
 
       for(final PsiMethod thatMethod : thatMethods) {
-        if(DefracPsiUtil.isSignatureEqual(thisMethod, thatMethod)) {
+        if(isSignatureEqual(thisMethod, thatMethod)) {
           isSignatureEqual = true;
 
           final PsiType thisReturnType = thisMethod.getReturnType();
 
-          if(!DefracPsiUtil.isTypeParameter(thisReturnType) && !PsiTypesUtil.compareTypes(thisReturnType, thatMethod.getReturnType(), true)) {
+          if(!compareBytecodeTypes(thisReturnType, thatMethod.getReturnType())) {
             final Annotation annotation = holder.
                 createErrorAnnotation(element,
                     DefracBundle.message("annotator.delegate.method.returnType",
@@ -222,8 +220,8 @@ public final class DefracDelegateValidator {
             break;
           }
 
-          if(!DefracPsiUtil.isEqualVisibility(thisMethod, thatMethod)) {
-            final String visibility = DefracPsiUtil.getVisibility(thisMethod);
+          if(!isEqualVisibility(thisMethod, thatMethod)) {
+            final String visibility = getVisibility(thisMethod);
             holder.
                 createErrorAnnotation(element,
                     DefracBundle.message("annotator.delegate.method.visibility",
@@ -274,11 +272,11 @@ public final class DefracDelegateValidator {
         boolean isSignatureEqual = false;
 
         for(final PsiMethod thatConstructor : thatConstructors) {
-          if(DefracPsiUtil.isSignatureEqual(thisConstructor, thatConstructor)) {
+          if(isSignatureEqual(thisConstructor, thatConstructor)) {
             isSignatureEqual = true;
 
-            if(!DefracPsiUtil.isEqualVisibility(thisConstructor, thatConstructor)) {
-              final String visibility = DefracPsiUtil.getVisibility(thisConstructor);
+            if(!isEqualVisibility(thisConstructor, thatConstructor)) {
+              final String visibility = getVisibility(thisConstructor);
               holder.
                   createErrorAnnotation(element,
                       DefracBundle.message("annotator.delegate.constructor.visibility",
@@ -312,7 +310,7 @@ public final class DefracDelegateValidator {
   @NotNull
   private static String getMethodSignature(@NotNull final PsiMethod method) {
     final PsiParameter[] parameters = method.getParameterList().getParameters();
-    final StringBuilder signatureBuilder = new StringBuilder(DefracPsiUtil.getVisibility(method));
+    final StringBuilder signatureBuilder = new StringBuilder(getVisibility(method));
     final PsiType returnType = method.getReturnType();
 
     signatureBuilder.
@@ -341,7 +339,7 @@ public final class DefracDelegateValidator {
   private static String getConstructorSignature(@NotNull final PsiClass targetClass,
                                                 @NotNull final PsiMethod method) {
     final PsiParameter[] parameters = method.getParameterList().getParameters();
-    final StringBuilder signatureBuilder = new StringBuilder(DefracPsiUtil.getVisibility(method));
+    final StringBuilder signatureBuilder = new StringBuilder(getVisibility(method));
 
     signatureBuilder.
         append(' ').append(targetClass.getName()).

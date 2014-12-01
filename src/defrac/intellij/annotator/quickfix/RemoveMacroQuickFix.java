@@ -22,8 +22,10 @@ import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import defrac.intellij.DefracPlatform;
-import defrac.intellij.psi.DefracPsiUtil;
 import org.jetbrains.annotations.NotNull;
+
+import static defrac.intellij.psi.DefracPsiUtil.hasMacro;
+import static defrac.intellij.psi.DefracPsiUtil.isMacroAnnotation;
 
 /**
  *
@@ -57,12 +59,11 @@ public final class RemoveMacroQuickFix extends RemoveAnnotationQuickFix {
 
   @Override
   public boolean isAvailable(@NotNull final Project project, final Editor editor, final PsiFile file) {
-    return super.isAvailable(project, editor, file)
-        && DefracPsiUtil.hasMacro(element, platform);
+    return super.isAvailable(project, editor, file) && hasMacro(element, platform);
   }
 
   @Override
   protected boolean isAnnotation(@NotNull final PsiAnnotation annotation) {
-    return DefracPsiUtil.isMacroAnnotation(annotation, platform);
+    return isMacroAnnotation(annotation, platform);
   }
 }

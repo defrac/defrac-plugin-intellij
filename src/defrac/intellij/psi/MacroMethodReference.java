@@ -31,6 +31,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static defrac.intellij.psi.DefracPsiUtil.findReference;
+import static defrac.intellij.psi.DefracPsiUtil.isMacroAnnotation;
 
 /**
  *
@@ -39,11 +41,11 @@ public final class MacroMethodReference extends PsiReferenceBase<PsiLiteralExpre
   @Nullable
   @Contract("null -> null")
   public static MacroMethodReference getInstance(@Nullable final PsiAnnotation annotation) {
-    if(!DefracPsiUtil.isMacroAnnotation(annotation)) {
+    if(!isMacroAnnotation(annotation)) {
       return null;
     }
 
-    return DefracPsiUtil.findReference(annotation, MacroMethodReference.class);
+    return findReference(annotation, MacroMethodReference.class);
   }
 
   @Contract("null -> null")

@@ -24,11 +24,12 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.util.IncorrectOperationException;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import static com.intellij.psi.util.PsiTypesUtil.getClassType;
 
 /**
  *
@@ -108,7 +109,7 @@ public final class ChangeMacroSignatureQuickFix extends BaseIntentionAction {
     final PsiParameter[] refParameters = refParameterList.getParameters();
     final int methodParameterCount = methodParameters.length;
     final int referenceParameterCount = refParameters.length;
-    final PsiClassType parameterType = PsiTypesUtil.getClassType(parameter);
+    final PsiClassType parameterType = getClassType(parameter);
 
     // change types of existing parameters, keep names
     for(int i = 0; i < Math.min(methodParameterCount, referenceParameterCount); ++i) {

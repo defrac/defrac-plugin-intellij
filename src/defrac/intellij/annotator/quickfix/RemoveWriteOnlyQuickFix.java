@@ -21,8 +21,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
-import defrac.intellij.psi.DefracPsiUtil;
 import org.jetbrains.annotations.NotNull;
+
+import static defrac.intellij.psi.DefracPsiUtil.isWriteOnly;
+import static defrac.intellij.psi.DefracPsiUtil.isWriteOnlyAnnotation;
 
 /**
  *
@@ -41,13 +43,12 @@ public final class RemoveWriteOnlyQuickFix extends RemoveAnnotationQuickFix {
 
   @Override
   public boolean isAvailable(@NotNull final Project project, final Editor editor, final PsiFile file) {
-    return super.isAvailable(project, editor, file)
-        && DefracPsiUtil.isWriteOnly(element);
+    return super.isAvailable(project, editor, file) && isWriteOnly(element);
   }
 
   @Override
   protected boolean isAnnotation(@NotNull final PsiAnnotation annotation) {
-    return DefracPsiUtil.isWriteOnlyAnnotation(annotation);
+    return isWriteOnlyAnnotation(annotation);
   }
 
 }

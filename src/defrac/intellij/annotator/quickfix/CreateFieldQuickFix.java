@@ -24,10 +24,11 @@ import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
-import com.intellij.psi.util.PsiUtil;
 import com.intellij.util.IncorrectOperationException;
-import defrac.intellij.psi.DefracPsiUtil;
 import org.jetbrains.annotations.NotNull;
+
+import static com.intellij.psi.util.PsiUtil.setModifierProperty;
+import static defrac.intellij.psi.DefracPsiUtil.getVisibility;
 
 /**
  *
@@ -85,7 +86,7 @@ public final class CreateFieldQuickFix extends BaseIntentionAction {
     final PsiField newField = factory.createField(field.getName(), field.getType());
 
     // equal visibility
-    PsiUtil.setModifierProperty(newField, DefracPsiUtil.getVisibility(field), true);
+    setModifierProperty(newField, getVisibility(field), true);
 
     CreateFieldFromUsageHelper.insertField(klass, newField, klass);
   }

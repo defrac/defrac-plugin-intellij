@@ -29,6 +29,7 @@ import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static defrac.intellij.psi.DefracPsiUtil.compareBytecodeTypes;
 
 /**
  *
@@ -80,7 +81,7 @@ public final class DefracMacroValidator {
     final PsiClassType typeOfMethodBody = PsiTypesUtil.getClassType(classOfMethodBody);
 
     for(final PsiParameter parameter : parameterList.getParameters()) {
-      if(!PsiTypesUtil.compareTypes(parameter.getType(), typeOfParameter, true)) {
+      if(!compareBytecodeTypes(parameter.getType(), typeOfParameter)) {
         holder.
             createErrorAnnotation(element,
                 DefracBundle.message("annotator.macro.parameterType",
@@ -90,7 +91,7 @@ public final class DefracMacroValidator {
     }
 
     // (3)
-    if(!PsiTypesUtil.compareTypes(thatMethod.getReturnType(), typeOfMethodBody, true)) {
+    if(!compareBytecodeTypes(thatMethod.getReturnType(), typeOfMethodBody)) {
       holder.
           createErrorAnnotation(element,
               DefracBundle.message("annotator.macro.returnType", thatMethod.getName(), classOfMethodBody.getName())).

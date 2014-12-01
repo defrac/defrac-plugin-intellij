@@ -17,7 +17,7 @@
 <idea-plugin version="2">
   <id>defrac.intellij</id>
   <name>defrac Support</name>
-  <version>0.0.5</version>
+  <version>0.0.6</version>
   <vendor email="team@defrac.com" url="https://www.defrac.com">defrac inc.</vendor>
 
   <description>
@@ -26,6 +26,7 @@
 
   <change-notes>
     <![CDATA[<ul>
+      <li>2014-12-01 - Compile for Java 6, fix macro and delegate linkage</li>
       <li>2014-11-26 - Erasure for type parameters in Delegate</li>
       <li>2014-11-26 - Fix for Macro and Delegate annotator</li>
       <li>2014-11-26 - Fix for SDK chooser in Facet configuration</li>

@@ -22,12 +22,13 @@ import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiTypeParameter;
 import com.intellij.psi.search.*;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.psi.DefracReference;
 import org.jetbrains.annotations.NotNull;
+
+import static com.intellij.psi.util.PsiTreeUtil.getParentOfType;
 
 /**
  *
@@ -110,7 +111,7 @@ abstract class ReferencesSearchBase<E extends PsiElement, T> extends QueryExecut
     @Override
     public boolean execute(@NotNull final PsiElement element, final int offsetInElement) {
       final PsiLiteralExpression literalExpression =
-          PsiTreeUtil.getParentOfType(element, PsiLiteralExpression.class, false);
+          getParentOfType(element, PsiLiteralExpression.class, false);
 
       if(literalExpression == null) {
         return true;

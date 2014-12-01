@@ -24,9 +24,10 @@ import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.config.DefracConfig;
 import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.psi.DefracPsiUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import static defrac.intellij.psi.DefracPsiUtil.isUnsupported;
 
 /**
  *
@@ -52,7 +53,7 @@ public final class UnsupportedAnnotator implements Annotator {
 
       if(method.isConstructor()) {
         annotateClass(element, method.getContainingClass(), holder, platform);
-      } else if(DefracPsiUtil.isUnsupported(method, platform)) {
+      } else if(isUnsupported(method, platform)) {
         holder.
             createErrorAnnotation(element, DefracBundle.message("annotator.unsupported.method"));
       }
@@ -77,7 +78,7 @@ public final class UnsupportedAnnotator implements Annotator {
       return;
     }
 
-    if(DefracPsiUtil.isUnsupported(klass, platform)) {
+    if(isUnsupported(klass, platform)) {
       holder.
           createErrorAnnotation(element,
               DefracBundle.message("annotator.unsupported.class"));
@@ -100,7 +101,7 @@ public final class UnsupportedAnnotator implements Annotator {
 
       if(config != null) {
         for(final DefracPlatform targetPlatform : config.getTargets()) {
-          if(DefracPsiUtil.isUnsupported(owner, targetPlatform)) {
+          if(isUnsupported(owner, targetPlatform)) {
             holder.
                 createWarningAnnotation(element,
                     DefracBundle.message("annotator.unsupported.refInGeneric",
@@ -111,7 +112,7 @@ public final class UnsupportedAnnotator implements Annotator {
         }
       }
     } else {
-      if(DefracPsiUtil.isUnsupported(owner, platform)) {
+      if(isUnsupported(owner, platform)) {
         holder.
             createErrorAnnotation(element,
                 DefracBundle.message("annotator.unsupported.ref",
