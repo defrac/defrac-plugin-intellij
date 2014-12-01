@@ -81,9 +81,9 @@ public final class DefracRunningState extends CommandLineState {
     cmd.add(facet.getSettingsFile().getParentFile().getAbsolutePath());
 
     //TODO(joa): intellij is not building source, why?
-    /*if(facet.skipJavac()) {
+    if(facet.skipJavac()) {
       cmd.add("-skip-javac");
-    }*/
+    }
 
     //TODO(joa): configure android sdk if available!
     //TODO(joa): configure settings when console supports it
