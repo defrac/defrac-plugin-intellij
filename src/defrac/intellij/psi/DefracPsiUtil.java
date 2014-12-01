@@ -273,6 +273,11 @@ public final class DefracPsiUtil {
       }
 
       return isQualifiedNameEqual(classA, classB);
+    } else if(a instanceof PsiArrayType && b instanceof PsiArrayType) {
+      final PsiArrayType arrayA = (PsiArrayType)a;
+      final PsiArrayType arrayB = (PsiArrayType)b;
+
+      return compareBytecodeTypes(arrayA.getComponentType(), arrayB.getComponentType());
     }
 
     // primitive types, go with default behaviour of IntelliJ

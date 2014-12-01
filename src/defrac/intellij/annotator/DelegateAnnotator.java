@@ -26,7 +26,7 @@ import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.psi.DelegateClassReference;
-import defrac.intellij.psi.validation.DefracDelegateValidator;
+import defrac.intellij.psi.validation.DelegateValidator;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 
@@ -131,7 +131,7 @@ public final class DelegateAnnotator implements Annotator {
             }
           }
 
-          DefracDelegateValidator.annotate(element, holder, klass, result);
+          DelegateValidator.annotate(element, holder, klass, result);
         }
       }
     }

@@ -32,7 +32,7 @@ import defrac.intellij.annotator.quickfix.ChangeMacroSignatureQuickFix;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.psi.MacroClassReference;
 import defrac.intellij.psi.MacroMethodReference;
-import defrac.intellij.psi.validation.DefracMacroValidator;
+import defrac.intellij.psi.validation.MacroValidator;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 
@@ -187,7 +187,7 @@ public final class MacroAnnotator implements Annotator {
             final PsiMethod thatMethod = (PsiMethod)result;
 
             if(arity == thatMethod.getParameterList().getParametersCount()) {
-              DefracMacroValidator.annotate(element, holder, method, thatMethod);
+              MacroValidator.annotate(element, holder, method, thatMethod);
               found = true;
               break;
             } else {

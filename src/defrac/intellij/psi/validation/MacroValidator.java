@@ -34,7 +34,7 @@ import static defrac.intellij.psi.DefracPsiUtil.compareBytecodeTypes;
 /**
  *
  */
-public final class DefracMacroValidator {
+public final class MacroValidator {
   public static void annotate(@NotNull final PsiElement element,
                               @NotNull final AnnotationHolder holder,
                               @NotNull final PsiMethod thisMethod,
@@ -115,5 +115,5 @@ public final class DefracMacroValidator {
     }
   }
 
-  private DefracMacroValidator() {}
+  private MacroValidator() {}
 }

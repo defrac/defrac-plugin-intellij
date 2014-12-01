@@ -36,7 +36,7 @@ import static defrac.intellij.util.Grammar.buildGenitive;
 /**
  *
  */
-public final class DefracDelegateValidator {
+public final class DelegateValidator {
   public static void annotate(@NotNull final PsiElement element,
                               @NotNull final AnnotationHolder holder,
                               @NotNull final PsiClass thisClass,
@@ -387,5 +387,5 @@ public final class DefracDelegateValidator {
     return signatureBuilder.toString();
   }
 
-  private DefracDelegateValidator() {}
+  private DelegateValidator() {}
 }
