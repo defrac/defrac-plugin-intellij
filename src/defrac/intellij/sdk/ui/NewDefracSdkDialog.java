@@ -30,8 +30,8 @@ import java.util.List;
  */
 public final class NewDefracSdkDialog extends DialogWrapper {
   private JPanel contentPanel;
-  private JComboBox<String> internalJdkComboBox;
-  private JComboBox<String> defracVersionComboBox;
+  private JComboBox internalJdkComboBox;
+  private JComboBox defracVersionComboBox;
   private JLabel internalJdkLabel;
   private JLabel defracSdkLabel;
 

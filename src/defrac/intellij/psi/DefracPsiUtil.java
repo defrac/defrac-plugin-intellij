@@ -17,6 +17,7 @@
 package defrac.intellij.psi;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.search.GlobalSearchScope;
@@ -28,6 +29,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -403,5 +406,24 @@ public final class DefracPsiUtil {
   @Contract("null -> false")
   public static boolean isReadOnlyAnnotation(@Nullable final String qualifiedName) {
     return Names.defrac_dni_ReadOnly.equals(qualifiedName);
+  }
+
+
+
+  @NotNull
+  public static Set<PsiClass> mapToContainingClasses(@NotNull final List<PsiMethod> methods) {
+    final Set<PsiClass> set = Sets.newLinkedHashSet();
+
+    for(final PsiMethod method : methods) {
+      final PsiClass klass = method.getContainingClass();
+
+      if(klass == null) {
+        continue;
+      }
+
+      set.add(klass);
+    }
+
+    return set;
   }
 }

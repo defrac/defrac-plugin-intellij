@@ -51,7 +51,7 @@ public final class DefracFacetEditorForm {
   private final FacetEditorContext context;
 
   private JPanel componentPanel;
-  private JComboBox<DefracPlatform> platformComboBox;
+  private JComboBox platformComboBox;
   private TextFieldWithBrowseButton settingsField;
   private JLabel platformLabel;
   private JLabel settingsLabel;
@@ -63,7 +63,7 @@ public final class DefracFacetEditorForm {
   private ProjectSdksModel projectSdksModel;
 
   @NotNull
-  private final DefaultComboBoxModel<DefracPlatform> platformModel = new DefaultComboBoxModel<DefracPlatform>();
+  private final DefaultComboBoxModel platformModel = new DefaultComboBoxModel();
 
   public DefracFacetEditorForm(@NotNull final FacetEditorContext context,
                                @NotNull final DefracFacet facet) {

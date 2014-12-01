@@ -27,7 +27,6 @@ import defrac.intellij.annotator.quickfix.ChangeMacroSignatureQuickFix;
 import defrac.intellij.annotator.quickfix.ChangeReturnTypeQuickFix;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -38,14 +37,7 @@ public final class DefracMacroValidator {
   public static void annotate(@NotNull final PsiElement element,
                               @NotNull final AnnotationHolder holder,
                               @NotNull final PsiMethod thisMethod,
-                              @Nullable final PsiElement thatElement) {
-    if(!(thatElement instanceof PsiMethod)) {
-      holder.createErrorAnnotation(element, DefracBundle.message("annotator.expect.method"));
-      return;
-    }
-
-    final PsiMethod thatMethod = (PsiMethod)thatElement;
-
+                              @NotNull final PsiMethod thatMethod) {
     // Macro Validation
     // ===================
     // (1) Check same arity
