@@ -109,7 +109,7 @@ public final class DefracFacetConfiguration implements FacetConfiguration, Persi
 
   @NotNull
   public DefracPlatform getPlatform() {
-    return DefracPlatform.byName(getState().PLATFORM);
+    return checkNotNull(DefracPlatform.byName(getState().PLATFORM));
   }
 
   @Override

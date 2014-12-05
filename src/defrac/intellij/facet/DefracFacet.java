@@ -25,7 +25,6 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
@@ -115,15 +114,21 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
   }
 
   @NotNull
-  private JpsDefracModuleProperties getProperties() {
+  JpsDefracModuleProperties getProperties() {
     return getConfiguration().getState();
+  }
+
+  @Nullable
+  public VirtualFile getVirtualSettingsFile() {
+    final Module module = getModule();
+    final Project project = module.getProject();
+    return DefracRootUtil.
+        getFileByRelativeProjectPath(project, getProperties().SETTINGS_FILE_RELATIVE_PATH);
   }
 
   @NotNull
   public File getSettingsFile() {
-    final Module module = getModule();
-    final Project project = module.getProject();
-    final VirtualFile settingsFile = DefracRootUtil.getFileByRelativeProjectPath(project, getProperties().SETTINGS_FILE_RELATIVE_PATH);
+    final VirtualFile settingsFile = getVirtualSettingsFile();
 
     if(settingsFile == null) {
       return new File(Names.default_settings);
@@ -143,7 +148,7 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
 
   @Nullable
   public DefracConfig readConfig() throws IOException {
-    final VirtualFile settingsFile = VfsUtil.findFileByIoFile(getSettingsFile(), false);
+    final VirtualFile settingsFile = getVirtualSettingsFile();
 
     if(settingsFile == null) {
       return null;

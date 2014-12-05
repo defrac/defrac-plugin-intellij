@@ -104,18 +104,22 @@ public final class DefracConfig {
     return nullToEmpty(package$);
   }
 
+  @NotNull
   public String getIdentifier() {
     return nullToEmpty(identifier);
   }
 
+  @NotNull
   public String getMain() {
     return nullToEmpty(main);
   }
 
+  @NotNull
   public String getVersion() {
     return nullToEmpty(version);
   }
 
+  @NotNull
   public DefracPlatform[] getTargets() {
     final ArrayList<DefracPlatform> platforms =
         Lists.newArrayListWithExpectedSize(targets.length);
@@ -126,6 +130,10 @@ public final class DefracConfig {
       }
 
       final DefracPlatform platform = DefracPlatform.byName(target);
+
+      if(platform == null) {
+        continue;
+      }
 
       platforms.add(platform);
     }

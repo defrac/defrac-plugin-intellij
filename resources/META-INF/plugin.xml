@@ -17,7 +17,7 @@
 <idea-plugin version="2">
   <id>defrac.intellij</id>
   <name>defrac Support</name>
-  <version>0.0.6</version>
+  <version>0.0.7</version>
   <vendor email="team@defrac.com" url="https://www.defrac.com">defrac inc.</vendor>
 
   <description>
@@ -26,6 +26,7 @@
 
   <change-notes>
     <![CDATA[<ul>
+      <li>2014-12-05 - Check for array component type, add reference to main</li>
       <li>2014-12-01 - Compile for Java 6, fix macro and delegate linkage</li>
       <li>2014-11-26 - Erasure for type parameters in Delegate</li>
       <li>2014-11-26 - Fix for Macro and Delegate annotator</li>
@@ -47,6 +48,8 @@
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.IncompatibleReadWriteAnnotator"/>
     <configurationType implementation="defrac.intellij.run.DefracConfigurationType"/>
     <facetType implementation="defrac.intellij.facet.DefracFacetType"/>
+    <framework.detector implementation="defrac.intellij.facet.DefracFrameworkDetector"/>
+    <fileTypeFactory implementation="defrac.intellij.fileType.DefracFileTypeFactory"/>
     <gotoDeclarationHandler implementation="defrac.intellij.gotoDeclaration.GotoMacroDeclarationHandler" order="first"/>
     <gotoDeclarationHandler implementation="defrac.intellij.gotoDeclaration.GotoDelegateDeclarationHandler" order="first"/>
     <gotoRelatedProvider implementation="defrac.intellij.gotoDeclaration.RelatedDeclarationProvider"/>
@@ -56,6 +59,7 @@
     <psi.referenceContributor implementation="defrac.intellij.psi.ReferenceContributor"/>
     <referencesSearch implementation="defrac.intellij.findUsages.DelegateClassReferencesSearch"/>
     <referencesSearch implementation="defrac.intellij.findUsages.MacroClassReferencesSearch"/>
+    <!--referencesSearch implementation="defrac.intellij.findUsages.MainClassReferencesSearch"/-->
     <sdkType implementation="defrac.intellij.sdk.DefracSdkType"/>
   </extensions>
 

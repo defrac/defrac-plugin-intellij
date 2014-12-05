@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableMap;
 import defrac.intellij.util.Names;
 import defrac.intellij.util.OS;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
@@ -112,9 +113,9 @@ public enum DefracPlatform {
     return this == GENERIC;
   }
 
-  @NotNull
+  @Nullable
   public static DefracPlatform byName(@NotNull final String value) {
-    return checkNotNull(NAME_TO_PLATFORM.get(value));
+    return NAME_TO_PLATFORM.get(value);
   }
 
   @NotNull
