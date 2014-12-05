@@ -20,8 +20,6 @@ import com.google.common.collect.Lists;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.navigation.GotoRelatedProvider;
 import com.intellij.psi.*;
-import com.intellij.psi.util.PsiUtil;
-import defrac.intellij.psi.DefracPsiUtil;
 import defrac.intellij.psi.DelegateClassReference;
 import defrac.intellij.psi.MacroMethodReference;
 import org.jetbrains.annotations.NotNull;
@@ -29,6 +27,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static com.intellij.psi.util.PsiUtil.mapElements;
+import static defrac.intellij.psi.DefracPsiUtil.isDelegateAnnotation;
+import static defrac.intellij.psi.DefracPsiUtil.isMacroAnnotation;
 
 /**
  *
@@ -70,7 +72,7 @@ public final class RelatedDeclarationProvider extends GotoRelatedProvider {
     final ArrayList<GotoRelatedItem> items = Lists.newArrayListWithCapacity(0);
 
     for(final PsiAnnotation annotation : modifiers.getAnnotations()) {
-      if(!DefracPsiUtil.isMacroAnnotation(annotation)) {
+      if(!isMacroAnnotation(annotation)) {
         continue;
       }
 
@@ -81,7 +83,7 @@ public final class RelatedDeclarationProvider extends GotoRelatedProvider {
         continue;
       }
 
-      for(final PsiElement element : PsiUtil.mapElements(reference.multiResolve())) {
+      for(final PsiElement element : mapElements(reference.multiResolve())) {
         items.add(new GotoRelatedItem(element, "Macro"));
       }
     }
@@ -100,7 +102,7 @@ public final class RelatedDeclarationProvider extends GotoRelatedProvider {
     final ArrayList<GotoRelatedItem> items = Lists.newArrayListWithCapacity(0);
 
     for(final PsiAnnotation annotation : modifiers.getAnnotations()) {
-      if(!DefracPsiUtil.isDelegateAnnotation(annotation)) {
+      if(!isDelegateAnnotation(annotation)) {
         continue;
       }
 
@@ -111,7 +113,7 @@ public final class RelatedDeclarationProvider extends GotoRelatedProvider {
         continue;
       }
 
-      for(final PsiElement element : PsiUtil.mapElements(reference.multiResolve())) {
+      for(final PsiElement element : mapElements(reference.multiResolve())) {
         items.add(new GotoRelatedItem(element, "Delegate"));
       }
     }

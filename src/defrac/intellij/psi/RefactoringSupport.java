@@ -22,6 +22,9 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
 
+import static defrac.intellij.psi.DefracPsiUtil.isDelegateAnnotation;
+import static defrac.intellij.psi.DefracPsiUtil.isMacroAnnotation;
+
 /**
  *
  */
@@ -38,7 +41,7 @@ public final class RefactoringSupport extends JavaRefactoringSupportProvider {
 
     //noinspection SimplifiableIfStatement
     if(    annotation == null
-        || !(DefracPsiUtil.isMacroAnnotation(annotation) || DefracPsiUtil.isDelegateAnnotation(annotation))) {
+        || !(isMacroAnnotation(annotation) || isDelegateAnnotation(annotation))) {
       return super.isMemberInplaceRenameAvailable(elementToRename, context);
     } else {
       return false;

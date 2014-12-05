@@ -27,25 +27,18 @@ import defrac.intellij.annotator.quickfix.ChangeMacroSignatureQuickFix;
 import defrac.intellij.annotator.quickfix.ChangeReturnTypeQuickFix;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static defrac.intellij.psi.DefracPsiUtil.compareBytecodeTypes;
 
 /**
  *
  */
-public final class DefracMacroValidator {
+public final class MacroValidator {
   public static void annotate(@NotNull final PsiElement element,
                               @NotNull final AnnotationHolder holder,
                               @NotNull final PsiMethod thisMethod,
-                              @Nullable final PsiElement thatElement) {
-    if(!(thatElement instanceof PsiMethod)) {
-      holder.createErrorAnnotation(element, DefracBundle.message("annotator.expect.method"));
-      return;
-    }
-
-    final PsiMethod thatMethod = (PsiMethod)thatElement;
-
+                              @NotNull final PsiMethod thatMethod) {
     // Macro Validation
     // ===================
     // (1) Check same arity
@@ -88,7 +81,7 @@ public final class DefracMacroValidator {
     final PsiClassType typeOfMethodBody = PsiTypesUtil.getClassType(classOfMethodBody);
 
     for(final PsiParameter parameter : parameterList.getParameters()) {
-      if(!PsiTypesUtil.compareTypes(parameter.getType(), typeOfParameter, true)) {
+      if(!compareBytecodeTypes(parameter.getType(), typeOfParameter)) {
         holder.
             createErrorAnnotation(element,
                 DefracBundle.message("annotator.macro.parameterType",
@@ -98,7 +91,7 @@ public final class DefracMacroValidator {
     }
 
     // (3)
-    if(!PsiTypesUtil.compareTypes(thatMethod.getReturnType(), typeOfMethodBody, true)) {
+    if(!compareBytecodeTypes(thatMethod.getReturnType(), typeOfMethodBody)) {
       holder.
           createErrorAnnotation(element,
               DefracBundle.message("annotator.macro.returnType", thatMethod.getName(), classOfMethodBody.getName())).
@@ -122,5 +115,5 @@ public final class DefracMacroValidator {
     }
   }
 
-  private DefracMacroValidator() {}
+  private MacroValidator() {}
 }

@@ -21,9 +21,10 @@ import com.intellij.psi.PsiReference;
 import com.intellij.psi.search.SearchScope;
 import com.intellij.psi.search.searches.MethodReferencesSearch;
 import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.psi.DefracPsiUtil;
 import defrac.intellij.psi.MacroMethodReference;
 import org.jetbrains.annotations.NotNull;
+
+import static defrac.intellij.psi.DefracPsiUtil.isMacro;
 
 /**
  *
@@ -40,7 +41,7 @@ public final class MacroMethodReferencesSearch extends MacroReferencesSearchBase
   @Override
   protected boolean isSearchCandidate(@NotNull final PsiMethod candidate,
                                       @NotNull final DefracFacet facet) {
-    return facet.isMacroLibrary() && DefracPsiUtil.isMacro(candidate.getParent());
+    return facet.isMacroLibrary() && isMacro(candidate.getParent());
   }
 
   @Override

@@ -25,8 +25,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMember;
 import com.intellij.util.IncorrectOperationException;
-import defrac.intellij.psi.DefracPsiUtil;
 import org.jetbrains.annotations.NotNull;
+
+import static defrac.intellij.psi.DefracPsiUtil.setVisibility;
 
 /**
  *
@@ -76,7 +77,7 @@ public final class ChangeVisibilityQuickFix extends BaseIntentionAction {
             ApplicationManager.getApplication().runWriteAction(new Runnable() {
               @Override
               public void run() {
-                DefracPsiUtil.setVisibility(member, newVisibility);
+                setVisibility(member, newVisibility);
               }
             });
           }

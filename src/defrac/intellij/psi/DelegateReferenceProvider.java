@@ -17,7 +17,6 @@
 package defrac.intellij.psi;
 
 import com.intellij.psi.*;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
@@ -26,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.intellij.psi.util.PsiTreeUtil.getParentOfType;
 import static defrac.intellij.psi.DefracPsiUtil.isDelegateAnnotation;
 
 /**
@@ -59,7 +59,7 @@ public final class DelegateReferenceProvider extends PsiReferenceProvider {
 
     // (2) get delegate annotation
     final PsiAnnotation annotation =
-        PsiTreeUtil.getParentOfType(element, PsiAnnotation.class, /*strict=*/false);
+        getParentOfType(element, PsiAnnotation.class, /*strict=*/false);
 
     if(!isDelegateAnnotation(annotation)) {
       return PsiReference.EMPTY_ARRAY;

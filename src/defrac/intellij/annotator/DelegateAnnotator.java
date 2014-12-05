@@ -22,14 +22,11 @@ import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.psi.*;
 import com.intellij.psi.util.ClassKind;
-import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.util.PsiUtil;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.psi.DefracPsiUtil;
 import defrac.intellij.psi.DelegateClassReference;
-import defrac.intellij.psi.validation.DefracDelegateValidator;
+import defrac.intellij.psi.validation.DelegateValidator;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,6 +35,11 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.intellij.psi.util.PsiTreeUtil.getParentOfType;
+import static com.intellij.psi.util.PsiUtil.mapElements;
+import static defrac.intellij.annotator.DefracAnnotatorUtil.reportMissingImplementations;
+import static defrac.intellij.annotator.DefracAnnotatorUtil.reportMoreGenericAnnotation;
+import static defrac.intellij.psi.DefracPsiUtil.isDelegateAnnotation;
 
 /**
  *
@@ -59,14 +61,14 @@ public final class DelegateAnnotator implements Annotator {
     }
 
     final PsiAnnotation annotation =
-        PsiTreeUtil.getParentOfType(element, PsiAnnotation.class, /*strict=*/false);
+        getParentOfType(element, PsiAnnotation.class, /*strict=*/false);
 
-    if(!DefracPsiUtil.isDelegateAnnotation(annotation)) {
+    if(!isDelegateAnnotation(annotation)) {
       return;
     }
 
     final boolean isGeneric = Names.defrac_annotation_Delegate.equals(annotation.getQualifiedName());
-    final PsiClass klass = PsiTreeUtil.getParentOfType(element, PsiClass.class, /*strict=*/false);
+    final PsiClass klass = getParentOfType(element, PsiClass.class, /*strict=*/false);
 
     if(klass == null) {
       return;
@@ -104,12 +106,12 @@ public final class DelegateAnnotator implements Annotator {
           final Annotation errorAnnotation = holder.
               createErrorAnnotation(element, DefracBundle.message("annotator.unresolved", defracRef.getValue()));
           final PsiClass superClass = klass.getSuperClass();
-          final CreateClassOrPackageFix fix = CreateClassOrPackageFix.createFix(
+
+          final CreateClassOrPackageFix fix = DefracAnnotatorUtil.createCreateClassOrPackageFix(
               target,
               checkNotNull(DefracFacet.getInstance(klass)).
                   getDelegateSearchScope(DefracPlatform.byDelegateAnnotation(annotation.getQualifiedName())),
               element,
-              JavaDirectoryService.getInstance().getPackage(klass.getContainingFile().getContainingDirectory()),
               ClassKind.CLASS,
               superClass == null ? null : checkNotNull(superClass.getQualifiedName()),
               null);
@@ -120,7 +122,7 @@ public final class DelegateAnnotator implements Annotator {
           return;
         }
       } else {
-        for(final PsiElement result : PsiUtil.mapElements(resolveResults)) {
+        for(final PsiElement result : mapElements(resolveResults)) {
           final DefracFacet elementFacet = DefracFacet.getInstance(result);
 
           if(elementFacet != null) {
@@ -129,13 +131,13 @@ public final class DelegateAnnotator implements Annotator {
             }
           }
 
-          DefracDelegateValidator.annotate(element, holder, klass, result);
+          DelegateValidator.annotate(element, holder, klass, result);
         }
       }
     }
 
     if(isGeneric) {
-      DefracAnnotatorUtil.reportMissingImplementations(
+      reportMissingImplementations(
           element, holder,
           facet,
           klass, platformImplementations,
@@ -143,7 +145,7 @@ public final class DelegateAnnotator implements Annotator {
           target,
           /*isDelegate=*/true);
     } else {
-      DefracAnnotatorUtil.reportMoreGenericAnnotation(
+      reportMoreGenericAnnotation(
           holder, annotation, klass,
           Names.defrac_annotation_Delegate,
           DefracPlatform.byDelegateAnnotation(checkNotNull(annotation.getQualifiedName())),

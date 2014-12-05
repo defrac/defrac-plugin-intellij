@@ -24,8 +24,6 @@ import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.AllClassesSearch;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
-import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.IconUtil;
 import com.intellij.util.Query;
@@ -39,6 +37,9 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+
+import static com.intellij.psi.util.PsiTreeUtil.getParentOfType;
+import static defrac.intellij.psi.DefracPsiUtil.*;
 
 /**
  *
@@ -56,11 +57,11 @@ public final class DelegateClassReference extends ClassReferenceBase {
   @Nullable
   @Contract("null -> null")
   public static DelegateClassReference getInstance(@Nullable final PsiAnnotation annotation) {
-    if(!DefracPsiUtil.isDelegateAnnotation(annotation)) {
+    if(!isDelegateAnnotation(annotation)) {
       return null;
     }
 
-    return DefracPsiUtil.findReference(annotation, DelegateClassReference.class);
+    return findReference(annotation, DelegateClassReference.class);
   }
 
   public DelegateClassReference(@NotNull final String value,
@@ -88,7 +89,7 @@ public final class DelegateClassReference extends ClassReferenceBase {
     }
 
     final PsiClass enclosingClass =
-        PsiTreeUtil.getParentOfType(getElement(), PsiClass.class, false);
+        getParentOfType(getElement(), PsiClass.class, false);
 
     if(enclosingClass == null) {
       return NO_VARIANTS;
@@ -181,7 +182,7 @@ public final class DelegateClassReference extends ClassReferenceBase {
     sort(thatType);
 
     for(int i = 0; i < thisType.length; ++i) {
-      if(!PsiTypesUtil.compareTypes(thisType[i], thatType[i], true)) {
+      if(!compareBytecodeTypes(thisType[i], thatType[i])) {
         return false;
       }
     }

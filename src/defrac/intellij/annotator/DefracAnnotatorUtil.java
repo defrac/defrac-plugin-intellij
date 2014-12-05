@@ -19,9 +19,8 @@ package defrac.intellij.annotator;
 import com.intellij.codeInsight.daemon.quickFix.CreateClassOrPackageFix;
 import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
-import com.intellij.openapi.vfs.VfsUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.ClassKind;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
@@ -34,7 +33,6 @@ import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
@@ -45,6 +43,39 @@ import static com.google.common.base.Strings.isNullOrEmpty;
  *
  */
 public final class DefracAnnotatorUtil {
+  @Nullable
+  public static CreateClassOrPackageFix createCreateClassOrPackageFix(
+      @NotNull final String qualifiedName,
+      @NotNull final GlobalSearchScope scope,
+      @NotNull final PsiElement context,
+      @NotNull final ClassKind classKind,
+      @Nullable final String superClass,
+      @Nullable final String template) {
+    final PsiPackage package$;
+
+
+    final int lastIndexOfDot = qualifiedName.lastIndexOf('.');
+
+    if(lastIndexOfDot == -1) {
+      package$ = null;
+    } else if(lastIndexOfDot == (qualifiedName.length() - 1)) {
+      return null;
+    } else {
+      package$ = JavaPsiFacade.
+          getInstance(context.getProject()).
+          findPackage(qualifiedName.substring(0, lastIndexOfDot));
+    }
+
+    return CreateClassOrPackageFix.
+        createFix(
+            qualifiedName,
+            scope,
+            context,
+            package$,
+            classKind,
+            superClass,
+            template);
+  }
   public static void reportMoreGenericAnnotation(@NotNull final AnnotationHolder holder,
                                                  @NotNull final PsiAnnotation thisAnnotation,
                                                  @NotNull final PsiModifierListOwner annotatedElement,
@@ -104,6 +135,12 @@ public final class DefracAnnotatorUtil {
                                                   @NotNull final Map<String, DefracPlatform> nameToPlatform,
                                                   @Nullable final String target,
                                                   final boolean isDelegate) {
+    // don't report that a platform is missing if the project is not
+    // generic since it's not required!
+    if(!facet.getPlatform().isGeneric()) {
+      return;
+    }
+
     // don't report that some class is missing for a platform if
     // the more specific annotation is present
     final PsiAnnotation[] otherAnnotations = checkNotNull(annotatedElement.getModifierList()).getAnnotations();
@@ -117,64 +154,51 @@ public final class DefracAnnotatorUtil {
     }
 
     // now report all missing implementations for configured targets
-    try {
-      final VirtualFile settingsFile = VfsUtil.findFileByIoFile(facet.getSettingsFile(), false);
-      final PsiManager psiManager = PsiManager.getInstance(element.getProject());
+    final DefracConfig config = facet.getConfig();
 
-      if(settingsFile != null) {
-        final PsiFile file = checkNotNull(psiManager.findFile(settingsFile));
+    if(config != null) {
+      for(final DefracPlatform platform : config.getTargets()) {
+        if(platform.isGeneric()) {
+          continue;
+        }
 
-        if(file != null) {
-          final DefracConfig config = DefracConfig.fromJson(file);
+        if(!implementations.contains(platform)) {
+          final Annotation annotation =
+              holder.
+                  createErrorAnnotation(element,
+                      DefracBundle.message("annotator.platform.missing", platform.displayName));
 
-          for(final DefracPlatform platform : config.getTargets()) {
-            if(platform.isGeneric()) {
-              continue;
-            }
+          if(isDelegate) {
+            if(target != null) {
+              final PsiClass superClass = ((PsiClass) annotatedElement).getSuperClass();
+              final CreateClassOrPackageFix fix = DefracAnnotatorUtil.createCreateClassOrPackageFix(
+                  target,
+                  checkNotNull(DefracFacet.getInstance(annotatedElement)).getDelegateSearchScope(platform),
+                  element,
+                  ClassKind.CLASS,
+                  superClass == null ? null : checkNotNull(superClass.getQualifiedName()),
+                  null);
 
-            if(!implementations.contains(platform)) {
-              final Annotation annotation =
-                  holder.
-                      createErrorAnnotation(element,
-                          DefracBundle.message("annotator.platform.missing", platform.displayName));
-
-              if(isDelegate) {
-                if(target != null) {
-                  final PsiClass superClass = ((PsiClass)annotatedElement).getSuperClass();
-                  final CreateClassOrPackageFix fix = CreateClassOrPackageFix.createFix(
-                      target,
-                      checkNotNull(DefracFacet.getInstance(annotatedElement)).getDelegateSearchScope(platform),
-                      element,
-                      JavaDirectoryService.getInstance().getPackage(annotatedElement.getContainingFile().getContainingDirectory()),
-                      ClassKind.CLASS,
-                      superClass == null ? null : checkNotNull(superClass.getQualifiedName()),
-                      null);
-
-                  if(fix != null) {
-                    annotation.registerFix(fix);
-                  }
-                }
-              } else {
-                final String qualifiedClassName = MacroMethodReference.getQualifiedClassName(target);
-                final CreateClassOrPackageFix fix = CreateClassOrPackageFix.createFix(
-                    qualifiedClassName == null ? "" : qualifiedClassName,
-                    checkNotNull(DefracFacet.getInstance(annotatedElement)).getMacroSearchScope(platform),
-                    element,
-                    JavaDirectoryService.getInstance().getPackage(annotatedElement.getContainingFile().getContainingDirectory()),
-                    ClassKind.CLASS,
-                    Names.defrac_compiler_macro_Macro,
-                    null);
-
-                if(fix != null) {
-                  annotation.registerFix(fix);
-                }
+              if(fix != null) {
+                annotation.registerFix(fix);
               }
+            }
+          } else {
+            final String qualifiedClassName = MacroMethodReference.getQualifiedClassName(target);
+            final CreateClassOrPackageFix fix = DefracAnnotatorUtil.createCreateClassOrPackageFix(
+                qualifiedClassName == null ? "" : qualifiedClassName,
+                checkNotNull(DefracFacet.getInstance(annotatedElement)).getMacroSearchScope(platform),
+                element,
+                ClassKind.CLASS,
+                Names.defrac_compiler_macro_Macro,
+                null);
+
+            if(fix != null) {
+              annotation.registerFix(fix);
             }
           }
         }
       }
-    } catch(final IOException ioException) {
-      // ignored
     }
   }
 

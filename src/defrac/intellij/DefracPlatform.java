@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableMap;
 import defrac.intellij.util.Names;
 import defrac.intellij.util.OS;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
@@ -51,6 +52,22 @@ public enum DefracPlatform {
       IOS    , Names.defrac_annotation_MacroIOS,
       JVM    , Names.defrac_annotation_MacroJVM,
       WEB    , Names.defrac_annotation_MacroWeb
+  );
+
+  @NotNull
+  public static final Map<String, DefracPlatform> UNSUPPORTED_ANNOTATION_TO_PLATFORM = ImmutableMap.of(
+      Names.defrac_annotation_UnsupportedA5D, ANDROID,
+      Names.defrac_annotation_UnsupportedIOS, IOS,
+      Names.defrac_annotation_UnsupportedJVM, JVM,
+      Names.defrac_annotation_UnsupportedWeb, WEB
+  );
+
+  @NotNull
+  public static final Map<DefracPlatform, String> PLATFORM_TO_UNSUPPORTED_ANNOTATION = ImmutableMap.of(
+      ANDROID, Names.defrac_annotation_UnsupportedA5D,
+      IOS    , Names.defrac_annotation_UnsupportedIOS,
+      JVM    , Names.defrac_annotation_UnsupportedJVM,
+      WEB    , Names.defrac_annotation_UnsupportedWeb
   );
 
   @NotNull
@@ -96,9 +113,9 @@ public enum DefracPlatform {
     return this == GENERIC;
   }
 
-  @NotNull
+  @Nullable
   public static DefracPlatform byName(@NotNull final String value) {
-    return checkNotNull(NAME_TO_PLATFORM.get(value));
+    return NAME_TO_PLATFORM.get(value);
   }
 
   @NotNull

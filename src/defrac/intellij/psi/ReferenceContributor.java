@@ -16,6 +16,9 @@
 
 package defrac.intellij.psi;
 
+import com.intellij.json.JsonLanguage;
+import com.intellij.json.psi.JsonProperty;
+import com.intellij.lang.java.JavaLanguage;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiReferenceContributor;
@@ -41,8 +44,14 @@ public final class ReferenceContributor extends PsiReferenceContributor {
 
     registrar.registerReferenceProvider(
         psiElement(PsiLiteralExpression.class).
+            withLanguage(JavaLanguage.INSTANCE).
             withSuperParent(3, psiElement(PsiAnnotation.class)),
         new MacroReferenceProvider()
+    );
+
+    registrar.registerReferenceProvider(
+        psiElement(JsonProperty.class).withLanguage(JsonLanguage.INSTANCE),
+        new MainClassReferenceProvider()
     );
   }
 }

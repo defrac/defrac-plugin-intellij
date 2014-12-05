@@ -16,6 +16,7 @@
 
 package defrac.intellij.annotator;
 
+import com.google.common.collect.Lists;
 import com.intellij.codeInsight.daemon.impl.quickfix.CreateMethodQuickFix;
 import com.intellij.codeInsight.daemon.quickFix.CreateClassOrPackageFix;
 import com.intellij.lang.annotation.Annotation;
@@ -27,19 +28,22 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtil;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
+import defrac.intellij.annotator.quickfix.ChangeMacroSignatureQuickFix;
 import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.psi.DefracPsiUtil;
 import defrac.intellij.psi.MacroClassReference;
 import defrac.intellij.psi.MacroMethodReference;
-import defrac.intellij.psi.validation.DefracMacroValidator;
+import defrac.intellij.psi.validation.MacroValidator;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static defrac.intellij.psi.DefracPsiUtil.isMacroAnnotation;
+import static defrac.intellij.psi.DefracPsiUtil.mapToContainingClasses;
 
 /**
  *
@@ -63,7 +67,7 @@ public final class MacroAnnotator implements Annotator {
     final PsiAnnotation annotation =
         PsiTreeUtil.getParentOfType(element, PsiAnnotation.class, /*strict=*/false);
 
-    if(!DefracPsiUtil.isMacroAnnotation(annotation)) {
+    if(!isMacroAnnotation(annotation)) {
       return;
     }
 
@@ -100,12 +104,11 @@ public final class MacroAnnotator implements Annotator {
           } else {
             final Annotation errorAnnotation = holder.createErrorAnnotation(element, DefracBundle.message("annotator.unresolved", defracRef.getValue()));
             final String qualifiedClassName = MacroMethodReference.getQualifiedClassName(value);
-            final CreateClassOrPackageFix fix = CreateClassOrPackageFix.createFix(
+            final CreateClassOrPackageFix fix = DefracAnnotatorUtil.createCreateClassOrPackageFix(
                 qualifiedClassName == null ? "" : qualifiedClassName,
                 checkNotNull(DefracFacet.getInstance(method)).
                     getMacroSearchScope(DefracPlatform.byMacroAnnotation(annotation.getQualifiedName())),
                 element,
-                JavaDirectoryService.getInstance().getPackage(method.getContainingFile().getContainingDirectory()),
                 ClassKind.CLASS,
                 Names.defrac_compiler_macro_Macro,
                 null);
@@ -171,8 +174,50 @@ public final class MacroAnnotator implements Annotator {
             return;
           }
         } else {
+          final int arity = method.getParameterList().getParametersCount();
+          final ArrayList<PsiMethod> candidates = Lists.newArrayListWithCapacity(2);
+
+          boolean found = false;
+
           for(final PsiElement result : PsiUtil.mapElements(resolveResults)) {
-            DefracMacroValidator.annotate(element, holder, method, result);
+            if(!(result instanceof PsiMethod)) {
+              continue;
+            }
+
+            final PsiMethod thatMethod = (PsiMethod)result;
+
+            if(arity == thatMethod.getParameterList().getParametersCount()) {
+              MacroValidator.annotate(element, holder, method, thatMethod);
+              found = true;
+              break;
+            } else {
+              candidates.add(thatMethod);
+            }
+          }
+
+          if(!found) {
+            final Annotation errorAnnotation = holder.
+                createErrorAnnotation(element,
+                    DefracBundle.message("annotator.macro.arity", arity, arity == 1 ? "" : "s"));
+
+            if(candidates.size() == 1) {
+              errorAnnotation.
+                  registerFix(new ChangeMacroSignatureQuickFix(candidates.get(0), method));
+            }
+
+            final Set<PsiClass> containingClasses = mapToContainingClasses(candidates);
+
+            for(final PsiClass klass : containingClasses) {
+              final CreateMethodQuickFix fix = CreateMethodQuickFix.createFix(
+                  klass,
+                  getMacroSignature(method.getName(), method),
+                  "return MethodBody(Return());"
+              );
+
+              if(fix != null) {
+                errorAnnotation.registerFix(fix);
+              }
+            }
           }
         }
       }
@@ -180,9 +225,11 @@ public final class MacroAnnotator implements Annotator {
 
     if(isGeneric) {
       DefracAnnotatorUtil.reportMissingImplementations(
-          element, holder,
+          element,
+          holder,
           facet, method,
-          platformImplementations, DefracPlatform.MACRO_ANNOTATION_TO_PLATFORM,
+          platformImplementations,
+          DefracPlatform.MACRO_ANNOTATION_TO_PLATFORM,
           target,
           /*isDelegate=*/false);
     } else {

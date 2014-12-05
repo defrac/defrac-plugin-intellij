@@ -17,16 +17,19 @@
 package defrac.intellij.findUsages;
 
 import com.intellij.openapi.application.QueryExecutorBase;
+import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiReference;
+import com.intellij.psi.PsiTypeParameter;
 import com.intellij.psi.search.*;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Processor;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.psi.DefracReference;
 import org.jetbrains.annotations.NotNull;
+
+import static com.intellij.psi.util.PsiTreeUtil.getParentOfType;
 
 /**
  *
@@ -35,6 +38,14 @@ abstract class ReferencesSearchBase<E extends PsiElement, T> extends QueryExecut
   public static boolean useProvidedSearchScope(@NotNull final SearchScope scope) {
     return scope instanceof LocalSearchScope;
   }
+
+  @NotNull
+  private final Condition<PsiReference> referenceFilter = new Condition<PsiReference>() {
+    @Override
+    public boolean value(final PsiReference reference) {
+      return isReferenceCandidate(reference);
+    }
+  };
 
   ReferencesSearchBase() {
     super(true);
@@ -63,6 +74,10 @@ abstract class ReferencesSearchBase<E extends PsiElement, T> extends QueryExecut
     final E elementToSearch= getElement(queryParameter);
     final DefracFacet facet = DefracFacet.getInstance(elementToSearch);
 
+    if(elementToSearch instanceof PsiTypeParameter) {
+      return;
+    }
+
     if(facet == null) {
       return;
     }
@@ -73,7 +88,9 @@ abstract class ReferencesSearchBase<E extends PsiElement, T> extends QueryExecut
 
     final SearchScope scope = getSearchScope(queryParameter, elementToSearch, facet);
     final PsiSearchHelper helper = PsiSearchHelper.SERVICE.getInstance(elementToSearch.getProject());
-    final TextOccurenceProcessor processor = new DefracTextOccurrenceProcessor(elementToSearch, facet.getPlatform(), consumer);
+
+    final TextOccurenceProcessor processor = new DefracTextOccurrenceProcessor<E>(elementToSearch, facet.getPlatform(), consumer,
+        referenceFilter);
 
     helper.processElementsWithWord(
         processor,
@@ -84,7 +101,7 @@ abstract class ReferencesSearchBase<E extends PsiElement, T> extends QueryExecut
     );
   }
 
-  private class DefracTextOccurrenceProcessor implements TextOccurenceProcessor {
+  static class DefracTextOccurrenceProcessor<E extends PsiElement> implements TextOccurenceProcessor {
     @NotNull
     private final E elementToSearch;
 
@@ -94,18 +111,23 @@ abstract class ReferencesSearchBase<E extends PsiElement, T> extends QueryExecut
     @NotNull
     private final Processor<PsiReference> consumer;
 
+    @NotNull
+    private final Condition<PsiReference> filter;
+
     public DefracTextOccurrenceProcessor(@NotNull final E elementToSearch,
                                          @NotNull final DefracPlatform platform,
-                                         @NotNull final Processor<PsiReference> consumer) {
+                                         @NotNull final Processor<PsiReference> consumer,
+                                         @NotNull final Condition<PsiReference> filter) {
       this.elementToSearch = elementToSearch;
       this.platform = platform;
       this.consumer = consumer;
+      this.filter = filter;
     }
 
     @Override
     public boolean execute(@NotNull final PsiElement element, final int offsetInElement) {
       final PsiLiteralExpression literalExpression =
-          PsiTreeUtil.getParentOfType(element, PsiLiteralExpression.class, false);
+          getParentOfType(element, PsiLiteralExpression.class, false);
 
       if(literalExpression == null) {
         return true;
@@ -114,7 +136,7 @@ abstract class ReferencesSearchBase<E extends PsiElement, T> extends QueryExecut
       final PsiReference[] references = literalExpression.getReferences();
 
       for(final PsiReference reference : references) {
-        if(!isReferenceCandidate(reference)) {
+        if(reference == null || !isReferenceCandidate(reference)) {
           continue;
         }
 
@@ -137,6 +159,10 @@ abstract class ReferencesSearchBase<E extends PsiElement, T> extends QueryExecut
       }
 
       return true;
+    }
+
+    private boolean isReferenceCandidate(@NotNull final PsiReference reference) {
+      return filter.value(reference);
     }
   }
 }

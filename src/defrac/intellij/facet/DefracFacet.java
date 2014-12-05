@@ -30,10 +30,12 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.xml.ConvertContext;
 import com.intellij.util.xml.DomElement;
 import defrac.intellij.DefracPlatform;
+import defrac.intellij.config.DefracConfig;
 import defrac.intellij.jps.model.impl.JpsDefracModuleProperties;
 import defrac.intellij.sdk.DefracVersion;
 import defrac.intellij.util.Names;
@@ -42,6 +44,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  *
@@ -111,21 +114,54 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
   }
 
   @NotNull
-  private JpsDefracModuleProperties getProperties() {
+  JpsDefracModuleProperties getProperties() {
     return getConfiguration().getState();
+  }
+
+  @Nullable
+  public VirtualFile getVirtualSettingsFile() {
+    final Module module = getModule();
+    final Project project = module.getProject();
+    return DefracRootUtil.
+        getFileByRelativeProjectPath(project, getProperties().SETTINGS_FILE_RELATIVE_PATH);
   }
 
   @NotNull
   public File getSettingsFile() {
-    final Module module = getModule();
-    final Project project = module.getProject();
-    final VirtualFile settingsFile = DefracRootUtil.getFileByRelativeProjectPath(project, getProperties().SETTINGS_FILE_RELATIVE_PATH);
+    final VirtualFile settingsFile = getVirtualSettingsFile();
 
     if(settingsFile == null) {
       return new File(Names.default_settings);
     }
 
     return VfsUtilCore.virtualToIoFile(settingsFile);
+  }
+
+  @Nullable
+  public DefracConfig getConfig() {
+    try {
+      return readConfig();
+    } catch(final IOException ioException) {
+      return null;
+    }
+  }
+
+  @Nullable
+  public DefracConfig readConfig() throws IOException {
+    final VirtualFile settingsFile = getVirtualSettingsFile();
+
+    if(settingsFile == null) {
+      return null;
+    }
+
+    final PsiManager psiManager = PsiManager.getInstance(getModule().getProject());
+    final PsiFile file = psiManager.findFile(settingsFile);
+
+    if(file == null) {
+      return null;
+    }
+
+    return DefracConfig.fromJson(file);
   }
 
   @NotNull

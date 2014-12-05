@@ -39,13 +39,13 @@ public final class DefracSdkConfigurableForm {
   private final SdkModel sdkModel;
 
   @NotNull
-  private final DefaultComboBoxModel<Sdk> javaSdkModel = new DefaultComboBoxModel<Sdk>();
+  private final DefaultComboBoxModel javaSdkModel = new DefaultComboBoxModel();
 
   @Nullable
   private DefracVersion selectedDefracVersion;
 
   private JComponent contentPanel;
-  private JComboBox<Sdk> internalJdkComboBox;
+  private JComboBox internalJdkComboBox;
   private JLabel internalJdkLabel;
 
   public DefracSdkConfigurableForm(@NotNull final SdkModel sdkModel,
@@ -124,7 +124,9 @@ public final class DefracSdkConfigurableForm {
 
     if(defracSdk != null) {
       for(int i = 0; i < javaSdkModel.getSize(); i++) {
-        if(Comparing.strEqual((javaSdkModel.getElementAt(i)).getName(), jdkName)) {
+        final Sdk sdk = (Sdk)javaSdkModel.getElementAt(i);
+
+        if(Comparing.strEqual(sdk.getName(), jdkName)) {
           internalJdkComboBox.setSelectedIndex(i);
           break;
         }

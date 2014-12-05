@@ -24,8 +24,10 @@ import com.intellij.psi.PsiField;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.annotator.quickfix.RemoveReadOnlyQuickFix;
 import defrac.intellij.annotator.quickfix.RemoveWriteOnlyQuickFix;
-import defrac.intellij.psi.DefracPsiUtil;
 import org.jetbrains.annotations.NotNull;
+
+import static defrac.intellij.psi.DefracPsiUtil.isReadOnly;
+import static defrac.intellij.psi.DefracPsiUtil.isWriteOnly;
 
 /**
  *
@@ -42,7 +44,7 @@ public final class IncompatibleReadWriteAnnotator implements Annotator {
 
     final PsiField field = (PsiField)element;
 
-    if(DefracPsiUtil.isReadOnly(field) && DefracPsiUtil.isWriteOnly(field)) {
+    if(isReadOnly(field) && isWriteOnly(field)) {
       final Annotation annotation =
           holder.
               createErrorAnnotation(element, DefracBundle.message("annotator.readWrite.both"));

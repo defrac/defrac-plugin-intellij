@@ -80,6 +80,7 @@ public final class DefracRunningState extends CommandLineState {
     cmd.add("-project");
     cmd.add(facet.getSettingsFile().getParentFile().getAbsolutePath());
 
+    //TODO(joa): intellij is not building source, why?
     if(facet.skipJavac()) {
       cmd.add("-skip-javac");
     }

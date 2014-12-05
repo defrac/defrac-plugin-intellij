@@ -16,47 +16,56 @@
 
 package defrac.intellij.psi;
 
+import com.intellij.json.psi.JsonStringLiteral;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.IncorrectOperationException;
 import defrac.intellij.DefracPlatform;
+import defrac.intellij.facet.DefracFacet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
  *
  */
-abstract class ClassReferenceBase extends PsiReferenceBase<PsiLiteralExpression> implements PsiPolyVariantReference, DefracReference {
+public final class MainClassReference extends PsiReferenceBase<JsonStringLiteral> implements PsiPolyVariantReference, DefracReference {
   @NotNull
-  static final Object[] NO_VARIANTS = new Object[0];
+  private final DefracPlatform platform;
 
-  @NotNull
-  protected final DefracPlatform platform;
-
-  public ClassReferenceBase(@NotNull final PsiLiteralExpression element,
-                            @NotNull final TextRange range,
+  public MainClassReference(@NotNull final String value,
+                            @NotNull final JsonStringLiteral element,
                             @NotNull final DefracPlatform platform) {
-    super(element, range, false);
+    super(element, new TextRange(1, 1 + value.length()), false);
     this.platform = platform;
   }
 
+  @NotNull
   @Override
-  public final PsiElement bindToElement(@NotNull final PsiElement klass) throws IncorrectOperationException {
-    // We always want the fully qualified class name here so we have
-    // to implement bindToElement since it is the only method that
-    // doesn't receive just a string that represents the new unqualified name
+  public Object[] getVariants() {
+    return new Object[0]; //TODO(joa): implement me
+  }
+
+  @NotNull
+  @Override
+  public DefracPlatform getPlatform() {
+    return platform;
+  }
+
+  @Override
+  public PsiElement bindToElement(@NotNull final PsiElement klass) throws IncorrectOperationException {
     if(!(klass instanceof PsiClass)) {
       throw new IncorrectOperationException();
     }
 
-    final PsiLiteralExpression element = getElement();
-    final ElementManipulator<PsiLiteralExpression> manipulator = ElementManipulators.getManipulator(getElement());
+    final JsonStringLiteral element = getElement();
+    final ElementManipulator<JsonStringLiteral> manipulator = ElementManipulators.getManipulator(getElement());
 
     return manipulator.
         handleContentChange(element, getRangeInElement(), ((PsiClass)klass).getQualifiedName());
   }
+
 
   @Nullable
   @Override
@@ -71,7 +80,12 @@ abstract class ClassReferenceBase extends PsiReferenceBase<PsiLiteralExpression>
   }
 
   @NotNull
-  protected abstract GlobalSearchScope getSearchScope(@NotNull final Project project);
+  private GlobalSearchScope getSearchScope(@NotNull final Project project) {
+    final DefracFacet facet = DefracFacet.getInstance(getElement());
+    return facet == null
+        ? GlobalSearchScope.allScope(project)
+        : GlobalSearchScope.moduleWithDependenciesScope(facet.getModule());
+  }
 
   @NotNull
   @Override
@@ -87,11 +101,6 @@ abstract class ClassReferenceBase extends PsiReferenceBase<PsiLiteralExpression>
     }
 
     return resolveResult;
-  }
-
-  @NotNull
-  public final DefracPlatform getPlatform() {
-    return platform;
   }
 
   @Override
