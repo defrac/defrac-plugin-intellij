@@ -110,10 +110,9 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
 
     final boolean isDebug = DefaultDebugExecutor.EXECUTOR_ID.equals(executor.getId());
 
-    if(isDebug) {
-      // no debug support at the moment
-      return null;
-    }
+    //if(isDebug) {
+    //  there is no debug support yet
+    //}
 
     //noinspection ConstantConditions
     return new DefracRunningState(

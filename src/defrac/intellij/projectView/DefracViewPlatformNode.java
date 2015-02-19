@@ -147,7 +147,7 @@ final class DefracViewPlatformNode extends ProjectViewNode<DefracProjectPlatform
     if(modules.size() == 1) {
       final Module module = modules.get(0);
       addFlattenedSingleChild(project, children, module);
-    } else {
+    } else if(!modules.isEmpty()) {
       final DefracViewModuleGroupNode groupNode =
           new DefracViewModuleGroupNode(project, new DefracModuleGroup(groupName, modules), getSettings());
       children.add(groupNode);
