@@ -25,6 +25,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
@@ -41,7 +43,7 @@ public final class DefracRootUtil {
     final String projectDirPath = project.getBasePath();
 
     if(projectDirPath != null) {
-      final String absPath = FileUtil.toSystemIndependentName(projectDirPath + relativePath);
+      final String absPath = FileUtil.toSystemIndependentName(projectDirPath+File.separatorChar+relativePath);
       final VirtualFile file = LocalFileSystem.getInstance().findFileByPath(absPath);
 
       if(file != null) {

@@ -16,8 +16,11 @@
 
 package defrac.intellij.run;
 
+import com.google.common.collect.Maps;
+import com.intellij.execution.CommonJavaRunConfigurationParameters;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
+import com.intellij.execution.ExternalizablePath;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.runners.ExecutionEnvironment;
@@ -28,6 +31,8 @@ import com.intellij.openapi.util.DefaultJDOMExternalizer;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import defrac.intellij.DefracBundle;
+import defrac.intellij.DefracPlatform;
+import defrac.intellij.config.DefracConfigOracle;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.run.ui.DefracRunConfigurationEditor;
 import org.jdom.Element;
@@ -37,13 +42,25 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
  *
  */
-public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaRunConfigurationModule> {
+public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaRunConfigurationModule> implements CommonJavaRunConfigurationParameters {
+  public String MAIN_CLASS_NAME;
+  public String VM_PARAMETERS;
+  public String PROGRAM_PARAMETERS;
+  public String WORKING_DIRECTORY;
+  public boolean ALTERNATIVE_JRE_PATH_ENABLED;
+  public String ALTERNATIVE_JRE_PATH;
+  public boolean ENABLE_SWING_INSPECTOR;
+  public String ENV_VARIABLES;
+  private Map<String, String> envs = Maps.newLinkedHashMap();
+  public boolean PASS_PARENT_ENVS = true;
+
   public DefracRunConfiguration(@NotNull final Project project,
                                 @NotNull final ConfigurationFactory factory) {
     super(new JavaRunConfigurationModule(project, false), factory);
@@ -73,9 +90,8 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
 
   @Nullable
   @Override
-  public DefracRunningState getState(@NotNull final Executor executor,
+  public RunProfileState getState(@NotNull final Executor executor,
                                   @NotNull final ExecutionEnvironment environment) throws ExecutionException {
-
     final Module module = getConfigurationModule().getModule();
 
     if(module == null) {
@@ -108,11 +124,24 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
       throw new ExecutionException(DefracBundle.message("facet.error.unavailablePlatform", facet.getPlatform().displayName));
     }
 
+    final DefracConfigOracle config = facet.getConfigOracle();
+
+    if(config == null) {
+      throw new ExecutionException(DefracBundle.message("facet.error.noSettings"));
+    }
+
+    MAIN_CLASS_NAME =
+        config.getMain();
+
+    if(isNullOrEmpty(MAIN_CLASS_NAME)) {
+      throw new ExecutionException(DefracBundle.message("facet.error.noMain"));
+    }
+
     final boolean isDebug = DefaultDebugExecutor.EXECUTOR_ID.equals(executor.getId());
 
-    //if(isDebug) {
-    //  there is no debug support yet
-    //}
+    if(facet.getPlatform() == DefracPlatform.JVM) {
+      return new JVMRunningState(environment, facet, this);
+    }
 
     //noinspection ConstantConditions
     return new DefracRunningState(
@@ -204,5 +233,91 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
     }
 
     return name+" ("+facet.getConfiguration().getPlatform().displayName+')';
+  }
+
+  @Override
+  public void setVMParameters(final String value) {
+    VM_PARAMETERS = value;
+  }
+
+  @Override
+  public String getVMParameters() {
+    return VM_PARAMETERS;
+  }
+
+  @Override
+  public boolean isAlternativeJrePathEnabled() {
+    return ALTERNATIVE_JRE_PATH_ENABLED;
+  }
+
+  @Override
+  public void setAlternativeJrePathEnabled(final boolean value) {
+    ALTERNATIVE_JRE_PATH_ENABLED = value;
+  }
+
+  @Override
+  public String getAlternativeJrePath() {
+    return ALTERNATIVE_JRE_PATH;
+  }
+
+  @Override
+  public void setAlternativeJrePath(final String value) {
+    ALTERNATIVE_JRE_PATH = value;
+  }
+
+  @Nullable
+  @Override
+  public String getRunClass() {
+    return MAIN_CLASS_NAME;
+  }
+
+  @Nullable
+  @Override
+  public String getPackage() {
+    return null;
+  }
+
+  @Override
+  public void setProgramParameters(@Nullable final String value) {
+    PROGRAM_PARAMETERS = value;
+  }
+
+  @Nullable
+  @Override
+  public String getProgramParameters() {
+    return PROGRAM_PARAMETERS;
+  }
+
+  @Override
+  public void setWorkingDirectory(@Nullable final String value) {
+    WORKING_DIRECTORY = ExternalizablePath.urlValue(value);
+  }
+
+  @Nullable
+  @Override
+  public String getWorkingDirectory() {
+    return WORKING_DIRECTORY;
+  }
+
+  @Override
+  public void setEnvs(@NotNull final Map<String, String> value) {
+    envs.clear();
+    envs.putAll(value);
+  }
+
+  @NotNull
+  @Override
+  public Map<String, String> getEnvs() {
+    return envs;
+  }
+
+  @Override
+  public void setPassParentEnvs(final boolean value) {
+    PASS_PARENT_ENVS = value;
+  }
+
+  @Override
+  public boolean isPassParentEnvs() {
+    return PASS_PARENT_ENVS;
   }
 }

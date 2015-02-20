@@ -46,6 +46,7 @@ public final class DefracVersion {
   @NotNull public static final DefracVersion[] EMPTY_ARRAY = new DefracVersion[0];
 
   @NotNull public static final String FILE_LIB = DefracBundle.message("sdk.file.sdk.ver.lib");
+  @NotNull public static final String FILE_NATIVE = DefracBundle.message("sdk.file.sdk.ver.native");
 
   @NotNull private static final String[] LIBRARIES = {
       /*"defrac.sdk.file.sdk.ver.lib.defrac",
@@ -67,6 +68,16 @@ public final class DefracVersion {
       "sdk.file.sdk.ver.lib.macro.ios",
       "sdk.file.sdk.ver.lib.macro.jvm",
       "sdk.file.sdk.ver.lib.macro.web",
+  };
+
+  @NotNull private static final String[] RUNTIME_JARS = {
+      "sdk.file.sdk.ver.lib.defrac.jvm",
+      "sdk.file.sdk.ver.lib.lwjgl",
+      "sdk.file.sdk.ver.lib.audio.mp3",
+      "sdk.file.sdk.ver.lib.audio.ogg",
+      "sdk.file.sdk.ver.lib.audio.tritonus",
+      "sdk.file.sdk.ver.lib.audio.jlayer",
+      "sdk.file.sdk.ver.lib.audio.jorbis",
   };
 
   @NotNull
@@ -109,6 +120,12 @@ public final class DefracVersion {
     return root == null ? null : root.findChild(FILE_LIB);
   }
 
+  @Nullable
+  public VirtualFile getNative() {
+    final VirtualFile root = getRoot();
+    return root == null ? null : root.findChild(FILE_NATIVE);
+  }
+
   @NotNull
   public List<VirtualFile> getLibraries() {
     return librariesOf(LIBRARIES);
@@ -122,6 +139,11 @@ public final class DefracVersion {
   @NotNull
   public List<VirtualFile> getMacros() {
     return librariesOf(MACROS);
+  }
+
+  @NotNull
+  public List<VirtualFile> getRuntimeJars() {
+    return librariesOf(RUNTIME_JARS);
   }
 
   @NotNull

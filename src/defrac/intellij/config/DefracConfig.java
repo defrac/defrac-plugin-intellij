@@ -19,13 +19,16 @@ package defrac.intellij.config;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
 import com.google.gson.Gson;
-import com.google.gson.annotations.SerializedName;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.CachedValueProvider;
 import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.psi.util.PsiModificationTracker;
 import defrac.intellij.DefracPlatform;
+import defrac.intellij.config.android.AndroidSettings;
+import defrac.intellij.config.ios.IOSSettings;
+import defrac.intellij.config.jvm.JVMSettings;
+import defrac.intellij.config.web.WebSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,7 +43,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 /**
  *
  */
-public final class DefracConfig {
+public final class DefracConfig extends DefracConfigurationBase {
   public static DefracConfig fromJson(@NotNull final VirtualFile file) throws IOException {
     final Gson gson = new Gson();
     Reader reader = null;
@@ -86,37 +89,30 @@ public final class DefracConfig {
     return config;
   }
 
-  private String name;
-  @SerializedName("package") private String package$;
-  private String identifier;
-  private String main;
-  private String version;
-  @SuppressWarnings("MismatchedReadAndWriteOfArray") //false positive, this field is written by GSON
+  @SuppressWarnings("MismatchedReadAndWriteOfArray")
   private String[] targets;
-  private boolean debug;
+  private GenericSettings gen;
+  private AndroidSettings android;
+  private IOSSettings ios;
+  private JVMSettings jvm;
+  private WebSettings web;
 
-  @NotNull
-  public String getName() {
-    return nullToEmpty(name);
-  }
+  @Nullable
+  public DefracConfigurationBase getPlatform(@NotNull final DefracPlatform platform) {
+    switch(platform) {
+      case ANDROID:
+        return android;
+      case GENERIC:
+        return this;
+      case IOS:
+        return ios;
+      case JVM:
+        return jvm;
+      case WEB:
+        return web;
+    }
 
-  public String getPackage() {
-    return nullToEmpty(package$);
-  }
-
-  @NotNull
-  public String getIdentifier() {
-    return nullToEmpty(identifier);
-  }
-
-  @NotNull
-  public String getMain() {
-    return nullToEmpty(main);
-  }
-
-  @NotNull
-  public String getVersion() {
-    return nullToEmpty(version);
+    throw new IllegalArgumentException("Unknown platform "+platform);
   }
 
   @NotNull
@@ -141,13 +137,5 @@ public final class DefracConfig {
     return platforms.toArray(new DefracPlatform[platforms.size()]);
   }
 
-  public boolean isDebug() {
-    return debug;
-  }
-
   DefracConfig() {}
-
-  private static String nullToEmpty(@Nullable final String value) {
-    return value == null ? "" : value;
-  }
 }

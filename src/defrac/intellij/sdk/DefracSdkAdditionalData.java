@@ -26,9 +26,11 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static defrac.intellij.sdk.JdkUtil.isApplicableJdk;
+import java.io.File;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static defrac.intellij.sdk.JdkUtil.isApplicableJdk;
 
 /**
  *
@@ -137,5 +139,10 @@ public final class DefracSdkAdditionalData implements ValidatableSdkAdditionalDa
     }
 
     return defracVersion;
+  }
+
+  @Nullable
+  public String getGlobalSettings() {
+    return defracSdk.getHomePath()+File.separatorChar+"global.settings";
   }
 }

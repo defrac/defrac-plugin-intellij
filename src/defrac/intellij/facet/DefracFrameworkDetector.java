@@ -36,8 +36,6 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
-
 /**
  *
  */
@@ -82,11 +80,10 @@ public final class DefracFrameworkDetector extends FacetBasedFrameworkDetector<D
         facet.getProperties().PLATFORM = targets[0].name;
       }
 
-      final String main = config.getMain();
-
+      /*final String main = config.getMain();
       if(!isNullOrEmpty(main)) {
         //TODO(joa): create run config for main
-      }
+      }*/
     }
   }
 
