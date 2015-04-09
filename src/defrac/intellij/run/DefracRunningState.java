@@ -23,11 +23,11 @@ import com.intellij.execution.process.KillableColoredProcessHandler;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.util.SystemInfo;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.sdk.DefracVersion;
 import defrac.intellij.util.DefracCommandLineBuilder;
-import defrac.intellij.util.OS;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -75,6 +75,6 @@ public final class DefracRunningState extends CommandLineState {
   }
 
   private String getDefrac(final Sdk defracSdk) {
-    return defracSdk.getHomePath()+File.separatorChar+"defrac"+(OS.isWindows() ? ".bat" : "");
+    return defracSdk.getHomePath()+File.separatorChar+"defrac"+(SystemInfo.isWindows ? ".bat" : "");
   }
 }

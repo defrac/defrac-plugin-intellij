@@ -56,9 +56,7 @@ public final class DefracFacetEditorTab extends FacetEditorTab {
                               @NotNull final DefracFacetConfiguration configuration) {
     this.context = context;
     this.configuration = configuration;
-    this.form = new DefracFacetEditorForm(
-        context,
-        (DefracFacet)context.getFacet());
+    this.form = DefracFacetEditorForm.create(context, (DefracFacet) context.getFacet());
 
     form.addPlatforms(DefracPlatform.values());
   }

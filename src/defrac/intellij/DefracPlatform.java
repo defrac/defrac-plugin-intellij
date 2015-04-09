@@ -17,8 +17,8 @@
 package defrac.intellij;
 
 import com.google.common.collect.ImmutableMap;
+import com.intellij.openapi.util.SystemInfo;
 import defrac.intellij.util.Names;
-import defrac.intellij.util.OS;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -129,6 +129,6 @@ public enum DefracPlatform {
   }
 
   public boolean isAvailableOnHostOS() {
-    return this != IOS || OS.isMac();
+    return this != IOS || SystemInfo.isMac;
   }
 }

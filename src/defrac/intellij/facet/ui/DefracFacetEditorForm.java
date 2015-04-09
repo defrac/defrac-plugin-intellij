@@ -19,8 +19,10 @@ package defrac.intellij.facet.ui;
 import com.intellij.facet.ui.FacetEditorContext;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ui.configuration.JdkComboBox;
+import com.intellij.openapi.roots.ui.configuration.ProjectStructureConfigurable;
 import com.intellij.openapi.roots.ui.configuration.projectRoot.ProjectSdksModel;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.util.Condition;
@@ -47,6 +49,25 @@ import static com.jgoodies.common.base.Strings.isEmpty;
  *
  */
 public final class DefracFacetEditorForm {
+  // Note: I have tried different things of how to inject the project into the createUIComponents() method
+  //       of DefracFacetEditorForm but couldn't find a way since the method is executed before any
+  //       instance variables are set in the constructor.
+  //
+  //       If you have a lot of time or know the answer -- please go ahead and fix this mess.
+  @NotNull
+  private static final ThreadLocal<Project> PROJECT_REFERENCE = new ThreadLocal<Project>();
+
+  @NotNull
+  public static DefracFacetEditorForm create(@NotNull final FacetEditorContext context,
+                                             @NotNull final DefracFacet facet) {
+    try {
+      PROJECT_REFERENCE.set(context.getProject());
+      return new DefracFacetEditorForm(context, facet);
+    } finally {
+      PROJECT_REFERENCE.set(null);
+    }
+  }
+
   @NotNull
   private final FacetEditorContext context;
 
@@ -65,8 +86,8 @@ public final class DefracFacetEditorForm {
   @NotNull
   private final DefaultComboBoxModel platformModel = new DefaultComboBoxModel();
 
-  public DefracFacetEditorForm(@NotNull final FacetEditorContext context,
-                               @NotNull final DefracFacet facet) {
+  private DefracFacetEditorForm(@NotNull final FacetEditorContext context,
+                                @NotNull final DefracFacet facet) {
     this.context = context;
 
     platformLabel.setLabelFor(platformComboBox);
@@ -150,7 +171,9 @@ public final class DefracFacetEditorForm {
   }
 
   private void createUIComponents() {
-    projectSdksModel = DefracSdkUtil.getSdkModel(null);
+    assert PROJECT_REFERENCE.get() != null;
+
+    projectSdksModel = ProjectStructureConfigurable.getInstance(PROJECT_REFERENCE.get()).getProjectJdksModel();
     defracSdkComboBox = new JdkComboBox(
         projectSdksModel,
         DefracSdkUtil.IS_DEFRAC_VERSION);

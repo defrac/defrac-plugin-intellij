@@ -19,7 +19,6 @@ package defrac.intellij.run;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterators;
-import com.google.common.io.Closeables;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.application.BaseJavaApplicationCommandLineState;
 import com.intellij.execution.configurations.GeneralCommandLine;
@@ -31,6 +30,7 @@ import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.util.JavaParametersUtil;
 import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.PathsList;
 import defrac.intellij.DefracBundle;
@@ -38,11 +38,8 @@ import defrac.intellij.config.DefracConfigOracle;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.sdk.DefracVersion;
 import defrac.intellij.util.DefracCommandLineBuilder;
-import defrac.intellij.util.OS;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Iterator;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -89,36 +86,16 @@ public final class JVMRunningState extends BaseJavaApplicationCommandLineState<D
             command("compile").
             build();
 
-    //TODO(joa): intellij must offer something already, find it
-    final Process p = cmdLine.createProcess();
-    final Thread consumerThread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        InputStream in = null;
-
-        try {
-          in = p.getInputStream();
-
-          final byte[] buffer = BUFFER.get();
-          int length;
-
-          while((length = in.read(buffer)) > -1) {
-            System.out.write(buffer, 0, length);
-          }
-        } catch(final IOException ioException) {
-          Closeables.closeQuietly(in);
-        }
-      }
-    });
-
-    consumerThread.start();
+    final OSProcessHandler handler = new OSProcessHandler(cmdLine);
 
     try {
-      p.waitFor();
+      if(handler.getProcess().waitFor() != 0) {
+        throw new ExecutionException("Couldn't compile app");
+      }
     } catch(final InterruptedException interrupt) {
       Thread.currentThread().interrupt();
+      throw new ExecutionException("Interrupted.");
     }
-
 
     return super.startProcess();
   }
@@ -178,11 +155,11 @@ public final class JVMRunningState extends BaseJavaApplicationCommandLineState<D
       throw new ExecutionException("Couldn't find native JVM libraries");
     }
 
-    if(OS.isLinux()) {
+    if(SystemInfo.isLinux) {
       nativeLibs = "linux";
-    } else if(OS.isWindows()) {
+    } else if(SystemInfo.isWindows) {
       nativeLibs = "win";
-    } else if(OS.isMac()) {
+    } else if(SystemInfo.isMac) {
       nativeLibs = "mac";
     } else {
       throw new ExecutionException("Unsupported OS");
