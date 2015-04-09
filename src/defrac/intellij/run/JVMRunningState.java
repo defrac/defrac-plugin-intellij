@@ -1,0 +1,247 @@
+/*
+ * Copyright 2014 defrac inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package defrac.intellij.run;
+
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Iterators;
+import com.google.common.io.Closeables;
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.application.BaseJavaApplicationCommandLineState;
+import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.configurations.JavaParameters;
+import com.intellij.execution.configurations.JavaRunConfigurationModule;
+import com.intellij.execution.configurations.ParametersList;
+import com.intellij.execution.executors.DefaultDebugExecutor;
+import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.execution.util.JavaParametersUtil;
+import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.PathsList;
+import defrac.intellij.DefracBundle;
+import defrac.intellij.config.DefracConfigOracle;
+import defrac.intellij.facet.DefracFacet;
+import defrac.intellij.sdk.DefracVersion;
+import defrac.intellij.util.DefracCommandLineBuilder;
+import defrac.intellij.util.OS;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Iterator;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
+/**
+ *
+ */
+public final class JVMRunningState extends BaseJavaApplicationCommandLineState<DefracRunConfiguration> {
+  @NotNull
+  private static final ThreadLocal<byte[]> BUFFER = new ThreadLocal<byte[]>() {
+    @Override
+    protected byte[] initialValue() {
+      return new byte[4096];
+    }
+  };
+
+  @NotNull
+  private final DefracFacet facet;
+
+  public JVMRunningState(@NotNull final ExecutionEnvironment environment,
+                         @NotNull final DefracFacet facet,
+                         @NotNull final DefracRunConfiguration configuration) {
+    super(environment, configuration);
+    this.facet = facet;
+  }
+
+  @NotNull
+  @Override
+  protected OSProcessHandler startProcess() throws ExecutionException {
+    final Sdk defracSdk = facet.getDefracSdk();
+
+    if(defracSdk == null) {
+      throw new ExecutionException(DefracBundle.message("facet.error.noSDK"));
+    }
+
+    final DefracVersion defracVersion = facet.getDefracVersion();
+
+    if(defracVersion == null) {
+      throw new ExecutionException(DefracBundle.message("facet.error.noVersion"));
+    }
+
+    final GeneralCommandLine cmdLine =
+        DefracCommandLineBuilder.forFacet(facet).
+            command("compile").
+            build();
+
+    //TODO(joa): intellij must offer something already, find it
+    final Process p = cmdLine.createProcess();
+    final Thread consumerThread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        InputStream in = null;
+
+        try {
+          in = p.getInputStream();
+
+          final byte[] buffer = BUFFER.get();
+          int length;
+
+          while((length = in.read(buffer)) > -1) {
+            System.out.write(buffer, 0, length);
+          }
+        } catch(final IOException ioException) {
+          Closeables.closeQuietly(in);
+        }
+      }
+    });
+
+    consumerThread.start();
+
+    try {
+      p.waitFor();
+    } catch(final InterruptedException interrupt) {
+      Thread.currentThread().interrupt();
+    }
+
+
+    return super.startProcess();
+  }
+
+  @Override
+  protected JavaParameters createJavaParameters() throws ExecutionException {
+    final DefracVersion defrac = facet.getDefracVersion();
+
+    if(defrac == null) {
+      throw new ExecutionException(DefracBundle.message("facet.error.noVersion"));
+    }
+
+    final JavaParameters params = new JavaParameters();
+    final JavaRunConfigurationModule module = myConfiguration.getConfigurationModule();
+    final int classPathType = JavaParametersUtil.getClasspathType(module, myConfiguration.MAIN_CLASS_NAME, false);
+    final String jreHome = myConfiguration.ALTERNATIVE_JRE_PATH_ENABLED ? myConfiguration.ALTERNATIVE_JRE_PATH : null;
+    final String projectBasePath = checkNotNull(module.getProject().getBaseDir().getCanonicalPath());
+    final String defracHomePath = checkNotNull(checkNotNull(facet.getDefracSdk()).getHomePath());
+    final VirtualFile settingsFile = facet.getVirtualSettingsFile();
+    final VirtualFile nat1ve = defrac.getNative(), nativeJvmDir, nativeJvmPlatformDir;
+    final VirtualFile target, targetJvmDir;
+    final DefracConfigOracle config = facet.getConfigOracle();
+
+    if(config == null) {
+      throw new ExecutionException("Can't parse defrac settings");
+    }
+
+    final boolean isDebug =
+           DefaultDebugExecutor.EXECUTOR_ID.equals(getEnvironment().getExecutor().getId())
+        || config.isDebug();
+
+    final String nativeLibs;
+
+    if(settingsFile == null) {
+      throw new ExecutionException(DefracBundle.message("facet.error.noSettings"));
+    }
+
+    target = settingsFile.getParent().findChild("target");
+
+    if(target == null) {
+      throw new ExecutionException("Couldn't find target directory");
+    }
+
+    targetJvmDir = target.findChild("jvm");
+
+    if(targetJvmDir == null) {
+      throw new ExecutionException("Couldn't find JVM directory");
+    }
+
+    if(nat1ve == null) {
+      throw new ExecutionException("Couldn't find native libraries");
+    }
+
+    nativeJvmDir = nat1ve.findChild("jvm");
+
+    if(nativeJvmDir == null) {
+      throw new ExecutionException("Couldn't find native JVM libraries");
+    }
+
+    if(OS.isLinux()) {
+      nativeLibs = "linux";
+    } else if(OS.isWindows()) {
+      nativeLibs = "win";
+    } else if(OS.isMac()) {
+      nativeLibs = "mac";
+    } else {
+      throw new ExecutionException("Unsupported OS");
+    }
+
+    nativeJvmPlatformDir = nativeJvmDir.findChild(nativeLibs);
+
+    if(nativeJvmPlatformDir == null) {
+      throw new ExecutionException("Couldn't find native platform libraries");
+    }
+
+    // let intellij do its stuff
+    JavaParametersUtil.configureModule(module, params, classPathType, jreHome);
+    params.setMainClass(myConfiguration.MAIN_CLASS_NAME);
+    setupJavaParameters(params);
+
+    // now get rid of all the stuff we don't want from intellij
+    // - this includes any classpath inside the project
+    // - or any path in the defrac sdk
+    final PathsList pathList = params.getClassPath();
+    for(final String path : pathList.getPathList()) {
+      if(path.startsWith(projectBasePath) || path.startsWith(defracHomePath)) {
+        pathList.remove(path);
+      }
+    }
+
+    // add the classpath of everything we just compiled
+    params.getClassPath().add(targetJvmDir);
+
+    // now add the actual runtime dependencies
+    for(final VirtualFile runtimeLibrary: defrac.getRuntimeJars()) {
+      params.getClassPath().add(runtimeLibrary);
+    }
+
+    final ParametersList vmParametersList = params.getVMParametersList();
+
+    if(isDebug) {
+      // enable assertions if the user wants to debug the app
+      // because it is the same behaviour of jvm:run
+      vmParametersList.add("-ea");
+    }
+
+    vmParametersList.add("-Ddefrac.hotswap=false");
+    vmParametersList.add("-Djava.library.path=" + nativeJvmPlatformDir.getCanonicalPath());
+    vmParametersList.add("-Xms512M");
+    vmParametersList.add("-XX:+TieredCompilation");
+
+    final Iterator<String> resourcePaths = Iterators.transform(
+        config.getResources(facet.getModule().getProject()).iterator(),
+        new Function<VirtualFile, String>() {
+          @Override
+          public String apply(final VirtualFile virtualFile) {
+            return virtualFile.getCanonicalPath();
+          }
+        }
+    );
+
+    vmParametersList.add("-Ddefrac.resources="+Joiner.on('$').join(resourcePaths));
+
+    return params;
+  }
+}

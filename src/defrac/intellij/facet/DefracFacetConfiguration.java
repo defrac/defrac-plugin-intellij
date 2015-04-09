@@ -99,6 +99,24 @@ public final class DefracFacetConfiguration implements FacetConfiguration, Persi
     return data.getDefracVersion();
   }
 
+
+  @Nullable
+  public String getGlobalSettings() {
+    final Sdk sdk = getDefracSdk();
+
+    if(sdk == null) {
+      return null;
+    }
+
+    final DefracSdkAdditionalData data = (DefracSdkAdditionalData)sdk.getSdkAdditionalData();
+
+    if(data == null) {
+      return null;
+    }
+
+    return data.getGlobalSettings();
+  }
+
   public boolean isMacroLibrary() {
     return getState().IS_MACRO_LIBRARY;
   }

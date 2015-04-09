@@ -25,6 +25,7 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
@@ -36,6 +37,7 @@ import com.intellij.util.xml.ConvertContext;
 import com.intellij.util.xml.DomElement;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.config.DefracConfig;
+import defrac.intellij.config.DefracConfigOracle;
 import defrac.intellij.jps.model.impl.JpsDefracModuleProperties;
 import defrac.intellij.sdk.DefracVersion;
 import defrac.intellij.util.Names;
@@ -147,6 +149,32 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
   }
 
   @Nullable
+  public DefracConfigOracle getConfigOracle() {
+    final DefracConfig localConfig = getConfig();
+
+    if(localConfig == null) {
+      return null;
+    }
+
+    final DefracConfig globalConfig = getGlobalConfig();
+
+    if(globalConfig == null) {
+      return null;
+    }
+
+    return DefracConfigOracle.join(getPlatform(), localConfig, globalConfig);
+  }
+
+  @Nullable
+  public DefracConfig getGlobalConfig() {
+    try {
+      return readGlobalConfig();
+    } catch(final IOException ioException) {
+      return null;
+    }
+  }
+
+  @Nullable
   public DefracConfig readConfig() throws IOException {
     final VirtualFile settingsFile = getVirtualSettingsFile();
 
@@ -162,6 +190,24 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
     }
 
     return DefracConfig.fromJson(file);
+  }
+
+  @Nullable
+  private DefracConfig readGlobalConfig() throws IOException {
+    final String path = getConfiguration().getGlobalSettings();
+
+    if(path == null) {
+      return null;
+    }
+
+    final VirtualFile settingsFile =
+        LocalFileSystem.getInstance().findFileByPath(path);
+
+    if(settingsFile == null) {
+      return null;
+    }
+
+    return DefracConfig.fromJson(settingsFile);
   }
 
   @NotNull

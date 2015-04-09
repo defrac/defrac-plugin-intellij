@@ -17,7 +17,7 @@
 <idea-plugin version="2">
   <id>defrac.intellij</id>
   <name>defrac Support</name>
-  <version>0.0.7</version>
+  <version>0.0.8</version>
   <vendor email="team@defrac.com" url="https://www.defrac.com">defrac inc.</vendor>
 
   <description>
@@ -59,6 +59,7 @@
     <psi.referenceContributor implementation="defrac.intellij.psi.ReferenceContributor"/>
     <referencesSearch implementation="defrac.intellij.findUsages.DelegateClassReferencesSearch"/>
     <referencesSearch implementation="defrac.intellij.findUsages.MacroClassReferencesSearch"/>
+    <!--lang.findUsagesProvider language="JSON" implementationClass="defrac.intellij.JSONUsagesProvider"/-->
     <!--referencesSearch implementation="defrac.intellij.findUsages.MainClassReferencesSearch"/-->
     <sdkType implementation="defrac.intellij.sdk.DefracSdkType"/>
   </extensions>

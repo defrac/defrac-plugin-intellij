@@ -20,10 +20,13 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.intellij.openapi.projectRoots.*;
 import com.intellij.openapi.projectRoots.impl.JavaDependentSdkType;
+import com.intellij.openapi.projectRoots.impl.ProjectJdkImpl;
+import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil;
 import com.intellij.openapi.roots.AnnotationOrderRootType;
 import com.intellij.openapi.roots.JavadocOrderRootType;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.util.Consumer;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracIcons;
 import defrac.intellij.sdk.ui.NewDefracSdkDialog;
@@ -34,6 +37,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -112,6 +116,48 @@ public final class DefracSdkType extends JavaDependentSdkType implements JavaSdk
   }
 
   @Override
+  public void showCustomCreateUI(final SdkModel sdkModel,
+                                 final JComponent parentComponent,
+                                 final Consumer<Sdk> sdkCreatedCallback) {
+    customImpl: {
+      final Collection<String> homePaths = suggestHomePaths();
+
+      if(homePaths.isEmpty()) {
+        break customImpl;
+      }
+
+      final String home = homePaths.iterator().next();
+      final File homePath = new File(home);
+
+      if(!homePath.isDirectory()) {
+        break customImpl;
+      }
+
+      if(!checkDependency(sdkModel)) {
+        if(Messages.showOkCancelDialog(parentComponent,
+            getUnsatisfiedDependencyMessage(), "Cannot Create SDK",
+            Messages.getWarningIcon()) != Messages.OK) {
+          return;
+        }
+
+        if(fixDependency(sdkModel, sdkCreatedCallback) == null) {
+          return;
+        }
+      }
+
+      final String newSdkName = SdkConfigurationUtil.createUniqueSdkName(this, home, Arrays.asList(sdkModel.getSdks()));
+      final ProjectJdkImpl newJdk = new ProjectJdkImpl(newSdkName, this);
+
+      newJdk.setHomePath(home);
+      sdkCreatedCallback.consume(newJdk);
+
+      return;
+    }
+
+    super.showCustomCreateUI(sdkModel, parentComponent, sdkCreatedCallback);
+  }
+
+  @Override
   public Collection<String> suggestHomePaths() {
     final ArrayList<String> homePaths = Lists.newArrayListWithCapacity(2);
     final String defracHome = System.getenv("DEFRAC_HOME");
@@ -122,7 +168,7 @@ public final class DefracSdkType extends JavaDependentSdkType implements JavaSdk
 
     final String userHome = System.getProperty("user.home", "");
 
-    if(!isNullOrEmpty(defracHome)) {
+    if(!isNullOrEmpty(userHome)) {
       homePaths.add(userHome+File.separatorChar+".defrac"+File.separatorChar);
     }
 

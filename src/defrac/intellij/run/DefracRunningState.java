@@ -16,7 +16,6 @@
 
 package defrac.intellij.run;
 
-import com.google.common.collect.Lists;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.CommandLineState;
 import com.intellij.execution.configurations.GeneralCommandLine;
@@ -27,11 +26,11 @@ import com.intellij.openapi.projectRoots.Sdk;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.sdk.DefracVersion;
+import defrac.intellij.util.DefracCommandLineBuilder;
 import defrac.intellij.util.OS;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.ArrayList;
 
 /**
  *
@@ -66,33 +65,11 @@ public final class DefracRunningState extends CommandLineState {
       throw new ExecutionException(DefracBundle.message("facet.error.noVersion"));
     }
 
-    final ArrayList<String> cmd = Lists.newArrayList();
-
-    cmd.add(getDefrac(defracSdk));
-
-    if(isDebug) {
-      cmd.add("-debug");
-    }
-
-    cmd.add("-home");
-    cmd.add(defracSdk.getHomePath());
-
-    cmd.add("-project");
-    cmd.add(facet.getSettingsFile().getParentFile().getAbsolutePath());
-
-    //TODO(joa): intellij is not building source, why?
-    if(facet.skipJavac()) {
-      cmd.add("-skip-javac");
-    }
-
-    //TODO(joa): configure android sdk if available!
-    //TODO(joa): configure settings when console supports it
-
-    cmd.add(facet.getPlatform().name+":run");
-
     final GeneralCommandLine cmdLine =
-        new GeneralCommandLine(cmd).
-            withWorkDirectory(facet.getSettingsFile().getParentFile());
+        DefracCommandLineBuilder.forFacet(facet).
+            debug(isDebug).
+            command("run").
+            build();
 
     return new KillableColoredProcessHandler(cmdLine);
   }
