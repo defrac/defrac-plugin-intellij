@@ -49,14 +49,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public final class JVMRunningState extends BaseJavaApplicationCommandLineState<DefracRunConfiguration> {
   @NotNull
-  private static final ThreadLocal<byte[]> BUFFER = new ThreadLocal<byte[]>() {
-    @Override
-    protected byte[] initialValue() {
-      return new byte[4096];
-    }
-  };
-
-  @NotNull
   private final DefracFacet facet;
 
   public JVMRunningState(@NotNull final ExecutionEnvironment environment,

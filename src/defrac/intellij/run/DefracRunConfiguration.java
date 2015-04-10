@@ -100,25 +100,7 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
 
     final DefracFacet facet = DefracFacet.getInstance(module);
 
-    if(facet == null) {
-      throw new ExecutionException(DefracBundle.message("facet.error.facetMissing", module.getName()));
-    }
-
-    if(facet.isMacroLibrary()) {
-      throw new ExecutionException(DefracBundle.message("facet.error.isMacroLibrary"));
-    }
-
-    if(facet.getDefracVersion() == null) {
-      throw new ExecutionException(DefracBundle.message("facet.error.noVersion"));
-    }
-
-    if(!facet.getSettingsFile().canRead()) {
-      throw new ExecutionException(DefracBundle.message("facet.error.fileDoesNotExist", facet.getSettingsFile()));
-    }
-
-    if(facet.getPlatform().isGeneric()) {
-      throw new ExecutionException(DefracBundle.message("facet.error.genericPlatform", module.getName()));
-    }
+    assert facet != null : DefracBundle.message("facet.error.facetMissing", module.getName());
 
     if(!facet.getPlatform().isAvailableOnHostOS()) {
       throw new ExecutionException(DefracBundle.message("facet.error.unavailablePlatform", facet.getPlatform().displayName));
@@ -182,10 +164,6 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
 
     if(facet.getPlatform().isGeneric()) {
       throw new RuntimeConfigurationError(DefracBundle.message("facet.error.genericPlatform", module.getName()));
-    }
-
-    if(!facet.getPlatform().isAvailableOnHostOS()) {
-      throw new RuntimeConfigurationError(DefracBundle.message("facet.error.unavailablePlatform", facet.getPlatform().displayName));
     }
   }
 
