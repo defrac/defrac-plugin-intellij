@@ -19,6 +19,7 @@ package defrac.intellij.util;
 import com.google.common.collect.Lists;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.util.SystemInfo;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
@@ -91,7 +92,7 @@ public final class DefracCommandLineBuilder {
     }
 
     final ArrayList<String> cmd = Lists.newArrayList();
-    final String executable = sdk.getHomePath()+File.separatorChar+"defrac"+(OS.isWindows() ? ".bat" : "");
+    final String executable = sdk.getHomePath()+File.separatorChar+"defrac"+(SystemInfo.isWindows ? ".bat" : "");
 
     cmd.add(executable);
 
