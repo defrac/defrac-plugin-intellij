@@ -1,0 +1,193 @@
+/*
+ * Copyright 2014 defrac inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package defrac.intellij.projectWizard;
+
+import com.google.common.base.Splitter;
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.ui.DocumentAdapter;
+import org.jetbrains.annotations.NotNull;
+
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+/**
+ */
+public final class DefracWizardUtil {
+  public static final String DEFAULT_APP_NAME = "myapp";
+  public static final String DEFAULT_MAIN_CLASS_NAME = "com.example.Main";
+
+  static final class ApplicationSettingsController {
+    boolean packageTextFieldChangedByUser;
+
+    ApplicationSettingsController(final JTextField applicationNameTextField,
+                                  final JTextField packageNameTextField,
+                                  final JLabel errorLabel) {
+      applicationNameTextField.getDocument().addDocumentListener(new DocumentAdapter() {
+        @Override
+        protected void textChanged(final DocumentEvent documentEvent) {
+          if(!packageTextFieldChangedByUser) {
+            final String appName = applicationNameTextField.getText().trim();
+            if(appName.length() > 0) {
+              packageNameTextField.setText(getDefaultPackageNameByModuleName(appName));
+            }
+            packageTextFieldChangedByUser = false;
+          }
+        }
+      });
+
+      packageNameTextField.getDocument().addDocumentListener(new DocumentAdapter() {
+        @Override
+        protected void textChanged(final DocumentEvent documentEvent) {
+          packageTextFieldChangedByUser = true;
+          errorLabel.setText(validatePackageName(packageNameTextField.getText()));
+        }
+      });
+    }
+  }
+
+  static final class PlatformsSettingsController {
+    final JCheckBox[] checkBoxes;
+
+    public PlatformsSettingsController(final JCheckBox webCheckBox,
+                                       final JCheckBox iosCheckBox,
+                                       final JCheckBox androidCheckBox,
+                                       final JCheckBox jvmCheckBox,
+                                       final JLabel errorLabel) {
+      checkBoxes = new JCheckBox[]{webCheckBox, iosCheckBox, androidCheckBox, jvmCheckBox};
+
+      register(webCheckBox, errorLabel);
+      register(iosCheckBox, errorLabel);
+      register(androidCheckBox, errorLabel);
+      register(jvmCheckBox, errorLabel);
+    }
+
+    private void register(final JCheckBox checkBox, final JLabel errorLabel) {
+      checkBox.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(final ActionEvent e) {
+          errorLabel.setText(validatePlatforms(checkBoxes));
+        }
+      });
+    }
+  }
+
+  public static void initializeApplicationSettingsInput(final JTextField applicationNameTextField,
+                                                        final JTextField packageNameTextField,
+                                                        final String name) {
+    final String defaultAppName = name != null ? name : DEFAULT_APP_NAME;
+    applicationNameTextField.setText(defaultAppName);
+    applicationNameTextField.selectAll();
+
+    packageNameTextField.setText(getDefaultPackageNameByModuleName(defaultAppName));
+  }
+
+  public static void handleApplicationSettingsInput(final JTextField applicationNameTextField,
+                                                    final JTextField packageNameTextField,
+                                                    final JLabel errorLabel) {
+    new ApplicationSettingsController(applicationNameTextField, packageNameTextField, errorLabel);
+  }
+
+  public static void handlePlatformsSettingsInput(final JCheckBox webCheckBox,
+                                                  final JCheckBox iosCheckBox,
+                                                  final JCheckBox androidCheckBox,
+                                                  final JCheckBox jvmCheckBox,
+                                                  final JLabel errorLabel) {
+    new PlatformsSettingsController(webCheckBox, iosCheckBox, androidCheckBox, jvmCheckBox, errorLabel);
+  }
+
+  public static void handleMainClassSettingsInput(final JTextField mainClassTextField,
+                                                  final JLabel errorLabel) {
+    mainClassTextField.getDocument().addDocumentListener(new DocumentAdapter() {
+      @Override
+      protected void textChanged(final DocumentEvent documentEvent) {
+        errorLabel.setText(validateMainClassName(mainClassTextField.getText()));
+      }
+    });
+  }
+
+  public static String getDefaultPackageNameByModuleName(String moduleName) {
+    return "com.example." + toIdentifier(moduleName);
+  }
+
+  @NotNull
+  public static String validatePackageName(@NotNull final String value) {
+    final String name = value.trim();
+
+    if(name.isEmpty()) {
+      return "A package name must be specified";
+    }
+
+    if(!isValidQualifiedName(name)) {
+      return "Invalid package name";
+    }
+
+    return "";
+  }
+
+  @NotNull
+  public static String validateMainClassName(@NotNull final String value) {
+    final String name = value.trim();
+
+    if(name.isEmpty()) {
+      return "A main class name must be specified";
+    }
+
+    if(!isValidQualifiedName(name)) {
+      return "Invalid main class name";
+    }
+
+    return "";
+  }
+
+  @NotNull
+  public static String validatePlatforms(final JCheckBox... checkBoxes) {
+    for(final JCheckBox checkBox : checkBoxes) {
+      if(checkBox.isSelected()) {
+        return "";
+      }
+    }
+    return "No Platform selected";
+  }
+
+  public static boolean isValidQualifiedName(@NotNull final String name) {
+    for(final String s : Splitter.on('.').split(name)) {
+      if(!StringUtil.isJavaIdentifier(s)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @NotNull
+  public static String toIdentifier(@NotNull final String s) {
+    final StringBuilder result = new StringBuilder();
+    for(int i = 0, n = s.length(); i < n; i++) {
+      final char c = s.charAt(i);
+      if(Character.isJavaIdentifierPart(c)) {
+        if(i == 0 && !Character.isJavaIdentifierStart(c)) {
+          result.append('_');
+        }
+        result.append(c);
+      } else {
+        result.append('_');
+      }
+    }
+    return result.toString();
+  }
+}

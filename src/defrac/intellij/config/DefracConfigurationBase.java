@@ -25,7 +25,6 @@ import org.jetbrains.annotations.Nullable;
  */
 public class DefracConfigurationBase {
   protected String name;
-  protected String identifier;
   @SerializedName("package") protected String package$;
   protected String main;
   protected String version;
@@ -46,6 +45,90 @@ public class DefracConfigurationBase {
   @NotNull
   public String getName() {
     return nullToEmpty(name);
+  }
+
+  @NotNull
+  public DefracConfigurationBase setName(@NotNull final String value) {
+    name = value;
+    return this;
+  }
+
+  @NotNull
+  public DefracConfigurationBase setPackage(@NotNull final String value) {
+    package$ = value;
+    return this;
+  }
+
+  @NotNull
+  public DefracConfigurationBase setMain(@NotNull final String value) {
+    main = value;
+    return this;
+  }
+
+  @NotNull
+  public DefracConfigurationBase setVersion(@NotNull final String value) {
+    version = value;
+    return this;
+  }
+
+  @NotNull
+  public DefracConfigurationBase setDebug(final boolean value) {
+    debug = value;
+    return this;
+  }
+
+  @NotNull
+  public DefracConfigurationBase setGenSource(final boolean value) {
+    genSource = value;
+    return this;
+  }
+
+  @NotNull
+  public DefracConfigurationBase setGenMacros(final boolean value) {
+    genMacros = value;
+    return this;
+  }
+
+  @NotNull
+  public DefracConfigurationBase setStrictMode(final boolean value) {
+    strictMode = value;
+    return this;
+  }
+
+  @NotNull
+  public DefracConfigurationBase setLib(@NotNull final String[] value) {
+    lib = value;
+    return this;
+  }
+
+  @NotNull
+  public DefracConfigurationBase setEnvironmentConfig(@NotNull final EnvironmentConfig value) {
+    environment = value;
+    return this;
+  }
+
+  @NotNull
+  public DefracConfigurationBase setJavaSettings(@NotNull final JavaSettings value) {
+    java = value;
+    return this;
+  }
+
+  @NotNull
+  public DefracConfigurationBase setMacroSettings(@NotNull final MacroSettings value) {
+    macro = value;
+    return this;
+  }
+
+  @NotNull
+  public DefracConfigurationBase setKeep(@NotNull final String[] value) {
+    keep = value;
+    return this;
+  }
+
+  @NotNull
+  public DefracConfigurationBase setResources(@NotNull final String[] value) {
+    resources = value;
+    return this;
   }
 
   private static String nullToEmpty(@Nullable final String value) {

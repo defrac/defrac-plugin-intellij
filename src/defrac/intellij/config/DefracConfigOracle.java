@@ -66,6 +66,16 @@ public final class DefracConfigOracle {
   }
 
   @NotNull
+  public String getPackage() {
+    return lookupString("package");
+  }
+
+  @NotNull
+  public String getName() {
+    return lookupString("name");
+  }
+
+  @NotNull
   public List<VirtualFile> getResources(@NotNull final Project project) {
     final String[] resources = getResources();
     final ArrayList<VirtualFile> result = Lists.newArrayListWithCapacity(resources.length);

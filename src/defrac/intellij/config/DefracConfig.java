@@ -16,6 +16,7 @@
 
 package defrac.intellij.config;
 
+import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
 import com.google.gson.Gson;
@@ -33,9 +34,7 @@ import defrac.intellij.config.web.WebSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -115,7 +114,7 @@ public final class DefracConfig extends DefracConfigurationBase {
       case WEB: return web;
     }
 
-    throw new IllegalArgumentException("Unknown platform "+platform);
+    throw new IllegalArgumentException("Unknown platform " + platform);
   }
 
   @NotNull
@@ -140,5 +139,55 @@ public final class DefracConfig extends DefracConfigurationBase {
     return platforms.toArray(new DefracPlatform[platforms.size()]);
   }
 
-  DefracConfig() {}
+  @NotNull
+  public DefracConfig setTargets(@NotNull final String[] value) {
+    targets = value;
+    return this;
+  }
+
+  @NotNull
+  public DefracConfig setGenericSettings(@NotNull final GenericSettings value) {
+    gen = value;
+    return this;
+  }
+
+  @NotNull
+  public DefracConfig setAndroidSettings(@NotNull final AndroidSettings value) {
+    android = value;
+    return this;
+  }
+
+  @NotNull
+  public DefracConfig setIOSSettings(@NotNull final IOSSettings value) {
+    ios = value;
+    return this;
+  }
+
+  @NotNull
+  public DefracConfig setJVMSettings(@NotNull final JVMSettings value) {
+    jvm = value;
+    return this;
+  }
+
+  @NotNull
+  public DefracConfig setWebSettings(@NotNull final WebSettings value) {
+    web = value;
+    return this;
+  }
+
+  public void write(@NotNull final Supplier<OutputStream> supplier) throws IOException {
+    BufferedWriter out = null;
+
+    try {
+      out = new BufferedWriter(new PrintWriter(supplier.get()));
+
+      final Gson gson = new Gson();
+      gson.toJson(this, out);
+    } finally {
+      Closeables.close(out, true);
+    }
+  }
+
+  public DefracConfig() {
+  }
 }

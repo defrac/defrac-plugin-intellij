@@ -28,6 +28,7 @@ import com.intellij.openapi.util.WriteExternalException;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.jps.model.JpsDefracModuleProperties;
 import defrac.intellij.sdk.DefracSdkAdditionalData;
+import defrac.intellij.sdk.DefracSdkUtil;
 import defrac.intellij.sdk.DefracVersion;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -84,37 +85,13 @@ public final class DefracFacetConfiguration implements FacetConfiguration, Persi
 
   @Nullable
   public DefracVersion getDefracVersion() {
-    final Sdk sdk = getDefracSdk();
-
-    if(sdk == null) {
-      return null;
-    }
-
-    final DefracSdkAdditionalData data = (DefracSdkAdditionalData)sdk.getSdkAdditionalData();
-
-    if(data == null) {
-      return null;
-    }
-
-    return data.getDefracVersion();
+    return DefracSdkUtil.getDefracVersion(getDefracSdk());
   }
 
 
   @Nullable
   public String getGlobalSettings() {
-    final Sdk sdk = getDefracSdk();
-
-    if(sdk == null) {
-      return null;
-    }
-
-    final DefracSdkAdditionalData data = (DefracSdkAdditionalData)sdk.getSdkAdditionalData();
-
-    if(data == null) {
-      return null;
-    }
-
-    return data.getGlobalSettings();
+    return DefracSdkUtil.getGlobalSettings(getDefracSdk());
   }
 
   public boolean isMacroLibrary() {

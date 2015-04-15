@@ -69,6 +69,8 @@
     <sdkType implementation="defrac.intellij.sdk.DefracSdkType"/>
     <nonProjectFileWritingAccessExtension implementation="defrac.intellij.fileType.DefracSettingsWritingAccess"/>
     <toolWindow anchor="bottom" id="defrac" factoryClass="defrac.intellij.toolWindow.DefracToolWindowFactory"/>
+    <fileTemplateGroup implementation="defrac.intellij.DefracFileTemplateProvider"/>
+    <projectTemplatesFactory implementation="defrac.intellij.projectWizard.DefracProjectTemplatesFactory"/>
   </extensions>
 
   <application-components/>
