@@ -1,0 +1,15 @@
+#if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
+
+import defrac.app.*;
+
+#parse("File Header.java")
+public class ${NAME} extends GenericApp {
+    public static void main(final String[] args) {
+        Bootstrap.run(new ${NAME}());
+    }
+
+    @Override
+    protected void onCreate() {
+        super.onCreate();
+    }
+}

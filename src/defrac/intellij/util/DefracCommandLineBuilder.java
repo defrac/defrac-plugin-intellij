@@ -19,12 +19,14 @@ package defrac.intellij.util;
 import com.google.common.collect.Lists;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.util.SystemInfo;
+import com.intellij.openapi.vfs.VirtualFile;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
+import defrac.intellij.sdk.DefracSdkUtil;
 import defrac.intellij.sdk.DefracVersion;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -36,21 +38,41 @@ import static com.google.common.base.Strings.isNullOrEmpty;
  *
  */
 public final class DefracCommandLineBuilder {
+  @NotNull
   public static DefracCommandLineBuilder forFacet(@NotNull final DefracFacet facet) {
     return new DefracCommandLineBuilder(facet);
   }
 
-  @NotNull private final DefracFacet facet;
-  @NotNull private String home;
-  @NotNull private String project;
-  @NotNull private String command = "";
-  @NotNull private DefracPlatform platform;
+  @NotNull
+  public static DefracCommandLineBuilder forSdk(@NotNull final Sdk sdk) {
+    return new DefracCommandLineBuilder(sdk);
+  }
+
+  @Nullable private String home;
+  @Nullable private String project;
+  @Nullable private String command;
+  @Nullable private File workingDirectory;
+  @NotNull private Sdk sdk;
+  @Nullable private DefracVersion version;
+  @NotNull private DefracPlatform platform = DefracPlatform.GENERIC;
   private boolean debug;
   private boolean skipJavac;
 
   @NotNull
   public DefracCommandLineBuilder debug(final boolean value) {
     debug = value;
+    return this;
+  }
+
+  @NotNull
+  public DefracCommandLineBuilder platform(final DefracPlatform value) {
+    platform = value;
+    return this;
+  }
+
+  @NotNull
+  public DefracCommandLineBuilder workingDirectory(final File value) {
+    workingDirectory = value;
     return this;
   }
 
@@ -79,25 +101,27 @@ public final class DefracCommandLineBuilder {
   }
 
   public GeneralCommandLine build() {
-    final Sdk sdk = facet.getDefracSdk();
-
-    if(sdk == null) {
-      throw new IllegalStateException(DefracBundle.message("facet.error.noSDK"));
-    }
-
-    final DefracVersion version = facet.getDefracVersion();
-
     if(version == null) {
       throw new IllegalStateException(DefracBundle.message("facet.error.noVersion"));
     }
 
-    final ArrayList<String> cmd = Lists.newArrayList();
-    final String executable = sdk.getHomePath()+File.separatorChar+"defrac"+(SystemInfo.isWindows ? ".bat" : "");
+    if(workingDirectory == null) {
+      throw new IllegalStateException("Couldn't find working directory");
+    }
 
-    cmd.add(executable);
+    final ArrayList<String> cmd = Lists.newArrayList();
+
+    final VirtualFile executable = DefracSdkUtil.getPathToExecutable(sdk);
+
+    if(executable == null) {
+      throw new IllegalStateException("Can't find defrac executable");
+    }
+
+    cmd.add(executable.getCanonicalPath());
 
     if(debug) {
-      cmd.add("-debug");
+      cmd.add("-Cdebug");
+      cmd.add("true");
     }
 
     if(skipJavac) {
@@ -119,26 +143,30 @@ public final class DefracCommandLineBuilder {
     }
 
     return new GeneralCommandLine(cmd).
-        withWorkDirectory(facet.getSettingsFile().getParentFile());
+        withWorkDirectory(workingDirectory);
+  }
+
+  private DefracCommandLineBuilder(@NotNull final Sdk sdk) {
+    this.sdk = sdk;
+    this.home = checkNotNull(sdk.getHomePath());
+    this.version = DefracSdkUtil.getDefracVersion(sdk);
+    this.skipJavac = false;
+    this.debug = false;
   }
 
   private DefracCommandLineBuilder(@NotNull final DefracFacet facet) {
-    final Sdk sdk = facet.getDefracSdk();
+    final Sdk defracSdk = facet.getDefracSdk();
 
-    if(sdk == null) {
+    if(defracSdk == null) {
       throw new IllegalStateException(DefracBundle.message("facet.error.noSDK"));
     }
 
-    final DefracVersion version = facet.getDefracVersion();
-
-    if(version == null) {
-      throw new IllegalStateException(DefracBundle.message("facet.error.noVersion"));
-    }
-
-    this.facet = facet;
+    this.sdk = defracSdk;
     this.platform = facet.getPlatform();
     this.home = checkNotNull(sdk.getHomePath());
     this.project = facet.getSettingsFile().getParentFile().getAbsolutePath();
+    this.workingDirectory = facet.getSettingsFile().getParentFile();
+    this.version = DefracSdkUtil.getDefracVersion(sdk);
     this.skipJavac = false;
     this.debug = false;
 

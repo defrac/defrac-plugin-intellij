@@ -26,12 +26,14 @@ import com.intellij.openapi.roots.*;
 import com.intellij.openapi.roots.libraries.ui.OrderRoot;
 import com.intellij.openapi.roots.ui.configuration.projectRoot.ProjectSdksModel;
 import com.intellij.openapi.util.Condition;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,6 +42,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
@@ -166,6 +169,17 @@ public final class DefracSdkUtil {
     return result;
   }
 
+  @Nullable
+  public static VirtualFile getPathToExecutable(final Sdk defracSdk) {
+    final VirtualFile homeDir = defracSdk.getHomeDirectory();
+
+    if(homeDir != null) {
+      return homeDir.findChild("defrac" + (SystemInfo.isWindows ? ".bat" : ""));
+    } else {
+      return null;
+    }
+  }
+
   @NotNull
   private static String getJavadocUrl(@NotNull final DefracVersion defracVersion,
                                       @NotNull final DefracPlatform defracPlatform) {
@@ -186,6 +200,36 @@ public final class DefracSdkUtil {
   @NotNull
   public static String chooseNameForNewLibrary(@NotNull final DefracVersion version) {
     return "defrac ("+version.getName()+')';
+  }
+
+  @Nullable
+  public static DefracVersion getDefracVersion(@Nullable final Sdk sdk) {
+    if(sdk == null) {
+      return null;
+    }
+
+    final DefracSdkAdditionalData data = (DefracSdkAdditionalData)sdk.getSdkAdditionalData();
+
+    if(data == null) {
+      return null;
+    }
+
+    return data.getDefracVersion();
+  }
+
+  @Nullable
+  public static String getGlobalSettings(@Nullable final Sdk sdk) {
+    if(sdk == null) {
+      return null;
+    }
+
+    final DefracSdkAdditionalData data = (DefracSdkAdditionalData)sdk.getSdkAdditionalData();
+
+    if(data == null) {
+      return null;
+    }
+
+    return data.getGlobalSettings();
   }
 
   @Nullable

@@ -62,6 +62,8 @@
     <referencesSearch implementation="defrac.intellij.findUsages.MacroClassReferencesSearch"/>
     <sdkType implementation="defrac.intellij.sdk.DefracSdkType"/>
     <nonProjectFileWritingAccessExtension implementation="defrac.intellij.fileType.DefracSettingsWritingAccess"/>
+    <fileTemplateGroup implementation="defrac.intellij.DefracFileTemplateProvider"/>
+    <projectTemplatesFactory implementation="defrac.intellij.projectWizard.DefracProjectTemplatesFactory"/>
   </extensions>
 
   <application-components/>

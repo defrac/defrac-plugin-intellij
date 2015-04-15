@@ -1,0 +1,10 @@
+#if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
+
+import static defrac.ios.uikit.UIKit.applicationMain;
+
+#parse("File Header.java")
+public class ${NAME} {
+    public static void main(String[] args) {
+        applicationMain(args, null, ${NAME}Delegate.class);
+    }
+}
