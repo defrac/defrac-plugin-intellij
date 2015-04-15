@@ -86,6 +86,10 @@ public final class DefracConfigOracle {
     return lookupString("main");
   }
 
+  public String getBrowser() {
+    return lookupString("browser");
+  }
+
   @NotNull
   private String lookupString(@NotNull final String fieldName) {
     return lookup(fieldName, String.class, "");
@@ -120,7 +124,7 @@ public final class DefracConfigOracle {
 
       return defaultValue;
     } catch(final NoSuchFieldException e) {
-      throw new RuntimeException(e);
+      return defaultValue;
     } catch(final IllegalAccessException e) {
       throw new RuntimeException(e);
     }
@@ -153,10 +157,10 @@ public final class DefracConfigOracle {
 
     while(klass != Object.class) {
       try {
-        return klass.getField(name);
+        return makeAccessible(klass.getField(name));
       } catch(final NoSuchFieldException ignored) {
         try {
-          return klass.getDeclaredField(name);
+          return makeAccessible(klass.getDeclaredField(name));
         } catch(final NoSuchFieldException alsoIgnored) {
           // nada
         }
@@ -165,5 +169,11 @@ public final class DefracConfigOracle {
     }
 
     throw new NoSuchFieldException("No such field: "+name);
+  }
+
+  @NotNull
+  private static Field makeAccessible(@NotNull final Field field) {
+    field.setAccessible(true);
+    return field;
   }
 }

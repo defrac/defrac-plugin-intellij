@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package defrac.intellij.jps.model.impl;
+package defrac.intellij.jps.model;
 
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.sdk.DefracVersion;
@@ -28,7 +28,6 @@ public final class JpsDefracModuleProperties {
   public String SETTINGS_FILE_RELATIVE_PATH = "/"+Names.default_settings;
   public String DEFRAC_VERSION = DefracVersion.LATEST;
   public boolean IS_MACRO_LIBRARY = false;
-  public boolean SKIP_JAVAC = true;
 
   public JpsDefracModuleProperties() {}
 }

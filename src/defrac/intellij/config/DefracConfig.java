@@ -19,6 +19,7 @@ package defrac.intellij.config;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
 import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.CachedValueProvider;
@@ -44,13 +45,20 @@ import static com.google.common.base.Strings.isNullOrEmpty;
  *
  */
 public final class DefracConfig extends DefracConfigurationBase {
+  @NotNull
+  private static JsonReader lenientReader(@NotNull final Reader reader) {
+    final JsonReader jsonReader = new JsonReader(reader);
+    jsonReader.setLenient(true);
+    return jsonReader;
+  }
+
   public static DefracConfig fromJson(@NotNull final VirtualFile file) throws IOException {
     final Gson gson = new Gson();
     Reader reader = null;
 
     try {
       reader = new InputStreamReader(file.getInputStream());
-      return gson.fromJson(reader, DefracConfig.class);
+      return gson.fromJson(lenientReader(reader), DefracConfig.class);
     } finally {
       Closeables.closeQuietly(reader);
     }
@@ -68,7 +76,7 @@ public final class DefracConfig extends DefracConfigurationBase {
         try {
           reader = new InputStreamReader(file.getVirtualFile().getInputStream());
           return Result.create(
-              gson.fromJson(reader, DefracConfig.class),
+              gson.<DefracConfig>fromJson(lenientReader(reader), DefracConfig.class),
               file, PsiModificationTracker.MODIFICATION_COUNT);
         } catch(final IOException exception) {
           exceptionRef.set(exception);
@@ -100,16 +108,11 @@ public final class DefracConfig extends DefracConfigurationBase {
   @Nullable
   public DefracConfigurationBase getPlatform(@NotNull final DefracPlatform platform) {
     switch(platform) {
-      case ANDROID:
-        return android;
-      case GENERIC:
-        return this;
-      case IOS:
-        return ios;
-      case JVM:
-        return jvm;
-      case WEB:
-        return web;
+      case ANDROID: return android;
+      case GENERIC: return this;
+      case IOS: return ios;
+      case JVM: return jvm;
+      case WEB: return web;
     }
 
     throw new IllegalArgumentException("Unknown platform "+platform);

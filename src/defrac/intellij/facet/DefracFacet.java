@@ -38,7 +38,7 @@ import com.intellij.util.xml.DomElement;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.config.DefracConfig;
 import defrac.intellij.config.DefracConfigOracle;
-import defrac.intellij.jps.model.impl.JpsDefracModuleProperties;
+import defrac.intellij.jps.model.JpsDefracModuleProperties;
 import defrac.intellij.sdk.DefracVersion;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NonNls;
@@ -227,10 +227,6 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
 
   public boolean isMacroLibrary() {
     return getConfiguration().isMacroLibrary();
-  }
-
-  public boolean skipJavac() {
-    return getConfiguration().skipJavac();
   }
 
   @NotNull

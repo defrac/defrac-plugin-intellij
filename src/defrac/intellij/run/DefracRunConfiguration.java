@@ -24,6 +24,7 @@ import com.intellij.execution.ExternalizablePath;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -31,7 +32,6 @@ import com.intellij.openapi.util.DefaultJDOMExternalizer;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import defrac.intellij.DefracBundle;
-import defrac.intellij.DefracPlatform;
 import defrac.intellij.config.DefracConfigOracle;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.run.ui.DefracRunConfigurationEditor;
@@ -49,7 +49,8 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 /**
  *
  */
-public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaRunConfigurationModule> implements CommonJavaRunConfigurationParameters {
+public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaRunConfigurationModule>
+    implements CommonJavaRunConfigurationParameters, RunConfigurationWithSuppressedDefaultDebugAction, RunConfigurationWithSuppressedDefaultRunAction {
   public String MAIN_CLASS_NAME;
   public String VM_PARAMETERS;
   public String PROGRAM_PARAMETERS;
@@ -121,16 +122,11 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
 
     final boolean isDebug = DefaultDebugExecutor.EXECUTOR_ID.equals(executor.getId());
 
-    if(facet.getPlatform() == DefracPlatform.JVM) {
-      return new JVMRunningState(environment, facet, this);
+    switch(facet.getPlatform()) {
+      case JVM: return new JvmRunningState(environment, facet, this);
+      case WEB: return new WebRunningState(environment, this);
+      default:  return new DefracRunningState(environment, facet, isDebug);
     }
-
-    //noinspection ConstantConditions
-    return new DefracRunningState(
-        environment,
-        facet,
-        isDebug
-    );
   }
 
   @Override

@@ -14,25 +14,19 @@
  * limitations under the License.
  */
 
-package defrac.intellij;
+package defrac.intellij.ipc;
 
-import com.intellij.openapi.util.IconLoader;
-import org.jetbrains.annotations.Nullable;
-
-import javax.swing.*;
+import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.NotNull;
 
 /**
  *
  */
-public final class DefracIcons {
-  @Nullable
-  public static final Icon DEFRAC = IconLoader.findIcon("/icons/defrac.png");
+public final class DefracCommands {
+  @NotNull @NonNls public static final String COMPILE = "compile";
+  @NotNull @NonNls public static final String COMPILE_RESULT = "\\[info\\] Compiled (\\d+) units? in (\\d+(s|ms)) \\((\\d+) errors?, (\\d+) warnings?\\)";
 
-  @Nullable
-  public static final Icon TOOLWINDOW_DEFRAC = IconLoader.findIcon("/icons/toolwindow.defrac.png");
+  @NotNull @NonNls public static final String PACKAGE = "package";
 
-  @Nullable
-  public static final Icon MODULE_ANDROID = IconLoader.findIcon("/icons/module.android.png");
-
-  private DefracIcons() {}
+  private DefracCommands() {}
 }
