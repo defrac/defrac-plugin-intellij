@@ -25,12 +25,15 @@ import com.intellij.ide.util.projectWizard.ModuleBuilder;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.SettingsStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.ModifiableModuleModel;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.module.StdModuleTypes;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.SdkTypeId;
 import com.intellij.openapi.roots.ModifiableRootModel;
@@ -38,6 +41,7 @@ import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import defrac.intellij.DefracFileTemplateProvider;
 import defrac.intellij.DefracIcons;
 import defrac.intellij.DefracPlatform;
@@ -55,12 +59,17 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  */
 public abstract class DefracModuleBuilder extends ModuleBuilder {
+  @NotNull
+  private static final Logger LOG = Logger.getInstance("#defrac.intellij.projectWizard.DefracModuleBuilder");
+
   public static final class Generic extends DefracModuleBuilder {
     @Override
     public String getBuilderId() {
@@ -68,14 +77,17 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
     }
 
     @Override
-    public ModuleWizardStep[] createWizardSteps(@NotNull final WizardContext wizardContext, @NotNull final ModulesProvider modulesProvider) {
+    public ModuleWizardStep[] createWizardSteps(@NotNull final WizardContext wizardContext,
+                                                @NotNull final ModulesProvider modulesProvider) {
       return new ModuleWizardStep[]{
           new GenericModuleWizardStep(this)
       };
     }
 
     @Override
-    public void createTemplate(@NotNull final Project project, @NotNull final File baseDir, @NotNull final String packageName, @NotNull final String className) throws IOException {
+    public void createTemplate(@NotNull final Project project, @NotNull final File baseDir,
+                               @NotNull final String packageName,
+                               @NotNull final String className) throws IOException {
       final File sourceDir = new File(baseDir, "src" + File.separator + "java");
       final File packageDir = new File(sourceDir, packageName.replace('.', File.separatorChar));
 
@@ -90,14 +102,18 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
     }
 
     @Override
-    public ModuleWizardStep[] createWizardSteps(@NotNull final WizardContext wizardContext, @NotNull final ModulesProvider modulesProvider) {
+    public ModuleWizardStep[] createWizardSteps(@NotNull final WizardContext wizardContext,
+                                                @NotNull final ModulesProvider modulesProvider) {
       return new ModuleWizardStep[]{
           new IOSModuleWizardStep(this)
       };
     }
 
     @Override
-    public void createTemplate(@NotNull final Project project, @NotNull final File baseDir, @NotNull final String packageName, @NotNull final String className) throws IOException {
+    public void createTemplate(@NotNull final Project project,
+                               @NotNull final File baseDir,
+                               @NotNull final String packageName,
+                               @NotNull final String className) throws IOException {
       final File sourceDir = new File(baseDir, "src" + File.separator + "java.ios");
       final File packageDir = new File(sourceDir, packageName.replace('.', File.separatorChar));
 
@@ -127,20 +143,20 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
   }
 
   @NotNull
-  private String myApplicationName = "";
+  private String applicationName = "";
   @NotNull
-  private String myPackageName = "";
+  private String packageName = "";
   @NotNull
-  private String myMainClassName = "";
+  private String mainClassName = "";
   @NotNull
-  private String myVersion = "";
+  private String verion = "";
   @Nullable
-  private Sdk myDefracSdk;
+  private Sdk defracSdk;
 
-  private boolean myWebSupported;
-  private boolean myIOSSupported;
-  private boolean myJVMSupported;
-  private boolean myAndroidSupported;
+  private boolean webSupported;
+  private boolean iosSupported;
+  private boolean jvmSupported;
+  private boolean androidSupported;
 
   @Override
   public Icon getNodeIcon() {
@@ -156,47 +172,47 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
   public abstract String getBuilderId();
 
   public void setApplicationName(@NotNull final String value) {
-    myApplicationName = value;
+    applicationName = value;
   }
 
   public void setPackageName(@NotNull final String value) {
-    myPackageName = value;
+    packageName = value;
   }
 
   public void setMainClassName(@NotNull final String value) {
-    myMainClassName = value;
+    mainClassName = value;
   }
 
   public void setWebSupported(final boolean value) {
-    myWebSupported = value;
+    webSupported = value;
   }
 
   public void setIOSSupported(final boolean value) {
-    myIOSSupported = value;
+    iosSupported = value;
   }
 
   public void setJVMSupported(final boolean value) {
-    myJVMSupported = value;
+    jvmSupported = value;
   }
 
   public void setAndroidSupported(final boolean value) {
-    myAndroidSupported = value;
+    androidSupported = value;
   }
 
-  public void setDefracSdk(final Sdk value) {
-    myDefracSdk = value;
+  public void setDefracSdk(@Nullable final Sdk value) {
+    defracSdk = value;
   }
 
   @NotNull
   public String getJavaPackageName() {
-    final int dot = myMainClassName.lastIndexOf('.');
-    return dot == -1 ? "" : myMainClassName.substring(0, dot);
+    final int dot = mainClassName.lastIndexOf('.');
+    return dot == -1 ? "" : mainClassName.substring(0, dot);
   }
 
   @NotNull
   public String getJavaClassName() {
-    final int dot = myMainClassName.lastIndexOf('.');
-    return dot == -1 ? myMainClassName : myMainClassName.substring(dot + 1);
+    final int dot = mainClassName.lastIndexOf('.');
+    return dot == -1 ? mainClassName : mainClassName.substring(dot + 1);
   }
 
   @Override
@@ -226,21 +242,67 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
 
   @Nullable
   @Override
-  public final List<Module> commit(@NotNull final Project project, final ModifiableModuleModel model, final ModulesProvider modulesProvider) {
-    createProjectStructure(project);
-    createDefaultSettings(project);
-    createIntelliProject(project);
+  public final List<Module> commit(@NotNull final Project project,
+                                   final ModifiableModuleModel model,
+                                   final ModulesProvider modulesProvider) {
+    try {
+      createProjectStructure(project);
+      createDefaultSettings(project);
+      createIntelliProject(project);
+    } catch(final IOException exception) {
+      LOG.error(exception);
+    }
 
     StartupManager.getInstance(project).runWhenProjectIsInitialized(new Runnable() {
       @Override
       public void run() {
-        createTemplate(project);
+        try {
+          createTemplate(project);
+
+          // have to reload here since intellij caches the project
+          // and because it is not capable of creating multi-module
+          // projects we have to use "defrac ide-intellij" which
+          // creates the modules and facet which is a change intellij
+          // won't notice otherwise ...
+          reloadProject(project);
+        } catch(final IOException exception) {
+          LOG.error(exception);
+        }
       }
     });
     return null;
   }
 
-  private void createProjectStructure(@NotNull final Project project) {
+  private static void reloadProject(@NotNull final Project project) {
+    final CyclicBarrier barrier = new CyclicBarrier(2);
+
+    ApplicationManager.getApplication().runWriteAction(new Runnable() {
+      @Override
+      public void run() {
+        VirtualFileManager.getInstance().syncRefresh();
+
+        try {
+          barrier.await();
+        } catch(final BrokenBarrierException brokenBarrier) {
+          throw new IllegalStateException(brokenBarrier);
+        } catch(final InterruptedException interrupt) {
+          Thread.currentThread().interrupt();
+        }
+      }
+    });
+
+    try {
+      barrier.await();
+    } catch(final BrokenBarrierException brokenBarrier) {
+      throw new IllegalStateException(brokenBarrier);
+    } catch(final InterruptedException interrupt) {
+      Thread.currentThread().interrupt();
+    }
+
+    ProjectManager.getInstance().reloadProject(project);
+  }
+
+  private void createProjectStructure(@NotNull final Project project) throws IOException {
     final File baseDir = VfsUtilCore.virtualToIoFile(project.getBaseDir());
 
     createDefracDirectory(baseDir, "bin", "java");
@@ -259,7 +321,7 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
 
   private void createIntelliProject(@NotNull final Project project) {
     final GeneralCommandLine cmdLine =
-        DefracCommandLineBuilder.forSdk(checkNotNull(myDefracSdk)).
+        DefracCommandLineBuilder.forSdk(checkNotNull(defracSdk)).
             command("ide-intellij").
             workingDirectory(VfsUtilCore.virtualToIoFile(project.getBaseDir())).
             build();
@@ -268,37 +330,46 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
       final OSProcessHandler handler = new OSProcessHandler(cmdLine);
       handler.startNotify();
       handler.waitFor();
-    } catch(ExecutionException e) {
-      e.printStackTrace();
+    } catch(final ExecutionException exception) {
+      LOG.error(exception);
     }
   }
 
-  private void createTemplate(@NotNull final Project project) {
+  private void createTemplate(@NotNull final Project project) throws IOException {
     final File baseDir = VfsUtilCore.virtualToIoFile(project.getBaseDir());
-
-    try {
-      createTemplate(project, baseDir, getJavaPackageName(), getJavaClassName());
-    } catch(IOException e) {
-      e.printStackTrace();
-    }
+    createTemplate(project, baseDir, getJavaPackageName(), getJavaClassName());
   }
 
-  public abstract void createTemplate(@NotNull final Project project, @NotNull final File baseDir, @NotNull final String packageName, @NotNull final String className) throws IOException;
+  public abstract void createTemplate(@NotNull final Project project,
+                                      @NotNull final File baseDir,
+                                      @NotNull final String packageName,
+                                      @NotNull final String className) throws IOException;
 
-  private static void write(@NotNull final Project project, @NotNull final File file, @NotNull final String template, @NotNull final String packageName, @NotNull final String className) throws IOException {
-    FileUtil.writeToFile(file, DefracFileTemplateProvider.getText(project, template, templateProperties(project, packageName, className)));
+  private static void write(@NotNull final Project project,
+                            @NotNull final File file,
+                            @NotNull final String template,
+                            @NotNull final String packageName,
+                            @NotNull final String className) throws IOException {
+    FileUtil.writeToFile(
+        file,
+        DefracFileTemplateProvider.getText(project, template, templateProperties(project, packageName, className)));
   }
 
   @NotNull
-  private static Properties templateProperties(@NotNull final Project project, @NotNull final String packageName, @NotNull final String className) {
-    final Properties properties = new Properties(FileTemplateManager.getInstance(project).getDefaultProperties());
+  private static Properties templateProperties(@NotNull final Project project,
+                                               @NotNull final String packageName,
+                                               @NotNull final String className) {
+    //TODO(tim):  FileTemplateManager.getInstance(project)
+    final Properties properties = new Properties(FileTemplateManager.getInstance().getDefaultProperties());
     properties.put("NAME", className);
     properties.put("PACKAGE_NAME", packageName);
     return properties;
   }
 
   @NotNull
-  private static File createDefracDirectory(@NotNull final File parent, @NotNull final String name, @NotNull final String childPrefix) {
+  private static File createDefracDirectory(@NotNull final File parent,
+                                            @NotNull final String name,
+                                            @NotNull final String childPrefix) throws IOException {
     final File dir = createDirectory(parent, name);
     if(!childPrefix.isEmpty()) {
       createDirectory(dir, childPrefix);
@@ -322,53 +393,59 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
   }
 
   @NotNull
-  private static File createDirectory(@NotNull final File parent, @NotNull final String name) {
+  private static File createDirectory(@NotNull final File parent, @NotNull final String name) throws IOException {
     final File dir = new File(parent, name);
-    dir.mkdirs();
+
+    if(!dir.exists()) {
+      if(!dir.mkdirs()) {
+        throw new IOException("Couldn't create "+dir.getAbsolutePath());
+      }
+    }
+
     return dir;
   }
 
-  private void createDefaultSettings(@NotNull final Project project) {
+  private void createDefaultSettings(@NotNull final Project project) throws IOException {
     final File baseDir = VfsUtilCore.virtualToIoFile(project.getBaseDir());
     final File settingsFile = new File(baseDir, "default.settings");
 
     final DefracConfig config = new DefracConfig();
-    config.setName(myApplicationName);
-    config.setPackage(myPackageName);
-    config.setVersion(myVersion);
+    config.setName(applicationName);
+    config.setPackage(packageName);
+    config.setVersion(verion);
 
-    if(!myMainClassName.isEmpty()) {
-      config.setMain(myMainClassName);
+    if(!mainClassName.isEmpty()) {
+      config.setMain(mainClassName);
     }
 
     config.setTargets(targets());
 
-    try {
-      settingsFile.createNewFile();
-
-      config.write(Suppliers.<OutputStream>ofInstance(new FileOutputStream(settingsFile)));
-    } catch(IOException e) {
-      e.printStackTrace();
+    if(!settingsFile.exists()) {
+      if(!settingsFile.createNewFile()) {
+        throw new IOException("Couldn't create "+settingsFile.getAbsolutePath());
+      }
     }
+
+    config.write(Suppliers.<OutputStream>ofInstance(new FileOutputStream(settingsFile)));
   }
 
   @NotNull
   private String[] targets() {
     final List<String> list = new ArrayList<String>();
 
-    if(myWebSupported) {
+    if(webSupported) {
       list.add("web");
     }
 
-    if(myIOSSupported) {
+    if(iosSupported) {
       list.add("ios");
     }
 
-    if(myJVMSupported) {
+    if(jvmSupported) {
       list.add("jvm");
     }
 
-    if(myAndroidSupported) {
+    if(androidSupported) {
       list.add("android");
     }
 

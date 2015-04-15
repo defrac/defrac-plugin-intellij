@@ -21,6 +21,7 @@ import com.intellij.platform.ProjectTemplate;
 import com.intellij.platform.ProjectTemplatesFactory;
 import defrac.intellij.DefracIcons;
 import defrac.intellij.DefracPlatform;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,13 +32,13 @@ import java.util.List;
 /**
  */
 public final class DefracProjectTemplatesFactory extends ProjectTemplatesFactory {
-  public static final String DEFRAC = "Defrac";
-  public static final String JAVA = "Java";
+  @NotNull @NonNls public static final String DEFRAC = "defrac";
+  @NotNull @NonNls public static final String JAVA = "Java";
 
   @NotNull
   @Override
   public String[] getGroups() {
-    return new String[]{DEFRAC};
+    return new String[] { DEFRAC };
   }
 
   @Override
@@ -55,13 +56,13 @@ public final class DefracProjectTemplatesFactory extends ProjectTemplatesFactory
   public ProjectTemplate[] createTemplates(@Nullable final String group, final WizardContext wizardContext) {
     final List<ProjectTemplate> templates = new ArrayList<ProjectTemplate>();
 
-    templates.add(new DefracProjectTemplate("Generic", "Creates a multi-platform defrac project", new DefracModuleBuilder.Generic()));
+    templates.add(new DefracProjectTemplate("Generic", "Creates a new Multi-Platform project", new DefracModuleBuilder.Generic()));
 
     if(DefracPlatform.IOS.isAvailableOnHostOS()) {
-      templates.add(new DefracProjectTemplate("IOS", "Creates a ios defrac project", new DefracModuleBuilder.IOS()));
+      templates.add(new DefracProjectTemplate("iOS", "Creates a new iOS project based on native UIKit components", new DefracModuleBuilder.IOS()));
     }
 
-    templates.add(new DefracProjectTemplate("Empty", "Creates a empty defrac project", new DefracModuleBuilder.Empty()));
+    templates.add(new DefracProjectTemplate("Empty", "Creates an empty Multi-Platform project", new DefracModuleBuilder.Empty()));
 
     return templates.toArray(new ProjectTemplate[templates.size()]);
   }

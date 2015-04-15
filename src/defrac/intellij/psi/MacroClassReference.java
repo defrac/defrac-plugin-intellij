@@ -18,6 +18,7 @@ package defrac.intellij.psi;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.JavaPsiFacade;
@@ -40,6 +41,9 @@ import java.util.List;
  *
  */
 public final class MacroClassReference extends ClassReferenceBase {
+  @NotNull
+  private static final Logger LOG = Logger.getInstance("#defrac.intellij.psi.MacroClassReference");
+
   public MacroClassReference(@NotNull final PsiLiteralExpression element,
                              final int offset,
                              final int length,
@@ -88,10 +92,9 @@ public final class MacroClassReference extends ClassReferenceBase {
             LookupElementBuilder.create(klass).
                 withInsertHandler(QualifiedClassNameInsertHandler.INSTANCE).
                 withIcon(IconUtil.getIcon(klass.getContainingFile().getVirtualFile(), 0, project)).
-                withTypeText(klass.getContainingFile().getName())
-        );
+                withTypeText(klass.getContainingFile().getName()));
       } catch(final PsiInvalidElementAccessException invalidElementAccess) {
-        invalidElementAccess.printStackTrace();
+        LOG.error(invalidElementAccess);
       }
     }
 

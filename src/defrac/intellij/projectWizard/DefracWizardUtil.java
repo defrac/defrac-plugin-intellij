@@ -19,7 +19,10 @@ package defrac.intellij.projectWizard;
 import com.google.common.base.Splitter;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.DocumentAdapter;
+import defrac.intellij.DefracBundle;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -29,8 +32,8 @@ import java.awt.event.ActionListener;
 /**
  */
 public final class DefracWizardUtil {
-  public static final String DEFAULT_APP_NAME = "myapp";
-  public static final String DEFAULT_MAIN_CLASS_NAME = "com.example.Main";
+  @NotNull @NonNls public static final String DEFAULT_APP_NAME = "myapp";
+  @NotNull @NonNls public static final String DEFAULT_MAIN_CLASS_NAME = "com.example.Main";
 
   static final class ApplicationSettingsController {
     boolean packageTextFieldChangedByUser;
@@ -62,7 +65,8 @@ public final class DefracWizardUtil {
   }
 
   static final class PlatformsSettingsController {
-    final JCheckBox[] checkBoxes;
+    @NotNull
+    private final JCheckBox[] checkBoxes;
 
     public PlatformsSettingsController(final JCheckBox webCheckBox,
                                        final JCheckBox iosCheckBox,
@@ -87,9 +91,9 @@ public final class DefracWizardUtil {
     }
   }
 
-  public static void initializeApplicationSettingsInput(final JTextField applicationNameTextField,
-                                                        final JTextField packageNameTextField,
-                                                        final String name) {
+  public static void initializeApplicationSettingsInput(@NotNull final JTextField applicationNameTextField,
+                                                        @NotNull final JTextField packageNameTextField,
+                                                        @Nullable final String name) {
     final String defaultAppName = name != null ? name : DEFAULT_APP_NAME;
     applicationNameTextField.setText(defaultAppName);
     applicationNameTextField.selectAll();
@@ -122,7 +126,7 @@ public final class DefracWizardUtil {
   }
 
   public static String getDefaultPackageNameByModuleName(String moduleName) {
-    return "com.example." + toIdentifier(moduleName);
+    return "com.example."+toIdentifier(moduleName);
   }
 
   @NotNull
@@ -130,11 +134,11 @@ public final class DefracWizardUtil {
     final String name = value.trim();
 
     if(name.isEmpty()) {
-      return "A package name must be specified";
+      return DefracBundle.message("projectWizard.error.noPackageName");
     }
 
     if(!isValidQualifiedName(name)) {
-      return "Invalid package name";
+      return DefracBundle.message("projectWizard.error.invalidPackageName");
     }
 
     return "";
@@ -145,11 +149,11 @@ public final class DefracWizardUtil {
     final String name = value.trim();
 
     if(name.isEmpty()) {
-      return "A main class name must be specified";
+      return DefracBundle.message("projectWizard.error.noMainClass");
     }
 
     if(!isValidQualifiedName(name)) {
-      return "Invalid main class name";
+      return DefracBundle.message("projectWizard.error.invalidMainClass");
     }
 
     return "";
@@ -162,7 +166,8 @@ public final class DefracWizardUtil {
         return "";
       }
     }
-    return "No Platform selected";
+
+    return DefracBundle.message("projectWizard.error.noPlatform");
   }
 
   public static boolean isValidQualifiedName(@NotNull final String name) {

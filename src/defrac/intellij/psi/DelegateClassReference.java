@@ -18,6 +18,7 @@ package defrac.intellij.psi;
 
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.*;
@@ -45,6 +46,9 @@ import static defrac.intellij.psi.DefracPsiUtil.*;
  *
  */
 public final class DelegateClassReference extends ClassReferenceBase {
+  @NotNull
+  private static final Logger LOG = Logger.getInstance("#defrac.intellij.psi.DelegateClassReference");
+
   @NotNull
   public static final Comparator<PsiClassType> TYPE_COMPARATOR = new Comparator<PsiClassType>() {
     @Override
@@ -166,7 +170,7 @@ public final class DelegateClassReference extends ClassReferenceBase {
                 withTypeText(klass.getContainingFile().getName())
         );
       } catch(final PsiInvalidElementAccessException invalidElementAccess) {
-        invalidElementAccess.printStackTrace();
+        LOG.error(invalidElementAccess);
       }
     }
 

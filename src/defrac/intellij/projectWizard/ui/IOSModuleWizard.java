@@ -20,51 +20,52 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.ui.JBColor;
 import defrac.intellij.projectWizard.DefracWizardUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
 /**
  */
 public final class IOSModuleWizard {
-  private JPanel myPanel;
-  private JTextField myApplicationNameTextField;
-  private JTextField myMainClassNameTextField;
-  private JTextField myPackageNameTextField;
-  private JLabel myErrorLabel;
+  private JPanel panel;
+  private JTextField applicationNameTextField;
+  private JTextField mainClassNameTextField;
+  private JTextField packageNameTextField;
+  private JLabel errorLabel;
 
-  public IOSModuleWizard(String name) {
-    DefracWizardUtil.initializeApplicationSettingsInput(myApplicationNameTextField, myPackageNameTextField, name);
-    DefracWizardUtil.handleApplicationSettingsInput(myApplicationNameTextField, myPackageNameTextField, myErrorLabel);
-    DefracWizardUtil.handleMainClassSettingsInput(myMainClassNameTextField, myErrorLabel);
+  public IOSModuleWizard(@Nullable final String name) {
+    DefracWizardUtil.initializeApplicationSettingsInput(applicationNameTextField, packageNameTextField, name);
+    DefracWizardUtil.handleApplicationSettingsInput(applicationNameTextField, packageNameTextField, errorLabel);
+    DefracWizardUtil.handleMainClassSettingsInput(mainClassNameTextField, errorLabel);
 
-    myErrorLabel.setForeground(JBColor.RED);
+    errorLabel.setForeground(JBColor.RED);
 
-    myMainClassNameTextField.setText(DefracWizardUtil.DEFAULT_MAIN_CLASS_NAME);
+    mainClassNameTextField.setText(DefracWizardUtil.DEFAULT_MAIN_CLASS_NAME);
   }
 
   @NotNull
   public String getPackageName() {
-    return myPackageNameTextField.getText().trim();
+    return packageNameTextField.getText().trim();
   }
 
   @NotNull
   public String getApplicationName() {
-    return myApplicationNameTextField.getText().trim();
+    return applicationNameTextField.getText().trim();
   }
 
   @NotNull
   public String getMainClassName() {
-    return myMainClassNameTextField.getText().trim();
+    return mainClassNameTextField.getText().trim();
   }
 
   @NotNull
   public JComponent getComponent() {
-    return myPanel;
+    return panel;
   }
 
   @NotNull
   public JComponent getPreferredFocusedComponent() {
-    return myApplicationNameTextField;
+    return applicationNameTextField;
   }
 
   public boolean validate() throws ConfigurationException {

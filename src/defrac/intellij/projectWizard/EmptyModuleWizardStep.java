@@ -27,37 +27,38 @@ import javax.swing.*;
  */
 public final class EmptyModuleWizardStep extends ModuleWizardStep {
   @NotNull
-  private final DefracModuleBuilder myModuleBuilder;
+  private final DefracModuleBuilder moduleBuilder;
+
   @NotNull
-  private final EmptyModuleWizard myWizard;
+  private final EmptyModuleWizard wizard;
 
   public EmptyModuleWizardStep(@NotNull final DefracModuleBuilder moduleBuilder) {
-    myModuleBuilder = moduleBuilder;
-    myWizard = new EmptyModuleWizard(moduleBuilder.getName());
+    this.moduleBuilder = moduleBuilder;
+    this.wizard = new EmptyModuleWizard(moduleBuilder.getName());
   }
 
   @Override
   public boolean validate() throws ConfigurationException {
-    return myWizard.validate();
+    return wizard.validate();
   }
 
   @Override
   public JComponent getPreferredFocusedComponent() {
-    return myWizard.getPreferredFocusedComponent();
+    return wizard.getPreferredFocusedComponent();
   }
 
   @Override
   public JComponent getComponent() {
-    return myWizard.getComponent();
+    return wizard.getComponent();
   }
 
   @Override
   public void updateDataModel() {
-    myModuleBuilder.setApplicationName(myWizard.getApplicationName());
-    myModuleBuilder.setPackageName(myWizard.getPackageName());
-    myModuleBuilder.setWebSupported(myWizard.isWebSupported());
-    myModuleBuilder.setIOSSupported(myWizard.isIOSSupported());
-    myModuleBuilder.setJVMSupported(myWizard.isJVMSupported());
-    myModuleBuilder.setAndroidSupported(myWizard.isAndroidSupported());
+    moduleBuilder.setApplicationName(wizard.getApplicationName());
+    moduleBuilder.setPackageName(wizard.getPackageName());
+    moduleBuilder.setWebSupported(wizard.isWebSupported());
+    moduleBuilder.setIOSSupported(wizard.isIOSSupported());
+    moduleBuilder.setJVMSupported(wizard.isJVMSupported());
+    moduleBuilder.setAndroidSupported(wizard.isAndroidSupported());
   }
 }

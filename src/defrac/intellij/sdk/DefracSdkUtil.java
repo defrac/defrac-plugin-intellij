@@ -17,14 +17,12 @@
 package defrac.intellij.sdk;
 
 import com.google.common.collect.Lists;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.SdkModificator;
 import com.intellij.openapi.projectRoots.SdkTypeId;
 import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil;
 import com.intellij.openapi.roots.*;
 import com.intellij.openapi.roots.libraries.ui.OrderRoot;
-import com.intellij.openapi.roots.ui.configuration.projectRoot.ProjectSdksModel;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -42,7 +40,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
@@ -169,15 +166,17 @@ public final class DefracSdkUtil {
     return result;
   }
 
+  @Contract(value="null -> null", pure=true)
   @Nullable
-  public static VirtualFile getPathToExecutable(final Sdk defracSdk) {
-    final VirtualFile homeDir = defracSdk.getHomeDirectory();
-
-    if(homeDir != null) {
-      return homeDir.findChild("defrac" + (SystemInfo.isWindows ? ".bat" : ""));
-    } else {
+  public static VirtualFile getPathToExecutable(@Nullable final Sdk defracSdk) {
+    if(defracSdk == null) {
       return null;
     }
+
+    final VirtualFile homeDir = defracSdk.getHomeDirectory();
+    return homeDir == null
+        ? null
+        : homeDir.findChild("defrac" + (SystemInfo.isWindows ? ".bat" : ""));
   }
 
   @NotNull
@@ -210,11 +209,9 @@ public final class DefracSdkUtil {
 
     final DefracSdkAdditionalData data = (DefracSdkAdditionalData)sdk.getSdkAdditionalData();
 
-    if(data == null) {
-      return null;
-    }
-
-    return data.getDefracVersion();
+    return data == null
+        ? null
+        : data.getDefracVersion();
   }
 
   @Nullable
@@ -225,11 +222,9 @@ public final class DefracSdkUtil {
 
     final DefracSdkAdditionalData data = (DefracSdkAdditionalData)sdk.getSdkAdditionalData();
 
-    if(data == null) {
-      return null;
-    }
-
-    return data.getGlobalSettings();
+    return data == null
+        ? null
+        : data.getGlobalSettings();
   }
 
   @Nullable
@@ -251,13 +246,6 @@ public final class DefracSdkUtil {
     }
 
     return new DefracVersion(versionName, location);
-  }
-
-  @NotNull
-  public static ProjectSdksModel getSdkModel(@Nullable final Project project) {
-    final ProjectSdksModel model = new ProjectSdksModel();
-    model.reset(project);
-    return model;
   }
 
   public static boolean isInDefracSdk(@NotNull final PsiElement element) {
