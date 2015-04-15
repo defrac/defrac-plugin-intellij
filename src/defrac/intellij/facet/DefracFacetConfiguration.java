@@ -26,7 +26,7 @@ import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import defrac.intellij.DefracPlatform;
-import defrac.intellij.jps.model.impl.JpsDefracModuleProperties;
+import defrac.intellij.jps.model.JpsDefracModuleProperties;
 import defrac.intellij.sdk.DefracSdkAdditionalData;
 import defrac.intellij.sdk.DefracSdkUtil;
 import defrac.intellij.sdk.DefracVersion;
@@ -96,10 +96,6 @@ public final class DefracFacetConfiguration implements FacetConfiguration, Persi
 
   public boolean isMacroLibrary() {
     return getState().IS_MACRO_LIBRARY;
-  }
-
-  public boolean skipJavac() {
-    return getState().SKIP_JAVAC;
   }
 
   @NotNull

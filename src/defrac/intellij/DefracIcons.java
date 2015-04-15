@@ -29,6 +29,9 @@ public final class DefracIcons {
   public static final Icon DEFRAC = IconLoader.findIcon("/icons/defrac.png");
 
   @Nullable
+  public static final Icon TOOLWINDOW_DEFRAC = IconLoader.findIcon("/icons/toolwindow.defrac.png");
+
+  @Nullable
   public static final Icon MODULE_ANDROID = IconLoader.findIcon("/icons/module.android.png");
 
   private DefracIcons() {}

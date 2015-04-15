@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="defrac.intellij.facet.ui.DefracFacetEditorForm">
-  <grid id="27dc6" binding="componentPanel" layout-manager="GridLayoutManager" row-count="6" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+  <grid id="27dc6" binding="componentPanel" layout-manager="GridLayoutManager" row-count="5" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="4" left="4" bottom="4" right="4"/>
     <constraints>
-      <xy x="20" y="20" width="500" height="188"/>
+      <xy x="20" y="20" width="500" height="159"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -39,7 +39,7 @@
       </component>
       <vspacer id="c4039">
         <constraints>
-          <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
         </constraints>
       </vspacer>
       <component id="b31e0" class="javax.swing.JLabel" binding="defracSdkLabel">
@@ -62,14 +62,6 @@
         </constraints>
         <properties>
           <text value="&amp;Macro Library"/>
-        </properties>
-      </component>
-      <component id="5621c" class="javax.swing.JCheckBox" binding="skipJavacCheckBox">
-        <constraints>
-          <grid row="4" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="Use IDE's &amp;build system for *.java files"/>
         </properties>
       </component>
       <component id="9ffca" class="javax.swing.JButton" binding="newSdkButton">

@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-package defrac.intellij.jps.model.impl;
+package defrac.intellij.ipc;
 
-import defrac.intellij.DefracPlatform;
-import defrac.intellij.sdk.DefracVersion;
-import defrac.intellij.util.Names;
+import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.NotNull;
 
 /**
  *
  */
-public final class JpsDefracModuleProperties {
-  public String PLATFORM = DefracPlatform.GENERIC.name;
-  public String SETTINGS_FILE_RELATIVE_PATH = "/"+Names.default_settings;
-  public String DEFRAC_VERSION = DefracVersion.LATEST;
-  public boolean IS_MACRO_LIBRARY = false;
-  public boolean SKIP_JAVAC = true;
+public final class DefracCommands {
+  @NotNull @NonNls public static final String COMPILE = "compile";
+  @NotNull @NonNls public static final String COMPILE_RESULT = "\\[info\\] Compiled (\\d+) units? in (\\d+(s|ms)) \\((\\d+) errors?, (\\d+) warnings?\\)";
 
-  public JpsDefracModuleProperties() {}
+  @NotNull @NonNls public static final String PACKAGE = "package";
+
+  private DefracCommands() {}
 }

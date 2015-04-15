@@ -40,6 +40,10 @@
 
   <idea-version since-build="139.225"/>
 
+  <depends>com.intellij.modules.java</depends>
+  <depends>com.intellij.modules.json</depends>
+  <depends>com.intellij.modules.xdebugger</depends>
+
   <extensions defaultExtensionNs="com.intellij">
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.DelegateAnnotator"/>
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.MacroAnnotator"/>
@@ -48,6 +52,8 @@
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.WriteOnlyAnnotator"/>
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.IncompatibleReadWriteAnnotator"/>
     <configurationType implementation="defrac.intellij.run.DefracConfigurationType"/>
+    <programRunner implementation="defrac.intellij.run.DefracJvmRunner" order="last"/>
+    <programRunner implementation="defrac.intellij.run.DefracRunner" order="last"/>
     <facetType implementation="defrac.intellij.facet.DefracFacetType"/>
     <framework.detector implementation="defrac.intellij.facet.DefracFrameworkDetector"/>
     <fileTypeFactory implementation="defrac.intellij.fileType.DefracFileTypeFactory"/>
@@ -62,12 +68,23 @@
     <referencesSearch implementation="defrac.intellij.findUsages.MacroClassReferencesSearch"/>
     <sdkType implementation="defrac.intellij.sdk.DefracSdkType"/>
     <nonProjectFileWritingAccessExtension implementation="defrac.intellij.fileType.DefracSettingsWritingAccess"/>
+    <toolWindow anchor="bottom" id="defrac" factoryClass="defrac.intellij.toolWindow.DefracToolWindowFactory"/>
     <fileTemplateGroup implementation="defrac.intellij.DefracFileTemplateProvider"/>
     <projectTemplatesFactory implementation="defrac.intellij.projectWizard.DefracProjectTemplatesFactory"/>
   </extensions>
 
   <application-components/>
-  <project-components/>
+  <project-components>
+      <component>
+          <implementation-class>defrac.intellij.project.DefracCompileTasks</implementation-class>
+      </component>
+      <component>
+          <implementation-class>defrac.intellij.project.DefracConsoleView</implementation-class>
+      </component>
+      <component>
+          <implementation-class>defrac.intellij.project.DefracProcess</implementation-class>
+      </component>
+  </project-components>
   <actions/>
   <module-components/>
 </idea-plugin>

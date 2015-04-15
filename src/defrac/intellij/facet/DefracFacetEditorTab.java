@@ -77,7 +77,6 @@ public final class DefracFacetEditorTab extends FacetEditorTab {
     return checkRelativePath(configuration.getState().SETTINGS_FILE_RELATIVE_PATH, form.getSettingsPath())
         || form.getSelectedPlatform() != configuration.getPlatform()
         || form.getSelectedSdk() != configuration.getDefracSdk()
-        || form.getSkipJavac() != configuration.skipJavac()
         || form.isMacroLibrary() != configuration.isMacroLibrary();
   }
 
@@ -87,7 +86,6 @@ public final class DefracFacetEditorTab extends FacetEditorTab {
     form.setSettingsPath(getFacet().getSettingsFile().getAbsolutePath());
     form.setSelectedSdk(configuration.getDefracSdk());
     form.setMacroLibrary(configuration.isMacroLibrary());
-    form.setSkipJavac(configuration.skipJavac());
   }
 
   @Override
@@ -110,7 +108,6 @@ public final class DefracFacetEditorTab extends FacetEditorTab {
 
     configuration.getState().PLATFORM = form.getSelectedPlatform().name;
     configuration.getState().IS_MACRO_LIBRARY = form.isMacroLibrary();
-    configuration.getState().SKIP_JAVAC = form.getSkipJavac();
 
     //
 

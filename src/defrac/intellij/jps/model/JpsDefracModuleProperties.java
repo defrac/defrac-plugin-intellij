@@ -14,10 +14,20 @@
  * limitations under the License.
  */
 
-package defrac.intellij.projectWizard;
+package defrac.intellij.jps.model;
+
+import defrac.intellij.DefracPlatform;
+import defrac.intellij.sdk.DefracVersion;
+import defrac.intellij.util.Names;
 
 /**
+ *
  */
-public enum DefracProjectType {
-  GENERIC, WEB, IOS, ANDROID, EMPTY
+public final class JpsDefracModuleProperties {
+  public String PLATFORM = DefracPlatform.GENERIC.name;
+  public String SETTINGS_FILE_RELATIVE_PATH = "/"+Names.default_settings;
+  public String DEFRAC_VERSION = DefracVersion.LATEST;
+  public boolean IS_MACRO_LIBRARY = false;
+
+  public JpsDefracModuleProperties() {}
 }

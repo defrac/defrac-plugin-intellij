@@ -21,15 +21,12 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Iterators;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.application.BaseJavaApplicationCommandLineState;
-import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.JavaParameters;
 import com.intellij.execution.configurations.JavaRunConfigurationModule;
 import com.intellij.execution.configurations.ParametersList;
 import com.intellij.execution.executors.DefaultDebugExecutor;
-import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.util.JavaParametersUtil;
-import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.PathsList;
@@ -37,7 +34,6 @@ import defrac.intellij.DefracBundle;
 import defrac.intellij.config.DefracConfigOracle;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.sdk.DefracVersion;
-import defrac.intellij.util.DefracCommandLineBuilder;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
@@ -47,49 +43,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  *
  */
-public final class JVMRunningState extends BaseJavaApplicationCommandLineState<DefracRunConfiguration> {
+public final class JvmRunningState extends BaseJavaApplicationCommandLineState<DefracRunConfiguration> {
   @NotNull
   private final DefracFacet facet;
 
-  public JVMRunningState(@NotNull final ExecutionEnvironment environment,
+  public JvmRunningState(@NotNull final ExecutionEnvironment environment,
                          @NotNull final DefracFacet facet,
                          @NotNull final DefracRunConfiguration configuration) {
     super(environment, configuration);
     this.facet = facet;
-  }
-
-  @NotNull
-  @Override
-  protected OSProcessHandler startProcess() throws ExecutionException {
-    final Sdk defracSdk = facet.getDefracSdk();
-
-    if(defracSdk == null) {
-      throw new ExecutionException(DefracBundle.message("facet.error.noSDK"));
-    }
-
-    final DefracVersion defracVersion = facet.getDefracVersion();
-
-    if(defracVersion == null) {
-      throw new ExecutionException(DefracBundle.message("facet.error.noVersion"));
-    }
-
-    final GeneralCommandLine cmdLine =
-        DefracCommandLineBuilder.forFacet(facet).
-            command("compile").
-            build();
-
-    final OSProcessHandler handler = new OSProcessHandler(cmdLine);
-
-    try {
-      if(handler.getProcess().waitFor() != 0) {
-        throw new ExecutionException("Couldn't compile app");
-      }
-    } catch(final InterruptedException interrupt) {
-      Thread.currentThread().interrupt();
-      throw new ExecutionException("Interrupted.");
-    }
-
-    return super.startProcess();
   }
 
   @Override
