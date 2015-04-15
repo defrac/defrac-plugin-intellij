@@ -41,7 +41,7 @@ public final class DefracToolWindowFactory implements ToolWindowFactory {
     final ConsoleView console = DefracConsoleView.getInstance(project);
 
     if(console == null) {
-      toolWindow.getContentManager().removeAllContents(true);
+      toolWindow.setAvailable(false, null);
       return;
     }
 

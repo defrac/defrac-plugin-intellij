@@ -19,45 +19,47 @@ package defrac.intellij.projectWizard;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.openapi.options.ConfigurationException;
 import defrac.intellij.projectWizard.ui.GenericDefracModuleWizard;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
 /**
  */
 public final class GenericModuleWizardStep extends ModuleWizardStep {
-  private final DefracModuleBuilder myModuleBuilder;
+  @NotNull
+  private final DefracModuleBuilder moduleBuilder;
 
-  private final GenericDefracModuleWizard myWizard;
+  @NotNull
+  private final GenericDefracModuleWizard wizard;
 
-  public GenericModuleWizardStep(final DefracModuleBuilder moduleBuilder) {
-    myModuleBuilder = moduleBuilder;
-
-    myWizard = new GenericDefracModuleWizard(moduleBuilder.getName());
+  public GenericModuleWizardStep(@NotNull final DefracModuleBuilder moduleBuilder) {
+    this.moduleBuilder = moduleBuilder;
+    this.wizard = new GenericDefracModuleWizard(moduleBuilder.getName());
   }
 
   @Override
   public boolean validate() throws ConfigurationException {
-    return myWizard.validate();
+    return wizard.validate();
   }
 
   @Override
   public JComponent getPreferredFocusedComponent() {
-    return myWizard.getPreferredFocusedComponent();
+    return wizard.getPreferredFocusedComponent();
   }
 
   @Override
   public JComponent getComponent() {
-    return myWizard.getComponent();
+    return wizard.getComponent();
   }
 
   @Override
   public void updateDataModel() {
-    myModuleBuilder.setApplicationName(myWizard.getApplicationName());
-    myModuleBuilder.setPackageName(myWizard.getPackageName());
-    myModuleBuilder.setWebSupported(myWizard.isWebSupported());
-    myModuleBuilder.setIOSSupported(myWizard.isIOSSupported());
-    myModuleBuilder.setJVMSupported(myWizard.isJVMSupported());
-    myModuleBuilder.setAndroidSupported(myWizard.isAndroidSupported());
-    myModuleBuilder.setMainClassName(myWizard.getMainClassName());
+    moduleBuilder.setApplicationName(wizard.getApplicationName());
+    moduleBuilder.setPackageName(wizard.getPackageName());
+    moduleBuilder.setWebSupported(wizard.isWebSupported());
+    moduleBuilder.setIOSSupported(wizard.isIOSSupported());
+    moduleBuilder.setJVMSupported(wizard.isJVMSupported());
+    moduleBuilder.setAndroidSupported(wizard.isAndroidSupported());
+    moduleBuilder.setMainClassName(wizard.getMainClassName());
   }
 }

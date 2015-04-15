@@ -20,72 +20,73 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.ui.JBColor;
 import defrac.intellij.projectWizard.DefracWizardUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
 /**
  */
 public final class GenericDefracModuleWizard {
-  private JPanel myPanel;
-  private JTextField myApplicationNameTextField;
-  private JTextField myPackageNameTextField;
-  private JCheckBox myWebCheckBox;
-  private JCheckBox myIOSCheckBox;
-  private JCheckBox myAndroidCheckBox;
-  private JCheckBox myJVMCheckBox;
-  private JTextField myMainClassNameTextField;
-  private JLabel myErrorLabel;
+  private JPanel panel;
+  private JTextField applicationNameTextField;
+  private JTextField packageNameTextField;
+  private JCheckBox webCheckBox;
+  private JCheckBox iosCheckBox;
+  private JCheckBox androidCheckBox;
+  private JCheckBox jvmCheckBox;
+  private JTextField mainClassNameTextField;
+  private JLabel errorLabel;
 
-  public GenericDefracModuleWizard(String name) {
-    DefracWizardUtil.initializeApplicationSettingsInput(myApplicationNameTextField, myPackageNameTextField, name);
-    DefracWizardUtil.handleApplicationSettingsInput(myApplicationNameTextField, myPackageNameTextField, myErrorLabel);
-    DefracWizardUtil.handlePlatformsSettingsInput(myWebCheckBox, myIOSCheckBox, myAndroidCheckBox, myJVMCheckBox, myErrorLabel);
-    DefracWizardUtil.handleMainClassSettingsInput(myMainClassNameTextField, myErrorLabel);
+  public GenericDefracModuleWizard(@Nullable final String name) {
+    DefracWizardUtil.initializeApplicationSettingsInput(applicationNameTextField, packageNameTextField, name);
+    DefracWizardUtil.handleApplicationSettingsInput(applicationNameTextField, packageNameTextField, errorLabel);
+    DefracWizardUtil.handlePlatformsSettingsInput(webCheckBox, iosCheckBox, androidCheckBox, jvmCheckBox, errorLabel);
+    DefracWizardUtil.handleMainClassSettingsInput(mainClassNameTextField, errorLabel);
 
-    myErrorLabel.setForeground(JBColor.RED);
+    errorLabel.setForeground(JBColor.RED);
 
-    myMainClassNameTextField.setText(DefracWizardUtil.DEFAULT_MAIN_CLASS_NAME);
+    mainClassNameTextField.setText(DefracWizardUtil.DEFAULT_MAIN_CLASS_NAME);
   }
 
   @NotNull
   public String getPackageName() {
-    return myPackageNameTextField.getText().trim();
+    return packageNameTextField.getText().trim();
   }
 
   @NotNull
   public String getApplicationName() {
-    return myApplicationNameTextField.getText().trim();
+    return applicationNameTextField.getText().trim();
   }
 
   public boolean isWebSupported() {
-    return myWebCheckBox.isSelected();
+    return webCheckBox.isSelected();
   }
 
   public boolean isIOSSupported() {
-    return myIOSCheckBox.isSelected();
+    return iosCheckBox.isSelected();
   }
 
   public boolean isAndroidSupported() {
-    return myAndroidCheckBox.isSelected();
+    return androidCheckBox.isSelected();
   }
 
   public boolean isJVMSupported() {
-    return myJVMCheckBox.isSelected();
+    return jvmCheckBox.isSelected();
   }
 
   @NotNull
   public String getMainClassName() {
-    return myMainClassNameTextField.getText().trim();
+    return mainClassNameTextField.getText().trim();
   }
 
   @NotNull
   public JComponent getComponent() {
-    return myPanel;
+    return panel;
   }
 
   @NotNull
   public JComponent getPreferredFocusedComponent() {
-    return myApplicationNameTextField;
+    return applicationNameTextField;
   }
 
   public boolean validate() throws ConfigurationException {
@@ -101,7 +102,7 @@ public final class GenericDefracModuleWizard {
       throw new ConfigurationException(message);
     }
 
-    message = DefracWizardUtil.validatePlatforms(myWebCheckBox, myIOSCheckBox, myAndroidCheckBox, myJVMCheckBox);
+    message = DefracWizardUtil.validatePlatforms(webCheckBox, iosCheckBox, androidCheckBox, jvmCheckBox);
 
     if(!message.isEmpty()) {
       throw new ConfigurationException(message);

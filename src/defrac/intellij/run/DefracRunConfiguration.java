@@ -113,6 +113,8 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
       throw new ExecutionException(DefracBundle.message("facet.error.noSettings"));
     }
 
+    MAIN_CLASS_NAME = config.getMain();
+
     final boolean isDebug = DefaultDebugExecutor.EXECUTOR_ID.equals(executor.getId());
 
     switch(facet.getPlatform()) {
@@ -155,7 +157,13 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
       throw new RuntimeConfigurationError(DefracBundle.message("facet.error.genericPlatform", module.getName()));
     }
 
-    if(isNullOrEmpty(MAIN_CLASS_NAME)) {
+    final DefracConfigOracle config = facet.getConfigOracle();
+
+    if(config == null) {
+      throw new RuntimeConfigurationError(DefracBundle.message("facet.error.noSettings"));
+    }
+
+    if(isNullOrEmpty(config.getMain())) {
       throw new RuntimeConfigurationError(DefracBundle.message("facet.error.noMain"));
     }
   }

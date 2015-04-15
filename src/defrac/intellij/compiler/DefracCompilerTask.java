@@ -24,12 +24,10 @@ import com.intellij.openapi.compiler.CompileTask;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.ui.UIUtil;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.project.DefracConsoleView;
 import defrac.intellij.run.DefracRunConfiguration;
-import defrac.intellij.toolWindow.DefracToolWindowFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -83,27 +81,19 @@ public abstract class DefracCompilerTask implements CompileTask {
       UIUtil.invokeLaterIfNeeded(new Runnable() {
         @Override
         public void run() {
-          ToolWindowManager.
-              getInstance(project).
-              getToolWindow(DefracToolWindowFactory.TOOLWINDOW_ID).
-              activate(new Runnable() {
-                @Override
-                public void run() {
-                  final ConsoleView console = DefracConsoleView.getInstance(project);
+          final ConsoleView console = DefracConsoleView.getInstance(project);
 
-                  if(console != null) {
-                    console.clear();
-                  }
+          if(console != null) {
+            console.clear();
+          }
 
-                  try {
-                    barrier.await();
-                  } catch(final InterruptedException interrupt) {
-                    Thread.currentThread().interrupt();
-                  } catch(final BrokenBarrierException brokenBarrier) {
-                    // ignore broken barrier state due to timeout
-                  }
-                }
-              }, true);
+          try {
+            barrier.await();
+          } catch(final InterruptedException interrupt) {
+            Thread.currentThread().interrupt();
+          } catch(final BrokenBarrierException brokenBarrier) {
+            // ignore broken barrier state due to timeout
+          }
         }
       });
 

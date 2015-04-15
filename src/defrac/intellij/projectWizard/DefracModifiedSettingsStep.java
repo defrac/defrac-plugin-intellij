@@ -25,7 +25,7 @@ import com.intellij.openapi.util.Condition;
 /**
  */
 public final class DefracModifiedSettingsStep extends SdkSettingsStep {
-  private DefracModuleBuilder myModuleBuilder;
+  private DefracModuleBuilder moduleBuilder;
 
   public DefracModifiedSettingsStep(final SettingsStep settingsStep, final DefracModuleBuilder moduleBuilder) {
     super(settingsStep, moduleBuilder, new Condition<SdkTypeId>() {
@@ -35,7 +35,7 @@ public final class DefracModifiedSettingsStep extends SdkSettingsStep {
       }
     });
 
-    myModuleBuilder = moduleBuilder;
+    this.moduleBuilder = moduleBuilder;
 
     if(myJdkComboBox.getSelectedJdk() != null) {
       OnSdkSelected(myJdkComboBox.getSelectedJdk());
@@ -44,6 +44,6 @@ public final class DefracModifiedSettingsStep extends SdkSettingsStep {
 
   @Override
   protected void OnSdkSelected(final Sdk sdk) {
-    myModuleBuilder.setDefracSdk(sdk);
+    moduleBuilder.setDefracSdk(sdk);
   }
 }

@@ -20,32 +20,34 @@ import com.intellij.ide.util.projectWizard.ModuleBuilder;
 import com.intellij.platform.templates.BuilderBasedTemplate;
 import defrac.intellij.DefracIcons;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
 /**
  */
 public final class DefracProjectTemplate extends BuilderBasedTemplate {
-  private final String myName;
-  private final String myDescription;
+  @NotNull
+  private final String name;
 
-  public DefracProjectTemplate(String name, String description, ModuleBuilder builder) {
+  @NotNull
+  private final String description;
+
+  public DefracProjectTemplate(@NotNull final String name, @NotNull final String description, final ModuleBuilder builder) {
     super(builder);
-    myName = name;
-    myDescription = description;
+    this.name = name;
+    this.description = description;
   }
 
   @NotNull
   @Override
   public String getName() {
-    return myName;
+    return name;
   }
 
-  @Nullable
+  @NotNull
   @Override
   public String getDescription() {
-    return myDescription;
+    return description;
   }
 
   @Override

@@ -27,36 +27,37 @@ import javax.swing.*;
  */
 public final class IOSModuleWizardStep extends ModuleWizardStep {
   @NotNull
-  private final DefracModuleBuilder myModuleBuilder;
+  private final DefracModuleBuilder moduleBuilder;
+
   @NotNull
-  private final IOSModuleWizard myWizard;
+  private final IOSModuleWizard wizard;
 
   public IOSModuleWizardStep(@NotNull final DefracModuleBuilder moduleBuilder) {
-    myModuleBuilder = moduleBuilder;
-    myWizard = new IOSModuleWizard(moduleBuilder.getName());
+    this.moduleBuilder = moduleBuilder;
+    this.wizard = new IOSModuleWizard(moduleBuilder.getName());
   }
 
   @Override
   public boolean validate() throws ConfigurationException {
-    return myWizard.validate();
+    return wizard.validate();
   }
 
   @Override
   public JComponent getComponent() {
-    return myWizard.getComponent();
+    return wizard.getComponent();
   }
 
   @NotNull
   public JComponent getPreferredFocusedComponent() {
-    return myWizard.getPreferredFocusedComponent();
+    return wizard.getPreferredFocusedComponent();
   }
 
   @Override
   public void updateDataModel() {
-    myModuleBuilder.setApplicationName(myWizard.getApplicationName());
-    myModuleBuilder.setPackageName(myWizard.getPackageName());
-    myModuleBuilder.setMainClassName(myWizard.getMainClassName());
+    moduleBuilder.setApplicationName(wizard.getApplicationName());
+    moduleBuilder.setPackageName(wizard.getPackageName());
+    moduleBuilder.setMainClassName(wizard.getMainClassName());
 
-    myModuleBuilder.setIOSSupported(true);
+    moduleBuilder.setIOSSupported(true);
   }
 }

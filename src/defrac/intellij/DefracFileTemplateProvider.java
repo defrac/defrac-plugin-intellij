@@ -23,6 +23,7 @@ import com.intellij.ide.fileTemplates.FileTemplateManager;
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -33,14 +34,10 @@ import java.util.Properties;
 /**
  */
 public final class DefracFileTemplateProvider implements FileTemplateGroupDescriptorFactory {
-  @NotNull
-  public static final String GENERIC_APP = "GenericApplication.java";
-  @NotNull
-  public static final String IOS_APP = "IOSApplication.java";
-  @NotNull
-  public static final String IOS_APP_CONTROLLER = "IOSApplicationController.java";
-  @NotNull
-  public static final String IOS_APP_DELEGATE = "IOSApplicationDelegate.java";
+  @NotNull @NonNls public static final String GENERIC_APP = "GenericApplication.java";
+  @NotNull @NonNls public static final String IOS_APP = "IOSApplication.java";
+  @NotNull @NonNls public static final String IOS_APP_CONTROLLER = "IOSApplicationController.java";
+  @NotNull @NonNls public static final String IOS_APP_DELEGATE = "IOSApplicationDelegate.java";
 
   @Override
   public FileTemplateGroupDescriptor getFileTemplatesDescriptor() {
@@ -63,7 +60,8 @@ public final class DefracFileTemplateProvider implements FileTemplateGroupDescri
   public static String getText(@NotNull final Project project,
                                @NotNull final String template,
                                @NotNull final Properties properties) throws IOException {
-    final FileTemplateManager templateManager = FileTemplateManager.getInstance(project);
+    //TODO(tim):  FileTemplateManager.getInstance(project)
+    final FileTemplateManager templateManager = FileTemplateManager.getInstance();
     final Properties defaultProperties = templateManager.getDefaultProperties();
 
     for(final Map.Entry<Object, Object> entry : defaultProperties.entrySet()) {

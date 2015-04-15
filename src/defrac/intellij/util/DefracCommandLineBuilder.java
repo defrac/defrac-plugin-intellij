@@ -65,13 +65,13 @@ public final class DefracCommandLineBuilder {
   }
 
   @NotNull
-  public DefracCommandLineBuilder platform(final DefracPlatform value) {
+  public DefracCommandLineBuilder platform(@NotNull final DefracPlatform value) {
     platform = value;
     return this;
   }
 
   @NotNull
-  public DefracCommandLineBuilder workingDirectory(final File value) {
+  public DefracCommandLineBuilder workingDirectory(@Nullable final File value) {
     workingDirectory = value;
     return this;
   }
