@@ -14,14 +14,22 @@
  * limitations under the License.
  */
 
-package defrac.intellij.config.web;
+package defrac.intellij.fileTemplate;
+
+import defrac.intellij.DefracPlatform;
+import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.NotNull;
 
 /**
  *
  */
-@SuppressWarnings("unused,MismatchedReadAndWriteOfArray")
-public final class WebPSettings {
-  protected Boolean enabled;
-  protected Integer quality;
-  protected String arguments;
+public final class DefracFileTemplateUtil {
+  @NotNull @NonNls public static final String PLATFORM_ALL = "PLATFORM_ALL";
+
+  @NotNull
+  public static String getPlatformKey(@NotNull final DefracPlatform platform) {
+    return "PLATFORM_"+platform.name.toUpperCase();
+  }
+
+  private DefracFileTemplateUtil() {}
 }

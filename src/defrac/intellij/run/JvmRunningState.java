@@ -28,6 +28,7 @@ import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.util.JavaParametersUtil;
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.PathsList;
 import defrac.intellij.DefracBundle;
@@ -66,8 +67,8 @@ public final class JvmRunningState extends BaseJavaApplicationCommandLineState<D
     final JavaRunConfigurationModule module = myConfiguration.getConfigurationModule();
     final int classPathType = JavaParametersUtil.getClasspathType(module, myConfiguration.MAIN_CLASS_NAME, false);
     final String jreHome = myConfiguration.ALTERNATIVE_JRE_PATH_ENABLED ? myConfiguration.ALTERNATIVE_JRE_PATH : null;
-    final String projectBasePath = checkNotNull(module.getProject().getBaseDir().getCanonicalPath());
-    final String defracHomePath = checkNotNull(checkNotNull(facet.getDefracSdk()).getHomePath());
+    final String projectBasePath = FileUtil.toSystemDependentName(checkNotNull(module.getProject().getBaseDir().getCanonicalPath()));
+    final String defracHomePath = FileUtil.toSystemDependentName(checkNotNull(checkNotNull(facet.getDefracSdk()).getHomePath()));
     final VirtualFile settingsFile = facet.getVirtualSettingsFile();
     final VirtualFile nat1ve = defrac.getNative(), nativeJvmDir, nativeJvmPlatformDir;
     final VirtualFile target, targetJvmDir;
@@ -157,12 +158,12 @@ public final class JvmRunningState extends BaseJavaApplicationCommandLineState<D
     }
 
     vmParametersList.add("-Ddefrac.hotswap=false");
-    vmParametersList.add("-Djava.library.path=" + nativeJvmPlatformDir.getCanonicalPath());
+    vmParametersList.add("-Djava.library.path="+nativeJvmPlatformDir.getCanonicalPath());
     vmParametersList.add("-Xms512M");
     vmParametersList.add("-XX:+TieredCompilation");
 
     final Iterator<String> resourcePaths = Iterators.transform(
-        config.getResources(facet.getModule().getProject()).iterator(),
+        config.getResources(facet).iterator(),
         new Function<VirtualFile, String>() {
           @Override
           public String apply(final VirtualFile virtualFile) {

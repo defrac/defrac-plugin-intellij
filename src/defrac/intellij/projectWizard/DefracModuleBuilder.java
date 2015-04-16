@@ -41,8 +41,8 @@ import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFileManager;
-import defrac.intellij.DefracFileTemplateProvider;
 import defrac.intellij.config.DefracConfig;
+import defrac.intellij.fileTemplate.DefracFileTemplateProvider;
 import defrac.intellij.sdk.DefracSdkType;
 import defrac.intellij.util.DefracCommandLineBuilder;
 import icons.DefracIcons;
@@ -157,12 +157,12 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
 
   @Override
   public Icon getNodeIcon() {
-    return DefracIcons.DEFRAC;
+    return DefracIcons.Defrac16x16;
   }
 
   @Override
   public Icon getBigIcon() {
-    return DefracIcons.DEFRAC;
+    return DefracIcons.Defrac16x16;
   }
 
   @Override

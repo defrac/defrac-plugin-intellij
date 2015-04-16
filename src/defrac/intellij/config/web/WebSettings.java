@@ -21,6 +21,7 @@ import defrac.intellij.config.DefracConfigurationBase;
 /**
  *
  */
+@SuppressWarnings("unused,MismatchedReadAndWriteOfArray")
 public final class WebSettings extends DefracConfigurationBase {
   protected String js;
   protected String jsMain;

@@ -34,14 +34,19 @@ public final class DefracIcons {
     return IconLoader.getIcon(path, DefracIcons.class);
   }
 
-  @NotNull
-  public static final Icon DEFRAC = load("/icons/defrac.png");
+  @NotNull public static final Icon Defrac16x16 = load("/icons/defrac16x16.png");
 
-  @NotNull
-  public static final Icon TOOLWINDOW_DEFRAC = load("/icons/toolwindow.defrac.png");
+  @NotNull public static final Icon Defrac13x13 = load("/icons/defrac13x13.png");
 
-  @NotNull
-  public static final Icon MODULE_ANDROID = load("/icons/module.android.png");
+  @NotNull public static final Icon ToolWindow = Defrac13x13;
+
+  @NotNull public static final Icon AndroidModule = load("/icons/module.android.png");
+
+  @NotNull public static final Icon NewDelegate = Defrac13x13;
+
+  @NotNull public static final Icon NewMacro = Defrac13x13;
+
+  @NotNull public static final Icon SwitchToXCode = Defrac13x13;
 
   private DefracIcons() {}
 }

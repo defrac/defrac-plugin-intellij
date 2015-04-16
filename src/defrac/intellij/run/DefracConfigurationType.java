@@ -39,12 +39,12 @@ public final class DefracConfigurationType extends ConfigurationTypeBase {
   }
 
   public DefracConfigurationType() {
-    super(ID, DISPLAY_NAME, DESCRIPTION, DefracIcons.DEFRAC);
+    super(ID, DISPLAY_NAME, DESCRIPTION, DefracIcons.Defrac16x16);
     addFactory(new DefracConfigurationFactory(this));
   }
 
   @Override
   public Icon getIcon() {
-    return DefracIcons.DEFRAC;
+    return DefracIcons.Defrac16x16;
   }
 }

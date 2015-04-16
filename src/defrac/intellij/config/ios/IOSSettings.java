@@ -21,6 +21,11 @@ import defrac.intellij.config.DefracConfigurationBase;
 /**
  *
  */
+@SuppressWarnings("unused,MismatchedReadAndWriteOfArray")
 public final class IOSSettings extends DefracConfigurationBase {
-
+  protected IOSDeploy deploy;
+  protected String platform;
+  protected SigningSettings signing;
+  protected String deviceTypeId;
+  protected XCodeSettings xcode;
 }

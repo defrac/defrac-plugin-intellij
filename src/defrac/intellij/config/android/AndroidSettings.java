@@ -21,6 +21,7 @@ import defrac.intellij.config.DefracConfigurationBase;
 /**
  *
  */
+@SuppressWarnings("unused,MismatchedReadAndWriteOfArray")
 public final class AndroidSettings extends DefracConfigurationBase {
 
 }

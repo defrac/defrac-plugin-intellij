@@ -19,13 +19,10 @@ package defrac.intellij.facet;
 import com.intellij.facet.ui.FacetEditorContext;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.io.File;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
@@ -35,23 +32,12 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 public final class DefracRootUtil {
   @Nullable
   public static VirtualFile getFileByRelativeProjectPath(@NotNull final Project project,
-                                                         @Nullable final String relativePath) {
-    if(isNullOrEmpty(relativePath)) {
+                                                         @Nullable final String uri) {
+    if(isNullOrEmpty(uri)) {
       return null;
     }
 
-    final String projectDirPath = project.getBasePath();
-
-    if(projectDirPath != null) {
-      final String absPath = FileUtil.toSystemIndependentName(projectDirPath+File.separatorChar+relativePath);
-      final VirtualFile file = LocalFileSystem.getInstance().findFileByPath(absPath);
-
-      if(file != null) {
-        return file;
-      }
-    }
-
-    return null;
+    return VfsUtilCore.findRelativeFile(uri, project.getBaseDir());
   }
 
   public static String getBasePath(@NotNull final FacetEditorContext context) {
@@ -62,10 +48,9 @@ public final class DefracRootUtil {
     return module.getProject().getBasePath();
   }
 
-  private DefracRootUtil() {
-  }
-
   public static VirtualFile getBaseDir(@NotNull final DefracFacet facet) {
     return facet.getModule().getProject().getBaseDir();
   }
+
+  private DefracRootUtil() {}
 }

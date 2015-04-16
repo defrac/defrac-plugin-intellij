@@ -20,6 +20,9 @@ import com.intellij.facet.Facet;
 import com.intellij.facet.FacetManager;
 import com.intellij.facet.FacetTypeId;
 import com.intellij.facet.FacetTypeRegistry;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleUtil;
@@ -41,12 +44,15 @@ import defrac.intellij.config.DefracConfigOracle;
 import defrac.intellij.jps.model.JpsDefracModuleProperties;
 import defrac.intellij.sdk.DefracVersion;
 import defrac.intellij.util.Names;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
  *
@@ -62,6 +68,20 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
     return (DefracFacetType)FacetTypeRegistry.getInstance().findFacetType(ID);
   }
 
+  @Contract("null -> null")
+  @Nullable
+  public static DefracFacet getInstance(@Nullable AnActionEvent event) {
+    return event == null ? null : getInstance(event.getDataContext());
+  }
+
+  @Contract("null -> null")
+  @Nullable
+  public static DefracFacet getInstance(@Nullable DataContext context) {
+    return context == null ? null : getInstance(LangDataKeys.MODULE.getData(context));
+  }
+
+
+  @Contract("null -> null")
   @Nullable
   public static DefracFacet getInstance(@Nullable Module module) {
     return module == null ? null : FacetManager.getInstance(module).getFacetByType(ID);
@@ -73,11 +93,13 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
     return module != null ? getInstance(module) : null;
   }
 
+  @Contract("null -> null")
   @Nullable
   public static DefracFacet getInstance(@Nullable final PsiElement element) {
     return element == null ? null : getInstance(element.getContainingFile());
   }
 
+  @Contract("null -> null")
   @Nullable
   public static DefracFacet getInstance(@Nullable final PsiFile file) {
     if(file == null) {
@@ -124,8 +146,14 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
   public VirtualFile getVirtualSettingsFile() {
     final Module module = getModule();
     final Project project = module.getProject();
-    return DefracRootUtil.
-        getFileByRelativeProjectPath(project, getProperties().SETTINGS_FILE_RELATIVE_PATH);
+    return DefracRootUtil.getFileByRelativeProjectPath(project, getProperties().SETTINGS_FILE_RELATIVE_PATH);
+  }
+
+  @Nullable
+  public VirtualFile findFileRelativeToSettings(@Nullable final String uri) {
+    return isNullOrEmpty(uri)
+        ? null
+        : VfsUtilCore.findRelativeFile(uri, getVirtualSettingsFile());
   }
 
   @NotNull

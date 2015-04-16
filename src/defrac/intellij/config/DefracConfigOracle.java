@@ -16,24 +16,28 @@
 
 package defrac.intellij.config;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
 import defrac.intellij.DefracPlatform;
-import defrac.intellij.facet.DefracRootUtil;
+import defrac.intellij.facet.DefracFacet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
  *
  */
 public final class DefracConfigOracle {
+  private static final Splitter PATH_SPLITTER = Splitter.on('/').trimResults().omitEmptyStrings();
+
   public static DefracConfigOracle join(@NotNull final DefracPlatform platform,
                                         @NotNull final DefracConfig localConfig,
                                         @NotNull final DefracConfig globalConfig) {
@@ -49,7 +53,8 @@ public final class DefracConfigOracle {
   @NotNull
   private final DefracConfig globalConfig;
 
-  private DefracConfigOracle(@NotNull final DefracPlatform platform, @NotNull final DefracConfig localConfig,
+  private DefracConfigOracle(@NotNull final DefracPlatform platform,
+                             @NotNull final DefracConfig localConfig,
                              @NotNull final DefracConfig globalConfig) {
     this.platform = platform;
     this.localConfig = localConfig;
@@ -75,17 +80,43 @@ public final class DefracConfigOracle {
     return lookupString("name");
   }
 
+  @Nullable
+  public VirtualFile getXCodeProject(@NotNull final DefracFacet facet) {
+    final String build = lookupString("xcode/build");
+    final String project = lookupString("xcode/project");
+
+    VirtualFile result = null;
+
+    if(!isNullOrEmpty(build)) {
+      result = facet.findFileRelativeToSettings(build);
+    }
+
+    if(!isNullOrEmpty(project) && result == null) {
+      result = facet.findFileRelativeToSettings(project);
+    }
+
+    if(result == null) {
+      result = facet.findFileRelativeToSettings(getDefaultNameOfXcodeProject());
+    }
+
+    return result;
+  }
+
   @NotNull
-  public List<VirtualFile> getResources(@NotNull final Project project) {
+  private String getDefaultNameOfXcodeProject() {
+    return getName()+".xcodeproj";
+  }
+
+  @NotNull
+  public List<VirtualFile> getResources(@NotNull final DefracFacet facet) {
     final String[] resources = getResources();
     final ArrayList<VirtualFile> result = Lists.newArrayListWithCapacity(resources.length);
 
     for(final String resource : resources) {
-      if(resource.charAt(0) == '/' || resource.charAt(1) == ':') {
-        // ghetto-style abs path guess
-        result.add(LocalFileSystem.getInstance().findFileByPath(resource));
-      } else {
-        result.add(DefracRootUtil.getFileByRelativeProjectPath(project, resource));
+      final VirtualFile file = facet.findFileRelativeToSettings(resource);
+
+      if(file != null) {
+        result.add(file);
       }
     }
 
@@ -116,17 +147,17 @@ public final class DefracConfigOracle {
 
   @NotNull
   private <A, B extends A> A lookup(
-      @NotNull final String fieldName,
+      @NotNull final String fieldPath,
       @NotNull Class<A> typeOfValue,
       @NotNull final B defaultValue) {
     try {
-      A firstTry = extract(fieldName, typeOfValue, localConfig);
+      A firstTry = extract(fieldPath, typeOfValue, localConfig);
 
       if(firstTry != null) {
         return firstTry;
       }
 
-      A secondTry = extract(fieldName, typeOfValue, globalConfig);
+      A secondTry = extract(fieldPath, typeOfValue, globalConfig);
 
       if(secondTry != null) {
         return secondTry;
@@ -141,27 +172,51 @@ public final class DefracConfigOracle {
   }
 
   @Nullable
-  private <A> A extract(@NotNull final String fieldName,
+  private <A> A extract(@NotNull final String fieldPath,
                         @NotNull final Class<A> typeOfValue,
                         @NotNull final DefracConfig genericConfig) throws NoSuchFieldException, IllegalAccessException {
     final DefracConfigurationBase platformConfig =
         genericConfig.getPlatform(platform);
 
     if(platformConfig != null) {
-      final Field field = getField(platformConfig, fieldName);
-      final A value = typeOfValue.cast(field.get(platformConfig));
+      try {
+        final A value = walkPath(fieldPath, typeOfValue, platformConfig);
 
-      if(value != null) {
-        return value;
+        if(value != null) {
+          return value;
+        }
+      } catch(final NoSuchFieldException noSuchFieldInPlatform) {
+        // ignore
       }
     }
 
-    final Field field = getField(genericConfig, fieldName);
-    return typeOfValue.cast(field.get(genericConfig));
+    return walkPath(fieldPath, typeOfValue, genericConfig);
+  }
+
+
+  @Nullable
+  private <A> A walkPath(@NotNull final String fieldPath,
+                         @NotNull final Class<A> typeOfValue,
+                         @NotNull final Object config) throws NoSuchFieldException, IllegalAccessException {
+    final Iterator<String> pathElements = PATH_SPLITTER.split(fieldPath).iterator();
+    Object current = config;
+
+    while(pathElements.hasNext()) {
+      final String pathElement = pathElements.next();
+      final Field field = getField(current, pathElement);
+
+      current = field.get(current);
+
+      if(current == null) {
+        return null;
+      }
+    }
+
+    return typeOfValue.cast(current);
   }
 
   @NotNull
-  private Field getField(@NotNull DefracConfigurationBase config,
+  private Field getField(@NotNull Object config,
                          @NotNull String name) throws NoSuchFieldException {
     Class<?> klass = config.getClass();
 

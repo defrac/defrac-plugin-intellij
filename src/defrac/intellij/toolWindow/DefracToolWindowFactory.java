@@ -33,7 +33,7 @@ import org.jetbrains.annotations.NotNull;
  *
  */
 public final class DefracToolWindowFactory implements ToolWindowFactory {
-  @NotNull @NonNls public static final String TOOLWINDOW_ID = "defrac";
+  @NotNull @NonNls public static final String TOOLWINDOW_ID = "defrac.toolWindow";
 
   @Override
   public void createToolWindowContent(@NotNull final Project project,
@@ -49,7 +49,7 @@ public final class DefracToolWindowFactory implements ToolWindowFactory {
         toolWindow.getContentManager().getFactory().createContent(console.getComponent(), "", true);
 
     toolWindow.getContentManager().addContent(content);
-    toolWindow.setIcon(DefracIcons.TOOLWINDOW_DEFRAC);
+    toolWindow.setIcon(DefracIcons.ToolWindow);
 
     console.print("Initializing ", ConsoleViewContentType.SYSTEM_OUTPUT);
     console.printHyperlink("defrac", new BrowserHyperlinkInfo("https://www.defrac.com/"));

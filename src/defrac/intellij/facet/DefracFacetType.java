@@ -40,7 +40,7 @@ public final class DefracFacetType extends FacetType<DefracFacet, DefracFacetCon
 
   @Override
   public Icon getIcon() {
-    return DefracIcons.DEFRAC;
+    return DefracIcons.Defrac16x16;
   }
 
   @Override

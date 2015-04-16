@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package defrac.intellij.config.web;
+package defrac.intellij.config.ios;
 
 /**
  *
  */
 @SuppressWarnings("unused,MismatchedReadAndWriteOfArray")
-public final class WebPSettings {
-  protected Boolean enabled;
-  protected Integer quality;
-  protected String arguments;
+public final class SigningSettings {
+  protected String developerName;
+  protected String profile;
 }

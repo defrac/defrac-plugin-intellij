@@ -70,23 +70,53 @@
     <referencesSearch implementation="defrac.intellij.findUsages.MacroClassReferencesSearch"/>
     <sdkType implementation="defrac.intellij.sdk.DefracSdkType"/>
     <nonProjectFileWritingAccessExtension implementation="defrac.intellij.fileType.DefracSettingsWritingAccess"/>
-    <toolWindow id="defrac" anchor="bottom" icon="DefracIcons.TOOLWINDOW_DEFRAC" conditionClass="defrac.intellij.toolWindow.DefracToolWindowCondition" factoryClass="defrac.intellij.toolWindow.DefracToolWindowFactory"/>
-    <fileTemplateGroup implementation="defrac.intellij.DefracFileTemplateProvider"/>
+    <toolWindow id="defrac.toolWindow"
+                anchor="bottom"
+                icon="DefracIcons.ToolWindow"
+                conditionClass="defrac.intellij.toolWindow.DefracToolWindowCondition"
+                factoryClass="defrac.intellij.toolWindow.DefracToolWindowFactory"/>
+    <fileTemplateGroup implementation="defrac.intellij.fileTemplate.DefracFileTemplateProvider"/>
     <projectTemplatesFactory implementation="defrac.intellij.projectWizard.DefracProjectTemplatesFactory"/>
   </extensions>
 
-  <application-components/>
   <project-components>
-      <component>
-          <implementation-class>defrac.intellij.project.DefracCompileTasks</implementation-class>
-      </component>
-      <component>
-          <implementation-class>defrac.intellij.project.DefracConsoleView</implementation-class>
-      </component>
-      <component>
-          <implementation-class>defrac.intellij.project.DefracProcess</implementation-class>
-      </component>
+    <component>
+      <implementation-class>defrac.intellij.project.DefracCompileTasks</implementation-class>
+    </component>
+    <component>
+      <implementation-class>defrac.intellij.project.DefracConsoleView</implementation-class>
+    </component>
+    <component>
+      <implementation-class>defrac.intellij.project.DefracProcess</implementation-class>
+    </component>
   </project-components>
-  <actions/>
+
+  <actions>
+    <action id="defrac.action.new.delegate"
+            class="defrac.intellij.action.create.NewDelegateAction"
+            icon="DefracIcons.NewDelegate"
+            text="New Delegate"
+            description="Creates a new Delegate">
+      <add-to-group group-id="NewGroup" anchor="last"/>
+    </action>
+
+    <action id="defrac.action.new.macro"
+            class="defrac.intellij.action.create.NewMacroAction"
+            icon="DefracIcons.NewMacro"
+            text="New Macro"
+            description="Creates a new Macro">
+      <add-to-group group-id="NewGroup" anchor="last"/>
+    </action>
+
+    <action id="defrac.action.ios.switchToXCode"
+            class="defrac.intellij.action.ios.SwitchToXCodeAction"
+            icon="DefracIcons.SwitchToXCode"
+            text="Switch to XCode"
+            description="Opens the XCode project for the selected module">
+      <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+    </action>
+  </actions>
+
+  <application-components/>
   <module-components/>
 </idea-plugin>

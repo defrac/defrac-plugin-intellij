@@ -52,6 +52,6 @@ public final class DefracProjectTemplate extends BuilderBasedTemplate {
 
   @Override
   public Icon getIcon() {
-    return DefracIcons.DEFRAC;
+    return DefracIcons.Defrac16x16;
   }
 }

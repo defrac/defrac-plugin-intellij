@@ -23,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  *
  */
+@SuppressWarnings("unused,MismatchedReadAndWriteOfArray")
 public class DefracConfigurationBase {
   protected String name;
   @SerializedName("package") protected String package$;
@@ -32,15 +33,13 @@ public class DefracConfigurationBase {
   @SerializedName("gen-sources") protected Boolean genSource;
   @SerializedName("gen-macros") protected Boolean genMacros;
   protected Boolean strictMode;
-  @SuppressWarnings("MismatchedReadAndWriteOfArray")
   protected String[] lib;
-  @SuppressWarnings("MismatchedReadAndWriteOfArray")
   protected String[] resources;
   protected EnvironmentConfig environment;
   protected JavaSettings java;
   protected MacroSettings macro;
-  @SuppressWarnings("MismatchedReadAndWriteOfArray")
   protected String[] keep;
+  protected String optimize;
 
   @NotNull
   public String getName() {

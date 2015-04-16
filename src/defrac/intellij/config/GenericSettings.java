@@ -19,6 +19,7 @@ package defrac.intellij.config;
 /**
  *
  */
+@SuppressWarnings("unused,MismatchedReadAndWriteOfArray")
 public final class GenericSettings {
   private JavaSettings java;
   private MacroSettings macro;

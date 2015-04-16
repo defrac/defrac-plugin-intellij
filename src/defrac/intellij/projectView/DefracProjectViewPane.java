@@ -57,7 +57,7 @@ public final class DefracProjectViewPane extends ProjectViewPane {
 
   @Override
   public Icon getIcon() {
-    return DefracIcons.DEFRAC;
+    return DefracIcons.Defrac16x16;
   }
 
   @Override

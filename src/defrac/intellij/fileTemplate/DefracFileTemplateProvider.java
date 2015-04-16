@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package defrac.intellij;
+package defrac.intellij.fileTemplate;
 
 import com.intellij.ide.fileTemplates.FileTemplateDescriptor;
 import com.intellij.ide.fileTemplates.FileTemplateGroupDescriptor;
@@ -39,14 +39,22 @@ public final class DefracFileTemplateProvider implements FileTemplateGroupDescri
   @NotNull @NonNls public static final String IOS_APP = "IOSApplication.java";
   @NotNull @NonNls public static final String IOS_APP_CONTROLLER = "IOSApplicationController.java";
   @NotNull @NonNls public static final String IOS_APP_DELEGATE = "IOSApplicationDelegate.java";
+  @NotNull @NonNls public static final String DELEGATE = "Delegate.java";
+  @NotNull @NonNls public static final String DELEGATE_IMPLEMENTATION = "DelegateImplementation.java";
+  @NotNull @NonNls public static final String MACRO = "Macro.java";
+  @NotNull @NonNls public static final String MACRO_IMPLEMENTATION = "MacroImplementation.java";
 
   @Override
   public FileTemplateGroupDescriptor getFileTemplatesDescriptor() {
-    final FileTemplateGroupDescriptor group = new FileTemplateGroupDescriptor("Defrac", DefracIcons.DEFRAC);
+    final FileTemplateGroupDescriptor group = new FileTemplateGroupDescriptor("Defrac", DefracIcons.Defrac16x16);
     group.addTemplate(new FileTemplateDescriptor(GENERIC_APP, StdFileTypes.JAVA.getIcon()));
     group.addTemplate(new FileTemplateDescriptor(IOS_APP, StdFileTypes.JAVA.getIcon()));
     group.addTemplate(new FileTemplateDescriptor(IOS_APP_DELEGATE, StdFileTypes.JAVA.getIcon()));
     group.addTemplate(new FileTemplateDescriptor(IOS_APP_CONTROLLER, StdFileTypes.JAVA.getIcon()));
+    group.addTemplate(new FileTemplateDescriptor(DELEGATE, StdFileTypes.JAVA.getIcon()));
+    group.addTemplate(new FileTemplateDescriptor(DELEGATE_IMPLEMENTATION, StdFileTypes.JAVA.getIcon()));
+    group.addTemplate(new FileTemplateDescriptor(MACRO, StdFileTypes.JAVA.getIcon()));
+    group.addTemplate(new FileTemplateDescriptor(MACRO_IMPLEMENTATION, StdFileTypes.JAVA.getIcon()));
     return group;
   }
 

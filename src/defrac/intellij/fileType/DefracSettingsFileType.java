@@ -75,6 +75,6 @@ public final class DefracSettingsFileType extends LanguageFileType {
   @Nullable
   @Override
   public Icon getIcon() {
-    return DefracIcons.DEFRAC;
+    return DefracIcons.Defrac16x16;
   }
 }
