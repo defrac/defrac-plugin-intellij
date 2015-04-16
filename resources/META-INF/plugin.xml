@@ -78,6 +78,7 @@
                 factoryClass="defrac.intellij.toolWindow.DefracToolWindowFactory"/>
     <fileTemplateGroup implementation="defrac.intellij.fileTemplate.DefracFileTemplateProvider"/>
     <projectTemplatesFactory implementation="defrac.intellij.projectWizard.DefracProjectTemplatesFactory"/>
+    <runConfigurationProducer implementation="defrac.intellij.run.DefracRunConfigurationProducer" order="first"/>
   </extensions>
 
   <project-components>
@@ -91,6 +92,7 @@
       <implementation-class>defrac.intellij.project.DefracProcess</implementation-class>
     </component>
   </project-components>
+<<<<<<< HEAD
 
   <actions>
     <action id="defrac.action.new.delegate"
@@ -127,5 +129,9 @@
   </actions>
 
   <application-components/>
+=======
+  <actions>
+  </actions>
+>>>>>>> 6fe0cf7... added defrac run config
   <module-components/>
 </idea-plugin>

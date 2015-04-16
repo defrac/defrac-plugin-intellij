@@ -16,6 +16,7 @@
 
 package defrac.intellij.run;
 
+import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationTypeBase;
 import com.intellij.execution.configurations.ConfigurationTypeUtil;
 import defrac.intellij.DefracBundle;
@@ -29,18 +30,39 @@ import javax.swing.*;
  *
  */
 public final class DefracConfigurationType extends ConfigurationTypeBase {
-  @NotNull @NonNls public static final String ID = "DEFRAC";
+  @NotNull
+  @NonNls
+  public static final String ID = "DEFRAC";
 
-  @NotNull public static final String DISPLAY_NAME = DefracBundle.message("config.name");
-  @NotNull public static final String DESCRIPTION = DefracBundle.message("config.description");
+  @NotNull
+  public static final String DISPLAY_NAME = DefracBundle.message("config.name");
+  @NotNull
+  public static final String DESCRIPTION = DefracBundle.message("config.description");
 
   public static DefracConfigurationType getInstance() {
     return ConfigurationTypeUtil.findConfigurationType(DefracConfigurationType.class);
   }
 
+  @NotNull
+  private final ConfigurationFactory factory = new DefracConfigurationFactory(this);
+
   public DefracConfigurationType() {
+<<<<<<< HEAD
     super(ID, DISPLAY_NAME, DESCRIPTION, DefracIcons.Defrac16x16);
     addFactory(new DefracConfigurationFactory(this));
+=======
+    super(ID, DISPLAY_NAME, DESCRIPTION, DefracIcons.DEFRAC);
+  }
+
+  @Override
+  public ConfigurationFactory[] getConfigurationFactories() {
+    return new ConfigurationFactory[]{factory};
+>>>>>>> df9721c... fix: run config for android modules
+  }
+
+  @NotNull
+  public ConfigurationFactory getConfigurationFactory() {
+    return factory;
   }
 
   @Override

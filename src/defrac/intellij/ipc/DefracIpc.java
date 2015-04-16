@@ -119,7 +119,7 @@ public final class DefracIpc implements ProcessListener {
 
   public boolean compile(@Nullable final CompileContext context,
                          @NotNull final DefracPlatform platform) throws IOException, InterruptedException {
-    LOG.info("defrac "+platform.prefixCommand(DefracCommands.COMPILE)+" requested");
+    LOG.info("defrac " + platform.prefixCommand(DefracCommands.COMPILE) + " requested");
 
     return execAndGet(context, new Task<Boolean>() {
       @NotNull
@@ -163,6 +163,62 @@ public final class DefracIpc implements ProcessListener {
 
         LOG.info("Invoking "+platform.prefixCommand(DefracCommands.COMPILE));
         execCommand(context, platform, DefracCommands.COMPILE);
+
+        LOG.info("Waiting for command to complete ...");
+        barrier.await();
+
+        return result.get();
+      }
+    });
+  }
+
+
+  public boolean genMacros(@Nullable final CompileContext context,
+                         @NotNull final DefracPlatform platform) throws IOException, InterruptedException {
+    LOG.info("defrac "+platform.prefixCommand(DefracCommands.GEN_MACROS)+" requested");
+
+    return execAndGet(context, new Task<Boolean>() {
+      @NotNull
+      @Override
+      public Boolean exec() throws IOException, InterruptedException, BrokenBarrierException {
+        if(process.isProcessTerminated() || process.isProcessTerminating()) {
+          addMessage(CompilerMessageCategory.ERROR, "defrac process lost");
+          return false;
+        }
+
+        final CyclicBarrier barrier = new CyclicBarrier(2);
+        final AtomicBoolean result = new AtomicBoolean();
+
+        installParser(new RegExpBasedParser(DefracCommands.COMPILE_RESULT) {
+          @Override
+          protected void onMatch(@NotNull final Matcher matcher) throws InterruptedException, BrokenBarrierException {
+            try {
+              final int errors = Integer.parseInt(matcher.group(4));
+              final boolean isSuccess = errors == 0;
+
+              LOG.info("Gen-macros completed. Result: " + isSuccess);
+              result.set(isSuccess);
+
+              LOG.info("Awaiting barrier ...");
+              barrier.await();
+            } catch(final NumberFormatException exception) {
+              LOG.error(exception);
+              onFailure();
+            }
+          }
+
+          @Override
+          public void onFailure() throws InterruptedException, BrokenBarrierException {
+            LOG.info("Received onFailure callback");
+            result.set(false);
+
+            LOG.info("Awaiting barrier ...");
+            barrier.await();
+          }
+        });
+
+        LOG.info("Invoking "+platform.prefixCommand(DefracCommands.GEN_MACROS));
+        execCommand(context, platform, DefracCommands.GEN_MACROS);
 
         LOG.info("Waiting for command to complete ...");
         barrier.await();

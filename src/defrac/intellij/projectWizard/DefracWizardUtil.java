@@ -138,6 +138,10 @@ public final class DefracWizardUtil {
       return DefracBundle.message("projectWizard.error.noPackageName");
     }
 
+    if(name.indexOf('.') == -1) {
+      return DefracBundle.message("projectWizard.error.unqualifiedPackageName");
+    }
+
     if(!isValidQualifiedName(name)) {
       return DefracBundle.message("projectWizard.error.invalidPackageName");
     }

@@ -44,6 +44,8 @@ public final class DefracModifiedSettingsStep extends SdkSettingsStep {
 
   @Override
   protected void OnSdkSelected(final Sdk sdk) {
-    moduleBuilder.setDefracSdk(sdk);
+    if(moduleBuilder != null && moduleBuilder.isSuitableSdkType(sdk.getSdkType())) {
+      moduleBuilder.setDefracSdk(sdk);
+    }
   }
 }

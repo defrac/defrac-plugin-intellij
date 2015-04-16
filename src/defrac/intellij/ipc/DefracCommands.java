@@ -27,6 +27,7 @@ public final class DefracCommands {
   @NotNull @NonNls public static final String COMPILE_RESULT = "\\[info\\] Compiled (\\d+) units? in (\\d+(s|ms)) \\((\\d+) errors?, (\\d+) warnings?\\)";
 
   @NotNull @NonNls public static final String PACKAGE = "package";
+  @NotNull @NonNls public static final String GEN_MACROS = "gen-macros";
 
   private DefracCommands() {}
 }

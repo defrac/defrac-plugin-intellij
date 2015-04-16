@@ -40,7 +40,7 @@ public final class PackageTask extends BooleanBasedCompilerTask {
 
   @Override
   protected boolean shouldRunForFacet(@NotNull final DefracFacet facet) {
-    return facet.getPlatform() != DefracPlatform.JVM;
+    return facet.getPlatform().isJVM();
   }
 
   @NotNull

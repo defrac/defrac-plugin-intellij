@@ -17,11 +17,15 @@
 package defrac.intellij.config;
 
 import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.CachedValueProvider;
@@ -37,6 +41,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -108,11 +113,16 @@ public final class DefracConfig extends DefracConfigurationBase {
   @Nullable
   public DefracConfigurationBase getPlatform(@NotNull final DefracPlatform platform) {
     switch(platform) {
-      case ANDROID: return android;
-      case GENERIC: return this;
-      case IOS: return ios;
-      case JVM: return jvm;
-      case WEB: return web;
+      case ANDROID:
+        return android;
+      case GENERIC:
+        return this;
+      case IOS:
+        return ios;
+      case JVM:
+        return jvm;
+      case WEB:
+        return web;
     }
 
     throw new IllegalArgumentException("Unknown platform " + platform);
@@ -174,6 +184,15 @@ public final class DefracConfig extends DefracConfigurationBase {
   public DefracConfig setWebSettings(@NotNull final WebSettings value) {
     web = value;
     return this;
+  }
+
+  public void commit(@NotNull final Project project) throws IOException {
+    final File baseDir = VfsUtilCore.virtualToIoFile(project.getBaseDir());
+    final File settingsFile = new File(baseDir, "default.settings");
+
+    write(Suppliers.<OutputStream>ofInstance(new FileOutputStream(settingsFile)));
+
+    LocalFileSystem.getInstance().refreshIoFiles(Collections.singletonList(settingsFile));
   }
 
   public void write(@NotNull final Supplier<OutputStream> supplier) throws IOException {

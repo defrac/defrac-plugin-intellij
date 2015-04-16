@@ -25,6 +25,7 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
@@ -128,7 +129,7 @@ public final class DefracProcess extends DefracProjectComponent {
 
     final List<String> cmd = Lists.newArrayList();
     final String pathToExecutable;
-    final Sdk sdk = DefracProjectUtil.getProjectSdk(getProject());
+    final Sdk sdk = findDefracSdk();
 
     if(DefracSdkUtil.isDefracSdk(sdk)) {
       final VirtualFile sdkDir = sdk.getHomeDirectory();
@@ -190,6 +191,26 @@ public final class DefracProcess extends DefracProjectComponent {
       processHandler = null;
       ipc = null;
     }
+  }
+
+  @Nullable
+  private Sdk findDefracSdk() {
+    final Sdk projectSdk = DefracProjectUtil.getProjectSdk(getProject());
+
+    if(DefracSdkUtil.isDefracSdk(projectSdk)) {
+      return projectSdk;
+    }
+
+    final Sdk[] sdks =
+        ProjectJdkTable.getInstance().getAllJdks();
+
+    for(final Sdk sdk : sdks) {
+      if(DefracSdkUtil.isDefracSdk(sdk)) {
+        return sdk;
+      }
+    }
+
+    return null;
   }
 
   private String getDefracExecutableName() {

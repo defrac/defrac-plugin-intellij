@@ -126,6 +126,22 @@ public enum DefracPlatform {
     return this == GENERIC;
   }
 
+  public boolean isAndroid() {
+    return this == ANDROID;
+  }
+
+  public boolean isWeb() {
+    return this == WEB;
+  }
+
+  public boolean isIOS() {
+    return this == IOS;
+  }
+
+  public boolean isJVM() {
+    return this == JVM;
+  }
+
   @Nullable
   public static DefracPlatform byName(@NotNull final String value) {
     return NAME_TO_PLATFORM.get(value);

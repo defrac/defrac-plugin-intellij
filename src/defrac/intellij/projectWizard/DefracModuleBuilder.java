@@ -16,7 +16,6 @@
 
 package defrac.intellij.projectWizard;
 
-import com.google.common.base.Suppliers;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
@@ -51,9 +50,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -387,9 +384,6 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
   }
 
   private void createDefaultSettings(@NotNull final Project project) throws IOException {
-    final File baseDir = VfsUtilCore.virtualToIoFile(project.getBaseDir());
-    final File settingsFile = new File(baseDir, "default.settings");
-
     final DefracConfig config = new DefracConfig();
     config.setName(applicationName);
     config.setPackage(packageName);
@@ -401,13 +395,7 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
 
     config.setTargets(targets());
 
-    if(!settingsFile.exists()) {
-      if(!settingsFile.createNewFile()) {
-        throw new IOException("Couldn't create "+settingsFile.getAbsolutePath());
-      }
-    }
-
-    config.write(Suppliers.<OutputStream>ofInstance(new FileOutputStream(settingsFile)));
+    config.commit(project);
   }
 
   @NotNull

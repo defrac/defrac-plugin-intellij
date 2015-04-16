@@ -215,6 +215,24 @@ public final class DefracPsiUtil {
     return true;
   }
 
+  public static boolean compareBytecodeTypes(@Nullable PsiType[] a,
+                                             @Nullable PsiType[] b) {
+    if(a == null) {
+      return b == null;
+    } else if(b == null) {
+      return false;
+    } else if(a.length != b.length) {
+      return false;
+    }
+
+    for(int i = 0; i < a.length; ++i) {
+      if(!compareBytecodeTypes(a[i], b[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   /**
    * Compares two types for equality in Java bytecode
    *
@@ -284,7 +302,7 @@ public final class DefracPsiUtil {
     return compareTypes(a, b, /*ignoreEllipsis=*/false);
   }
 
-  private static boolean isJavaLangObject(final PsiType b) {
+  public static boolean isJavaLangObject(final PsiType b) {
     final GlobalSearchScope scope = b.getResolveScope();
 
     if(scope == null) {
