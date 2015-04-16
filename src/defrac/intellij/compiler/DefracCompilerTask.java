@@ -24,17 +24,23 @@ import com.intellij.openapi.compiler.CompileTask;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.ui.UIUtil;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.project.DefracConsoleView;
 import defrac.intellij.run.DefracRunConfiguration;
+import defrac.intellij.toolWindow.DefracToolWindowFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  *
@@ -72,6 +78,10 @@ public abstract class DefracCompilerTask implements CompileTask {
       return false;
     }
 
+    if(!shouldRunForFacet(facet)) {
+      return true;
+    }
+
     try {
       context.getProgressIndicator().pushState();
       setProgressIndicatorText(context, facet);
@@ -81,12 +91,32 @@ public abstract class DefracCompilerTask implements CompileTask {
       UIUtil.invokeLaterIfNeeded(new Runnable() {
         @Override
         public void run() {
-          final ConsoleView console = DefracConsoleView.getInstance(project);
+          final ToolWindow toolWindow =
+              ToolWindowManager.
+                  getInstance(project).
+                  getToolWindow(DefracToolWindowFactory.TOOLWINDOW_ID);
 
-          if(console != null) {
-            console.clear();
+          if(toolWindow.getContentManager().getContentCount() == 1 &&
+              checkNotNull(toolWindow.getContentManager().getContent(0)).getComponent() instanceof JLabel) {
+            toolWindow.activate(new Runnable() {
+              @Override
+              public void run() {
+                awaitBarrier();
+              }
+            });
+          } else {
+            final ConsoleView console =
+                DefracConsoleView.getInstance(project);
+
+            if(console != null) {
+              console.clear();
+            }
+
+            awaitBarrier();
           }
+        }
 
+        private void awaitBarrier() {
           try {
             barrier.await();
           } catch(final InterruptedException interrupt) {
@@ -108,7 +138,7 @@ public abstract class DefracCompilerTask implements CompileTask {
         // able to show and clear console view in time
       }
 
-      return doCompile(context, facet, defracRunConfiguration);
+      return doCompile(context, defracRunConfiguration, facet);
     } finally {
       context.getProgressIndicator().popState();
     }
@@ -118,15 +148,17 @@ public abstract class DefracCompilerTask implements CompileTask {
                                         @NotNull final DefracFacet facet) {
     context.
         getProgressIndicator().
-        setText("defrac " + (facet.getPlatform().isGeneric() ? "" : facet.getPlatform().name + ":") + getPresentableName());
+        setText("defrac "+facet.getPlatform().prefixCommand(getDefracCommandName()));
   }
 
-  @NotNull
-  protected abstract String getPresentableName();
+  protected abstract boolean shouldRunForFacet(@NotNull final DefracFacet facet);
+
+    @NotNull
+  protected abstract String getDefracCommandName();
 
   protected abstract boolean doCompile(@NotNull final CompileContext context,
-                                       @NotNull final DefracFacet facet,
-                                       @NotNull final DefracRunConfiguration configuration);
+                                       @NotNull final DefracRunConfiguration configuration,
+                                       @NotNull final DefracFacet facet);
 
   private boolean isDefracRunConfiguration(@Nullable final RunConfiguration runConfiguration) {
     return runConfiguration instanceof DefracRunConfiguration;

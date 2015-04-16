@@ -18,7 +18,7 @@ package defrac.intellij.projectWizard;
 
 import com.intellij.ide.util.projectWizard.ModuleBuilder;
 import com.intellij.platform.templates.BuilderBasedTemplate;
-import defrac.intellij.DefracIcons;
+import icons.DefracIcons;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;

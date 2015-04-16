@@ -48,8 +48,8 @@ public final class JvmRunningState extends BaseJavaApplicationCommandLineState<D
   private final DefracFacet facet;
 
   public JvmRunningState(@NotNull final ExecutionEnvironment environment,
-                         @NotNull final DefracFacet facet,
-                         @NotNull final DefracRunConfiguration configuration) {
+                         @NotNull final DefracRunConfiguration configuration,
+                         @NotNull final DefracFacet facet) {
     super(environment, configuration);
     this.facet = facet;
   }
@@ -74,7 +74,7 @@ public final class JvmRunningState extends BaseJavaApplicationCommandLineState<D
     final DefracConfigOracle config = facet.getConfigOracle();
 
     if(config == null) {
-      throw new ExecutionException("Can't parse defrac settings");
+      throw new ExecutionException(DefracBundle.message("facet.error.noSettings"));
     }
 
     final boolean isDebug =

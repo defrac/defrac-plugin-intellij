@@ -29,12 +29,15 @@ import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.ui.UIUtil;
 import defrac.intellij.ipc.DefracIpc;
 import defrac.intellij.sdk.DefracSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -75,20 +78,44 @@ public final class DefracProcess extends DefracProjectComponent {
         processHandler = null;
         ipc = null;
 
-        final ConsoleView console =
-            DefracConsoleView.getInstance(getProject());
+        final CyclicBarrier barrier = new CyclicBarrier(2);
 
-        if(console != null) {
-          console.clear();
-          console.print("Restarting ", ConsoleViewContentType.SYSTEM_OUTPUT);
-          console.printHyperlink("defrac", new BrowserHyperlinkInfo("https://www.defrac.com/"));
-          console.print(" ...\n", ConsoleViewContentType.SYSTEM_OUTPUT);
-        }
+        UIUtil.invokeLaterIfNeeded(new Runnable() {
+          @Override
+          public void run() {
+            final ConsoleView console =
+                DefracConsoleView.getInstance(getProject());
 
-        tryInitProcess();
+            if(console != null) {
+              console.clear();
+              console.print("Restarting ", ConsoleViewContentType.SYSTEM_OUTPUT);
+              console.printHyperlink("defrac", new BrowserHyperlinkInfo("https://www.defrac.com/"));
+              console.print(" ...\n", ConsoleViewContentType.SYSTEM_OUTPUT);
+            }
 
-        if(console != null && processHandler != null) {
-          console.attachToProcess(processHandler);
+
+            tryInitProcess();
+
+            if(console != null && processHandler != null) {
+              console.attachToProcess(processHandler);
+            }
+
+            try {
+              barrier.await();
+            } catch(final InterruptedException interrupt) {
+              Thread.currentThread().interrupt();
+            } catch(final BrokenBarrierException brokenBarrier) {
+              throw new IllegalStateException(brokenBarrier);
+            }
+          }
+        });
+
+        try {
+          barrier.await();
+        } catch(final InterruptedException interrupt) {
+          Thread.currentThread().interrupt();
+        } catch(final BrokenBarrierException brokenBarrier) {
+          throw new IllegalStateException(brokenBarrier);
         }
       }
 

@@ -19,6 +19,7 @@ package defrac.intellij;
 import com.google.common.collect.ImmutableMap;
 import com.intellij.openapi.util.SystemInfo;
 import defrac.intellij.util.Names;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -107,6 +108,18 @@ public enum DefracPlatform {
     this.name = name;
     this.displayName = displayName;
     this.abbreviation = abbreviation;
+  }
+
+  @Nullable
+  @Contract("null -> null; !null -> !null")
+  public String prefixCommand(@Nullable final String command) {
+    if(command == null) {
+      return null;
+    } else {
+      return isGeneric()
+          ? command
+          : name+':'+command;
+    }
   }
 
   public boolean isGeneric() {

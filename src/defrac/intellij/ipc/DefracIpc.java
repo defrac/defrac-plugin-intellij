@@ -16,12 +16,14 @@
 
 package defrac.intellij.ipc;
 
+import com.google.common.base.Charsets;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessListener;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.util.ui.UIUtil;
@@ -31,22 +33,26 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.PrintStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
  *
  */
 public final class DefracIpc implements ProcessListener {
+  @NotNull
+  private static final Logger LOG = Logger.getInstance(DefracIpc.class.getName());
+
   @NotNull @NonNls public static final String LEVEL_DEBUG = "debug";
   @NotNull @NonNls public static final String LEVEL_INFO = "info";
   @NotNull @NonNls public static final String LEVEL_WARN = "warn";
@@ -73,9 +79,6 @@ public final class DefracIpc implements ProcessListener {
   @NotNull
   private final ProcessHandler process;
 
-  @NotNull
-  private final PrintStream out;
-
   @Nullable
   private Parser parser;
 
@@ -93,19 +96,24 @@ public final class DefracIpc implements ProcessListener {
   @NotNull
   private final Lock lock = new ReentrantLock(/*fair=*/true);
 
+  @Nullable
+  private Thread currentThread;
+
+  private volatile boolean someOutputReceived = false;
+
   private DefracIpc(@NotNull final ProcessHandler process) {
     this.process = process;
-    this.out = new PrintStream(checkNotNull(process.getProcessInput()), /*autoFlush=*/true);
     process.addProcessListener(this);
-    out.println("");
-  }
+    }
 
   public boolean compile(@Nullable final CompileContext context,
-                         @NotNull final DefracPlatform platform) throws InterruptedException {
+                         @NotNull final DefracPlatform platform) throws IOException, InterruptedException {
+    LOG.info("defrac "+platform.prefixCommand(DefracCommands.COMPILE)+" requested");
+
     return execAndGet(context, new Task<Boolean>() {
       @NotNull
       @Override
-      public Boolean exec() throws InterruptedException, BrokenBarrierException {
+      public Boolean exec() throws IOException, InterruptedException, BrokenBarrierException {
         if(process.isProcessTerminated() || process.isProcessTerminating()) {
           addMessage(CompilerMessageCategory.ERROR, "defrac process lost");
           return false;
@@ -119,21 +127,33 @@ public final class DefracIpc implements ProcessListener {
           protected void onMatch(@NotNull final Matcher matcher) throws InterruptedException, BrokenBarrierException {
             try {
               final int errors = Integer.parseInt(matcher.group(4));
-              result.set(errors == 0);
+              final boolean isSuccess = errors == 0;
+
+              LOG.info("Compile completed. Result: " + isSuccess);
+              result.set(isSuccess);
+
+              LOG.info("Awaiting barrier ...");
               barrier.await();
             } catch(final NumberFormatException exception) {
+              LOG.error(exception);
               onFailure();
             }
           }
 
           @Override
           public void onFailure() throws InterruptedException, BrokenBarrierException {
+            LOG.info("Received onFailure callback");
             result.set(false);
+
+            LOG.info("Awaiting barrier ...");
             barrier.await();
           }
         });
 
-        execCommand(platform, DefracCommands.COMPILE);
+        LOG.info("Invoking "+platform.prefixCommand(DefracCommands.COMPILE));
+        execCommand(context, platform, DefracCommands.COMPILE);
+
+        LOG.info("Waiting for command to complete ...");
         barrier.await();
 
         return result.get();
@@ -142,11 +162,13 @@ public final class DefracIpc implements ProcessListener {
   }
 
   public boolean pack(@Nullable final CompileContext context,
-                         @NotNull final DefracPlatform platform) throws InterruptedException {
+                      @NotNull final DefracPlatform platform) throws IOException, InterruptedException {
+    LOG.info("defrac "+platform.prefixCommand(DefracCommands.PACKAGE)+" requested");
+
     return execAndGet(context, new Task<Boolean>() {
       @NotNull
       @Override
-      public Boolean exec() throws InterruptedException, BrokenBarrierException {
+      public Boolean exec() throws IOException, InterruptedException, BrokenBarrierException {
         //TODO(joa): dup cleanup
 
         if(process.isProcessTerminated() || process.isProcessTerminating()) {
@@ -162,21 +184,34 @@ public final class DefracIpc implements ProcessListener {
           protected void onMatch(@NotNull final Matcher matcher) throws InterruptedException, BrokenBarrierException {
             try {
               final int errors = Integer.parseInt(matcher.group(4));
-              result.set(errors == 0);
+              final boolean isSuccess = errors == 0;
+
+              LOG.info("Packaging completed. Result: " + isSuccess);
+              result.set(isSuccess);
+
+              LOG.info("Awaiting barrier ...");
               barrier.await();
             } catch(final NumberFormatException exception) {
+              LOG.error(exception);
               onFailure();
             }
           }
 
           @Override
           public void onFailure() throws InterruptedException, BrokenBarrierException {
+            LOG.info("Received onFailure callback");
             result.set(false);
+
+            LOG.info("Awaiting barrier ...");
             barrier.await();
           }
         });
 
-        execCommand(platform, DefracCommands.PACKAGE);
+        LOG.info("Invoking "+platform.prefixCommand(DefracCommands.PACKAGE));
+        execCommand(context, platform, DefracCommands.PACKAGE);
+
+
+        LOG.info("Waiting for command to complete ...");
         barrier.await();
 
         return result.get();
@@ -186,11 +221,15 @@ public final class DefracIpc implements ProcessListener {
 
   @NotNull
   private <V> V execAndGet(@Nullable CompileContext context,
-                           @NotNull final Task<V> task) throws InterruptedException {
+                           @NotNull final Task<V> task) throws InterruptedException, IOException {
     try {
+      LOG.info("Acquiring lock ...");
       lock.lockInterruptibly();
+      currentThread = Thread.currentThread();
+
       installContext(context);
 
+      LOG.info("Executing task ...");
       return task.exec();
     } catch(final BrokenBarrierException brokenBarrier) {
       throw new IllegalStateException(brokenBarrier);
@@ -198,13 +237,53 @@ public final class DefracIpc implements ProcessListener {
       flushMessage();
       resetContext();
       resetParser();
+
+      LOG.info("Releasing lock...");
+      currentThread = null;
       lock.unlock();
     }
   }
 
-  private void execCommand(@NotNull final DefracPlatform platform,
-                           @NotNull final String command) {
-    out.println(createScopedCommand(platform, command));
+  private void execCommand(@Nullable final CompileContext context,
+                           @NotNull final DefracPlatform platform,
+                           @NotNull final String command) throws IOException, InterruptedException {
+    final OutputStream out = process.getProcessInput();
+
+    if(out == null) {
+      throw new IOException("Process has no input");
+    }
+
+    someOutputReceived = false;
+
+    out.write(platform.prefixCommand(command).getBytes(Charsets.UTF_8));
+    out.write('\n');
+    out.flush();
+
+    checkForLiveness(context);
+  }
+
+  private void checkForLiveness(@Nullable final CompileContext context) throws InterruptedException, IOException {
+    final long t0 = System.nanoTime();
+
+    while(!someOutputReceived && TimeUnit.SECONDS.convert(System.nanoTime() - t0, TimeUnit.NANOSECONDS) < 5L) {
+      Thread.sleep(0x80L);
+    }
+
+    if(!someOutputReceived) {
+      addMessage(CompilerMessageCategory.ERROR, "Process doesn't answer");
+
+      if(context != null) {
+        final ProcessHandler processHandler =
+            DefracProcess.getInstance(context.getProject()).
+                getProcessHandler();
+
+        if(processHandler != null) {
+          processHandler.destroyProcess();
+        }
+      }
+
+      throw new IOException("Process is hanging");
+    }
   }
 
   private void installContext(@Nullable final CompileContext newContext) {
@@ -224,21 +303,19 @@ public final class DefracIpc implements ProcessListener {
     parser = null;
   }
 
-  @NotNull
-  private static String createScopedCommand(@NotNull final DefracPlatform platform,
-                                            @NotNull final String command) {
-    return platform.isGeneric()
-        ? command
-        : platform.name+':'+command;
-  }
-
   @Override
-  public void startNotified(final ProcessEvent event) {
-  }
+  public void startNotified(final ProcessEvent event) {}
 
   @Override
   public void processTerminated(final ProcessEvent event) {
     addMessage(CompilerMessageCategory.ERROR, "defrac process terminated");
+
+    final Thread currentThread = this.currentThread;
+
+    if(currentThread != null) {
+      LOG.info("Process died will worker is waiting. Sending interrupt to " + currentThread.toString());
+      currentThread.interrupt();
+    }
   }
 
   private void addMessage(@NotNull final CompilerMessageCategory category,
@@ -267,11 +344,9 @@ public final class DefracIpc implements ProcessListener {
   @Override
   public void onTextAvailable(final ProcessEvent event,
                               final Key outputType) {
-    final Parser parser = this.parser;
+    someOutputReceived = true;
 
-    if(parser == null) {
-      return;
-    }
+    final Parser parser = this.parser;
 
     try {
       final String text = event.getText();
@@ -287,14 +362,18 @@ public final class DefracIpc implements ProcessListener {
         if(dontKillParserImmediately) {
           dontKillParserImmediately = false;
         } else {
-          parser.onFailure();
+          if(parser != null) {
+            parser.onFailure();
+          }
           return;
         }
       } else {
         currentMessage.append('\n').append(text.trim());
       }
 
-      parser.onTextAvailable(event, outputType);
+      if(parser != null) {
+        parser.onTextAvailable(event, outputType);
+      }
     } catch(final InterruptedException interrupt) {
       Thread.currentThread().interrupt();
     } catch(final BrokenBarrierException brokenBarrier) {
@@ -358,6 +437,6 @@ public final class DefracIpc implements ProcessListener {
 
   private static interface Task<V> {
     @NotNull
-    public V exec() throws InterruptedException, BrokenBarrierException;
+    public V exec() throws IOException, InterruptedException, BrokenBarrierException;
   }
 }
