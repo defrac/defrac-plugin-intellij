@@ -18,12 +18,11 @@ package defrac.intellij.compiler;
 
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
-import defrac.intellij.DefracPlatform;
+import com.intellij.openapi.diagnostic.Logger;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.ipc.DefracIpc;
 import defrac.intellij.project.DefracProcess;
 import defrac.intellij.run.DefracRunConfiguration;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.ide.PooledThreadExecutor;
 
@@ -32,29 +31,14 @@ import java.util.concurrent.*;
 /**
  *
  */
-public final class DefracCompileTask extends DefracCompilerTask {
-  @NotNull @NonNls private static final String NAME = "compile";
-
+public abstract class BooleanBasedCompilerTask extends DefracCompilerTask {
   @NotNull
-  public static final DefracCompileTask INSTANCE = new DefracCompileTask();
-
-  private DefracCompileTask() {
-  }
-
-  @NotNull
-  @Override
-  protected String getPresentableName() {
-    return NAME;
-  }
+  private static final Logger LOG = Logger.getInstance(BooleanBasedCompilerTask.class.getName());
 
   @Override
   protected boolean doCompile(@NotNull final CompileContext context,
-                              @NotNull final DefracFacet facet,
-                              @NotNull final DefracRunConfiguration configuration) {
-    if(facet.getPlatform() != DefracPlatform.JVM) {
-      return true;
-    }
-
+                              @NotNull final DefracRunConfiguration configuration,
+                              @NotNull final DefracFacet facet) {
     final DefracIpc ipc =
         DefracProcess.getInstance(context.getProject()).getIpc();
 
@@ -63,12 +47,9 @@ public final class DefracCompileTask extends DefracCompilerTask {
       return false;
     }
 
-    final Future<Boolean> future = PooledThreadExecutor.INSTANCE.submit(new Callable<Boolean>() {
-      @Override
-      public Boolean call() throws Exception {
-        return ipc.compile(context, facet.getPlatform());
-      }
-    });
+    final Future<Boolean> future =
+        PooledThreadExecutor.INSTANCE.
+            submit(createCallable(context, configuration, facet, ipc));
 
     for(;;) {
       if(context.getProgressIndicator().isCanceled()) {
@@ -81,6 +62,7 @@ public final class DefracCompileTask extends DefracCompilerTask {
           Thread.currentThread().interrupt();
           return false;
         } catch(final ExecutionException exception) {
+          LOG.error(exception);
           return false;
         } catch(final TimeoutException timeout) {
           /* retry */
@@ -88,4 +70,9 @@ public final class DefracCompileTask extends DefracCompilerTask {
       }
     }
   }
+
+  protected abstract Callable<Boolean> createCallable(@NotNull final CompileContext context,
+                                                      @NotNull final DefracRunConfiguration configuration,
+                                                      @NotNull final DefracFacet facet,
+                                                      @NotNull final DefracIpc ipc);
 }

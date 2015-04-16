@@ -19,7 +19,7 @@ package defrac.intellij.run;
 import com.intellij.execution.configurations.ConfigurationTypeBase;
 import com.intellij.execution.configurations.ConfigurationTypeUtil;
 import defrac.intellij.DefracBundle;
-import defrac.intellij.DefracIcons;
+import icons.DefracIcons;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 

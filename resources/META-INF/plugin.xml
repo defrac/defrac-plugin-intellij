@@ -44,6 +44,8 @@
   <depends>com.intellij.modules.json</depends>
   <depends>com.intellij.modules.xdebugger</depends>
 
+  <resource-bundle>defrac.intellij.DefracBundle</resource-bundle>
+
   <extensions defaultExtensionNs="com.intellij">
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.DelegateAnnotator"/>
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.MacroAnnotator"/>
@@ -68,7 +70,7 @@
     <referencesSearch implementation="defrac.intellij.findUsages.MacroClassReferencesSearch"/>
     <sdkType implementation="defrac.intellij.sdk.DefracSdkType"/>
     <nonProjectFileWritingAccessExtension implementation="defrac.intellij.fileType.DefracSettingsWritingAccess"/>
-    <toolWindow anchor="bottom" id="defrac" factoryClass="defrac.intellij.toolWindow.DefracToolWindowFactory"/>
+    <toolWindow id="defrac" anchor="bottom" icon="DefracIcons.TOOLWINDOW_DEFRAC" conditionClass="defrac.intellij.toolWindow.DefracToolWindowCondition" factoryClass="defrac.intellij.toolWindow.DefracToolWindowFactory"/>
     <fileTemplateGroup implementation="defrac.intellij.DefracFileTemplateProvider"/>
     <projectTemplatesFactory implementation="defrac.intellij.projectWizard.DefracProjectTemplatesFactory"/>
   </extensions>

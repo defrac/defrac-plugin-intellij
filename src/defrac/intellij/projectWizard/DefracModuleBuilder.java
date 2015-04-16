@@ -25,7 +25,6 @@ import com.intellij.ide.util.projectWizard.ModuleBuilder;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.SettingsStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.ModifiableModuleModel;
 import com.intellij.openapi.module.Module;
@@ -43,11 +42,10 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import defrac.intellij.DefracFileTemplateProvider;
-import defrac.intellij.DefracIcons;
-import defrac.intellij.DefracPlatform;
 import defrac.intellij.config.DefracConfig;
 import defrac.intellij.sdk.DefracSdkType;
 import defrac.intellij.util.DefracCommandLineBuilder;
+import icons.DefracIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -59,16 +57,15 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
  */
 public abstract class DefracModuleBuilder extends ModuleBuilder {
   @NotNull
-  private static final Logger LOG = Logger.getInstance("#defrac.intellij.projectWizard.DefracModuleBuilder");
+  private static final Logger LOG = Logger.getInstance(DefracModuleBuilder.class.getName());
 
   public static final class Generic extends DefracModuleBuilder {
     @Override
@@ -149,7 +146,7 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
   @NotNull
   private String mainClassName = "";
   @NotNull
-  private String verion = "";
+  private String version = "1.0";
   @Nullable
   private Sdk defracSdk;
 
@@ -274,49 +271,27 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
   }
 
   private static void reloadProject(@NotNull final Project project) {
-    final CyclicBarrier barrier = new CyclicBarrier(2);
-
-    ApplicationManager.getApplication().runWriteAction(new Runnable() {
+    VirtualFileManager.getInstance().asyncRefresh(new Runnable() {
       @Override
       public void run() {
-        VirtualFileManager.getInstance().syncRefresh();
-
-        try {
-          barrier.await();
-        } catch(final BrokenBarrierException brokenBarrier) {
-          throw new IllegalStateException(brokenBarrier);
-        } catch(final InterruptedException interrupt) {
-          Thread.currentThread().interrupt();
-        }
+        ProjectManager.getInstance().reloadProject(project);
       }
     });
-
-    try {
-      barrier.await();
-    } catch(final BrokenBarrierException brokenBarrier) {
-      throw new IllegalStateException(brokenBarrier);
-    } catch(final InterruptedException interrupt) {
-      Thread.currentThread().interrupt();
-    }
-
-    ProjectManager.getInstance().reloadProject(project);
   }
 
   private void createProjectStructure(@NotNull final Project project) throws IOException {
     final File baseDir = VfsUtilCore.virtualToIoFile(project.getBaseDir());
 
-    createDefracDirectory(baseDir, "bin", "java");
-    createDefracDirectory(baseDir, "bin", "macro");
-
-    createDefracDirectory(baseDir, "macro", "java");
-
     createDirectory(baseDir, "resources");
 
     createDefracDirectory(baseDir, "src", "java");
+    createDefracDirectory(baseDir, "test", "java");
+    createDefracDirectory(baseDir, "macro", "java");
+
+    createDefracDirectory(baseDir, "bin", "java");
+    createDefracDirectory(baseDir, "bin", "macro");
 
     createDefracDirectory(baseDir, "target", "");
-
-    createDefracDirectory(baseDir, "test", "java");
   }
 
   private void createIntelliProject(@NotNull final Project project) {
@@ -359,7 +334,7 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
   private static Properties templateProperties(@NotNull final Project project,
                                                @NotNull final String packageName,
                                                @NotNull final String className) {
-    //TODO(tim):  FileTemplateManager.getInstance(project)
+    //TODO(tim): FileTemplateManager.getInstance(project)
     final Properties properties = new Properties(FileTemplateManager.getInstance().getDefaultProperties());
     properties.put("NAME", className);
     properties.put("PACKAGE_NAME", packageName);
@@ -367,19 +342,23 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
   }
 
   @NotNull
-  private static File createDefracDirectory(@NotNull final File parent,
-                                            @NotNull final String name,
-                                            @NotNull final String childPrefix) throws IOException {
+  private File createDefracDirectory(@NotNull final File parent,
+                                     @NotNull final String name,
+                                     @NotNull final String childPrefix) throws IOException {
     final File dir = createDirectory(parent, name);
+
     if(!childPrefix.isEmpty()) {
       createDirectory(dir, childPrefix);
     }
-    createDirectory(dir, directoryName(childPrefix, "android"));
-    if(DefracPlatform.IOS.isAvailableOnHostOS()) {
-      createDirectory(dir, directoryName(childPrefix, "ios"));
+
+    for(final String target : targets()) {
+      if(isNullOrEmpty(target)) {
+        continue;
+      }
+
+      createDirectory(dir, directoryName(childPrefix, target));
     }
-    createDirectory(dir, directoryName(childPrefix, "jvm"));
-    createDirectory(dir, directoryName(childPrefix, "web"));
+
     return dir;
   }
 
@@ -388,7 +367,7 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
     if(scope.isEmpty()) {
       return name;
     } else {
-      return scope + '.' + name;
+      return scope+'.'+name;
     }
   }
 
@@ -397,6 +376,8 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
     final File dir = new File(parent, name);
 
     if(!dir.exists()) {
+      LOG.info("Creating directory \""+parent.getAbsolutePath()+'"');
+
       if(!dir.mkdirs()) {
         throw new IOException("Couldn't create "+dir.getAbsolutePath());
       }
@@ -412,7 +393,7 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
     final DefracConfig config = new DefracConfig();
     config.setName(applicationName);
     config.setPackage(packageName);
-    config.setVersion(verion);
+    config.setVersion(isNullOrEmpty(version) ? "1.0" : version);
 
     if(!mainClassName.isEmpty()) {
       config.setMain(mainClassName);

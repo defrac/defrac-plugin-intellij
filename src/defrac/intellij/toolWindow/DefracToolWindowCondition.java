@@ -14,25 +14,18 @@
  * limitations under the License.
  */
 
-package defrac.intellij;
+package defrac.intellij.toolWindow;
 
-import com.intellij.openapi.util.IconLoader;
-import org.jetbrains.annotations.Nullable;
-
-import javax.swing.*;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Condition;
+import defrac.intellij.project.DefracProjectUtil;
 
 /**
  *
  */
-public final class DefracIcons {
-  @Nullable
-  public static final Icon DEFRAC = IconLoader.findIcon("/icons/defrac.png");
-
-  @Nullable
-  public static final Icon TOOLWINDOW_DEFRAC = IconLoader.findIcon("/icons/toolwindow.defrac.png");
-
-  @Nullable
-  public static final Icon MODULE_ANDROID = IconLoader.findIcon("/icons/module.android.png");
-
-  private DefracIcons() {}
+public final class DefracToolWindowCondition implements Condition<Project> {
+  @Override
+  public boolean value(final Project project) {
+    return DefracProjectUtil.isDefracProject(project);
+  }
 }

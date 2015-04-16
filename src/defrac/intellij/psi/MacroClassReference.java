@@ -42,7 +42,7 @@ import java.util.List;
  */
 public final class MacroClassReference extends ClassReferenceBase {
   @NotNull
-  private static final Logger LOG = Logger.getInstance("#defrac.intellij.psi.MacroClassReference");
+  private static final Logger LOG = Logger.getInstance(MacroClassReference.class.getName());
 
   public MacroClassReference(@NotNull final PsiLiteralExpression element,
                              final int offset,

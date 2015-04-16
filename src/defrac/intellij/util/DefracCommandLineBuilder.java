@@ -139,7 +139,7 @@ public final class DefracCommandLineBuilder {
     }
 
     if(!isNullOrEmpty(command)) {
-      cmd.add((platform.isGeneric() ? "" : platform.name+":")+command);
+      cmd.add(platform.prefixCommand(command));
     }
 
     return new GeneralCommandLine(cmd).

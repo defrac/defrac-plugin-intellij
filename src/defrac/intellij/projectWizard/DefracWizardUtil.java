@@ -125,7 +125,8 @@ public final class DefracWizardUtil {
     });
   }
 
-  public static String getDefaultPackageNameByModuleName(String moduleName) {
+  @NotNull
+  public static String getDefaultPackageNameByModuleName(@NotNull final String moduleName) {
     return "com.example."+toIdentifier(moduleName);
   }
 
@@ -184,11 +185,17 @@ public final class DefracWizardUtil {
     final StringBuilder result = new StringBuilder();
     for(int i = 0, n = s.length(); i < n; i++) {
       final char c = s.charAt(i);
+
       if(Character.isJavaIdentifierPart(c)) {
-        if(i == 0 && !Character.isJavaIdentifierStart(c)) {
-          result.append('_');
+        if(i == 0) {
+          if(!Character.isJavaIdentifierStart(c)) {
+            result.append('_');
+          } else {
+            result.append(Character.toLowerCase(c));
+          }
+        } else {
+          result.append(c);
         }
-        result.append(c);
       } else {
         result.append('_');
       }

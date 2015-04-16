@@ -16,8 +16,8 @@
 
 package defrac.intellij.run;
 
+import com.intellij.debugger.impl.GenericDebuggerRunner;
 import com.intellij.execution.configurations.RunProfile;
-import com.intellij.execution.impl.DefaultJavaProgramRunner;
 import com.intellij.openapi.module.Module;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
@@ -28,7 +28,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  *
  */
-public final class DefracJvmRunner extends DefaultJavaProgramRunner {
+public final class DefracJvmRunner extends GenericDebuggerRunner {
   @NotNull @NonNls public static final String RUNNER_ID = "DefracJvmRunner";
 
   @NotNull

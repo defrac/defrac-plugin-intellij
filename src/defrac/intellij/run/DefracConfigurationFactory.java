@@ -21,8 +21,8 @@ import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.facet.ProjectFacetManager;
 import com.intellij.openapi.project.Project;
-import defrac.intellij.DefracIcons;
 import defrac.intellij.facet.DefracFacet;
+import icons.DefracIcons;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;

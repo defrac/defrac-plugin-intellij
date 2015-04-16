@@ -32,9 +32,9 @@ import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiManager;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.PlatformIcons;
-import defrac.intellij.DefracIcons;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
+import icons.DefracIcons;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

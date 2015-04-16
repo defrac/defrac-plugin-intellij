@@ -20,6 +20,7 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
@@ -181,8 +182,13 @@ public final class DefracConfig extends DefracConfigurationBase {
     try {
       out = new BufferedWriter(new PrintWriter(supplier.get()));
 
-      final Gson gson = new Gson();
-      gson.toJson(this, out);
+      final Gson gson =
+          new GsonBuilder().
+              disableHtmlEscaping().
+              setPrettyPrinting().
+              create();
+
+      gson.toJson(this, DefracConfig.class, out);
     } finally {
       Closeables.close(out, true);
     }

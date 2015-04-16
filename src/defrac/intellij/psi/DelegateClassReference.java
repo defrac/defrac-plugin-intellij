@@ -47,7 +47,7 @@ import static defrac.intellij.psi.DefracPsiUtil.*;
  */
 public final class DelegateClassReference extends ClassReferenceBase {
   @NotNull
-  private static final Logger LOG = Logger.getInstance("#defrac.intellij.psi.DelegateClassReference");
+  private static final Logger LOG = Logger.getInstance(DelegateClassReference.class.getName());
 
   @NotNull
   public static final Comparator<PsiClassType> TYPE_COMPARATOR = new Comparator<PsiClassType>() {
