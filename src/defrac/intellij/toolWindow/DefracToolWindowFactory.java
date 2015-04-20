@@ -23,6 +23,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.content.Content;
+import defrac.intellij.DefracBundle;
 import defrac.intellij.project.DefracConsoleView;
 import defrac.intellij.project.DefracProcess;
 import icons.DefracIcons;
@@ -33,7 +34,7 @@ import org.jetbrains.annotations.NotNull;
  *
  */
 public final class DefracToolWindowFactory implements ToolWindowFactory {
-  @NotNull @NonNls public static final String TOOLWINDOW_ID = "defrac.toolWindow";
+  @NotNull @NonNls public static final String TOOLWINDOW_ID = "defrac";
 
   @Override
   public void createToolWindowContent(@NotNull final Project project,
@@ -52,7 +53,7 @@ public final class DefracToolWindowFactory implements ToolWindowFactory {
     toolWindow.setIcon(DefracIcons.ToolWindow);
 
     console.print("Initializing ", ConsoleViewContentType.SYSTEM_OUTPUT);
-    console.printHyperlink("defrac", new BrowserHyperlinkInfo("https://www.defrac.com/"));
+    console.printHyperlink(DefracBundle.message("name"), new BrowserHyperlinkInfo(DefracBundle.message("url")));
     console.print(" ...\n", ConsoleViewContentType.SYSTEM_OUTPUT);
 
     console.attachToProcess(DefracProcess.getInstance(project).getProcessHandler());

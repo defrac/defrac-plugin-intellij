@@ -17,7 +17,7 @@
 <idea-plugin version="2">
   <id>defrac.intellij</id>
   <name>defrac Support</name>
-  <version>0.0.9</version>
+  <version>0.0.10</version>
   <vendor email="team@defrac.com" url="https://www.defrac.com">defrac inc.</vendor>
 
   <description>
@@ -26,6 +26,7 @@
 
   <change-notes>
     <![CDATA[<ul>
+      <li>2015-04-20 - ToolWindow and Actions</li>
       <li>2015-04-09 - Fix broken SDK model in facet dialog</li>
       <li>2014-12-05 - Check for array component type, add reference to main</li>
       <li>2014-12-01 - Compile for Java 6, fix macro and delegate linkage</li>
@@ -70,7 +71,7 @@
     <referencesSearch implementation="defrac.intellij.findUsages.MacroClassReferencesSearch"/>
     <sdkType implementation="defrac.intellij.sdk.DefracSdkType"/>
     <nonProjectFileWritingAccessExtension implementation="defrac.intellij.fileType.DefracSettingsWritingAccess"/>
-    <toolWindow id="defrac.toolWindow"
+    <toolWindow id="defrac"
                 anchor="bottom"
                 icon="DefracIcons.ToolWindow"
                 conditionClass="defrac.intellij.toolWindow.DefracToolWindowCondition"
