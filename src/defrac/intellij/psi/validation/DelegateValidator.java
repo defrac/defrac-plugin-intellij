@@ -96,21 +96,6 @@ public final class DelegateValidator {
       return;
     }
 
-    final PsiClass[] thatInterfaces = thatClass.getInterfaces();
-    final Set<String> thisInterfaceQnames = ImmutableSet.copyOf(mapQualifiedName(thisInterfaces));
-    for(final PsiClass thatInterface: thatInterfaces) {
-      if(!thisInterfaceQnames.contains(thatInterface.getQualifiedName())) {
-        holder.createErrorAnnotation(element,
-            DefracBundle.message("annotator.delegate.mustNotImplement", thatClass.getName(), thatInterface.getName())).
-            registerFix(new ExtendsListFix(thatClass, thatInterface, false));
-        interfacesHaveError = true;
-      }
-    }
-
-    if(interfacesHaveError) {
-      return;
-    }
-
     // (3)
     final PsiField[] thisFields = thisClass.getFields();
 
@@ -186,16 +171,6 @@ public final class DelegateValidator {
           thatClass.findMethodsByName(thisMethod.getName(), false);
 
       if(thatMethods.length == 0) {
-        final Annotation annotation = holder.
-            createErrorAnnotation(element,
-                DefracBundle.message("annotator.delegate.method.missing", thatClass.getName(), thisMethod.getName()));
-
-        final CreateMethodQuickFix fix = CreateMethodQuickFix.createFix(thatClass, getMethodSignature(thisMethod), "");
-
-        if(fix != null) {
-          annotation.registerFix(fix);
-        }
-
         continue;
       }
 
