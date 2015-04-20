@@ -96,10 +96,20 @@ public final class DefracConfigOracle {
     }
 
     if(result == null) {
-      result = facet.findFileRelativeToSettings(getDefaultNameOfXcodeProject());
+      result = facet.findFileRelativeToSettings("target/ios/xcode/"+getDefaultNameOfXcodeProject());
     }
 
     return result;
+  }
+
+  public VirtualFile getIndexHtml(@NotNull final DefracFacet facet) {
+    final String html = lookupString("html", "index.html");
+
+    if(!isNullOrEmpty(html)) {
+      return facet.findFileRelativeToSettings("target/web/"+html);
+    }
+
+    return null;
   }
 
   @NotNull
@@ -133,7 +143,12 @@ public final class DefracConfigOracle {
 
   @NotNull
   private String lookupString(@NotNull final String fieldName) {
-    return lookup(fieldName, String.class, "");
+    return lookupString(fieldName, "");
+  }
+
+  @NotNull
+  private String lookupString(@NotNull final String fieldName, @NotNull final String defaultValue) {
+    return lookup(fieldName, String.class, defaultValue);
   }
 
   @NotNull

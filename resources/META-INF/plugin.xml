@@ -116,6 +116,14 @@
             description="Opens the XCode project for the selected module">
       <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
     </action>
+
+    <action id="defrac.action.web.openIndexHtml"
+            class="defrac.intellij.action.web.OpenIndexHtmlAction"
+            icon="DefracIcons.OpenIndexHtml"
+            text="Open index.html"
+            description="Opens the index.html for the selected module">
+      <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+    </action>
   </actions>
 
   <application-components/>

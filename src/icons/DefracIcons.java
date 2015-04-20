@@ -48,5 +48,7 @@ public final class DefracIcons {
 
   @NotNull public static final Icon SwitchToXCode = Defrac13x13;
 
+  @NotNull public static final Icon OpenIndexHtml = Defrac13x13;
+
   private DefracIcons() {}
 }
