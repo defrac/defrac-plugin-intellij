@@ -19,8 +19,8 @@ package defrac.intellij.config;
 /**
  *
  */
+@SuppressWarnings("unused,MismatchedReadAndWriteOfArray")
 public final class MacroSettings {
-  @SuppressWarnings("MismatchedReadAndWriteOfArray")
   private String[] src;
   private boolean debug;
   private boolean lint;

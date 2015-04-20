@@ -42,7 +42,7 @@ public final class DefracConfigurationFactory extends ConfigurationFactory {
 
   @Override
   public Icon getIcon() {
-    return DefracIcons.DEFRAC;
+    return DefracIcons.Defrac16x16;
   }
 
   @Override

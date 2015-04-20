@@ -16,13 +16,22 @@
 
 package defrac.intellij.project;
 
+import com.google.common.collect.Sets;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.vfs.VirtualFile;
+import defrac.intellij.DefracPlatform;
+import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Set;
 
 /**
  *
@@ -46,6 +55,35 @@ public final class DefracProjectUtil {
     return project == null
         ? null
         : ProjectRootManager.getInstance(project).getProjectSdk();
+  }
+
+  @NotNull
+  public static Module[] findModulesForPlatform(@Nullable final Project project,
+                                                @NotNull final DefracPlatform platform,
+                                                @Nullable final Condition<Module> condition) {
+    if(project == null) {
+      return Module.EMPTY_ARRAY;
+    }
+
+    final Module[] modules = ModuleManager.getInstance(project).getModules();
+    final Set<Module> platformModules =
+        Sets.newHashSetWithExpectedSize(modules.length / (DefracPlatform.values().length));
+
+    for(final Module module : modules) {
+      final DefracFacet facet = DefracFacet.getInstance(module);
+
+      if(facet == null || facet.getPlatform() != platform) {
+        continue;
+      }
+
+      if(condition != null && !condition.value(module)) {
+        continue;
+      }
+
+      platformModules.add(module);
+    }
+
+    return platformModules.toArray(new Module[platformModules.size()]);
   }
 
   private DefracProjectUtil() {}

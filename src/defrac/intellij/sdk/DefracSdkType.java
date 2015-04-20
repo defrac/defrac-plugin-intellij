@@ -284,7 +284,7 @@ public final class DefracSdkType extends JavaDependentSdkType implements JavaSdk
   @Override
   @Nullable
   public Icon getIcon() {
-    return DefracIcons.DEFRAC;
+    return DefracIcons.Defrac16x16;
   }
 
   @Override

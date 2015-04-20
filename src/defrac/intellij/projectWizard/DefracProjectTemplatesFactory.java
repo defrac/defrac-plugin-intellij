@@ -43,7 +43,7 @@ public final class DefracProjectTemplatesFactory extends ProjectTemplatesFactory
 
   @Override
   public Icon getGroupIcon(final String group) {
-    return DefracIcons.DEFRAC;
+    return DefracIcons.Defrac16x16;
   }
 
   @Override

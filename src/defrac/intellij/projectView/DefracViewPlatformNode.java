@@ -204,7 +204,7 @@ final class DefracViewPlatformNode extends ProjectViewNode<DefracProjectPlatform
     //TODO(joa): need icons for iOS
     switch(platform) {
       case ANDROID:
-        return DefracIcons.MODULE_ANDROID;
+        return DefracIcons.AndroidModule;
       case WEB:
         return PlatformIcons.WEB_ICON;
       default:

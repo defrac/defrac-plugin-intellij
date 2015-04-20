@@ -14,11 +14,17 @@
  * limitations under the License.
  */
 
-package defrac.intellij.config;
+package defrac.intellij.config.ios;
 
 /**
  *
  */
-public final class OptimizerSettings {
-  private boolean enabled;
+@SuppressWarnings("unused,MismatchedReadAndWriteOfArray")
+public final class XCodeSettings {
+  protected String organization;
+  protected String classPrefix;
+  protected String project;
+  protected String source;
+  protected String build;
+  protected String scheme;
 }

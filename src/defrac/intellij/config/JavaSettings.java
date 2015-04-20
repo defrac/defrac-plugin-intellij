@@ -19,10 +19,9 @@ package defrac.intellij.config;
 /**
  *
  */
+@SuppressWarnings("unused,MismatchedReadAndWriteOfArray")
 public final class JavaSettings {
-  @SuppressWarnings("MismatchedReadAndWriteOfArray")
   private String[] src;
-  @SuppressWarnings("MismatchedReadAndWriteOfArray")
   private String[] test;
   private boolean debug;
   private boolean lint;

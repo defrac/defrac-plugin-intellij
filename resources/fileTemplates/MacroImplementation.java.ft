@@ -1,0 +1,30 @@
+#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
+
+import defrac.compiler.Context;
+import defrac.compiler.macro.*;
+
+#parse("File Header.java")
+public class ${NAME} extends Macro {
+  public ${NAME}(Context context) {
+    super(context);
+  }
+
+  public MethodBody addValues(Parameter x, Parameter y) {
+    return MethodBody(
+      // int z = x + y;
+      Local(IntTypeReference(), "z", ADD(LocalGet(x), LocalGet(y))
+      // return z
+      Return(LocalGet("z")))
+    );
+  }
+
+  public MethodBody println(Parameter value) {
+    return MethodBody(
+      // System.out.println(value)
+      MethodCall(StaticGet("java.lang.System", "out"), "println", LocalGet(value)),
+
+      // Methods must always return in a macro, even if it is just void
+      Return()
+    );
+  }
+}

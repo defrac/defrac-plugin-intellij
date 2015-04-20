@@ -1,0 +1,20 @@
+#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
+
+#if(${PLATFORM_ALL} && ${PLATFORM_ALL} != "")
+#set ($NAME = "${NAME}Impl")
+#elseif(${PLATFORM_ANDROID} && ${PLATFORM_ANDROID} != "")
+#set ($NAME = "Android${NAME}")
+#elseif(${PLATFORM_IOS} && ${PLATFORM_IOS} != "")
+#set ($NAME = "IOS${NAME}")
+#elseif(${PLATFORM_JVM} && ${PLATFORM_JVM} != "")
+#set ($NAME = "JVM${NAME}")
+#elseif(${PLATFORM_WEB} && ${PLATFORM_WEB} != "")
+#set ($NAME = "Web${NAME}")
+#end
+
+#parse("File Header.java")
+public class ${NAME} {
+  public ${NAME}() {
+
+  }
+}
