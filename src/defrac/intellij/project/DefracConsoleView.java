@@ -17,6 +17,7 @@
 package defrac.intellij.project;
 
 import com.intellij.execution.filters.*;
+import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaPsiFacade;
@@ -106,5 +107,11 @@ public final class DefracConsoleView extends DefracProjectComponent {
       }
     });
     console = consoleBuilder.getConsole();
+
+    final ProcessHandler processHandler = DefracProcess.getInstance(project).getProcessHandler();
+
+    if(processHandler != null) {
+      console.attachToProcess(processHandler);
+    }
   }
 }
