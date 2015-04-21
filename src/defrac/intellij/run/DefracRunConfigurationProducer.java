@@ -34,6 +34,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiMethodUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import defrac.intellij.config.DefracConfig;
+import defrac.intellij.config.DefracConfigurationBase;
 import defrac.intellij.facet.DefracFacet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -85,9 +86,18 @@ public final class DefracRunConfigurationProducer extends JavaRunConfigurationPr
     setupConfigurationModule(context, config);
     config.setGeneratedName();
 
+    final DefracFacet facet = checkNotNull(DefracFacet.getInstance(cls));
+
     // always update main class in defrac config
-    final DefracConfig defracConfig = checkNotNull(checkNotNull(DefracFacet.getInstance(cls)).getConfig());
-    defracConfig.setMain(checkNotNull(JavaExecutionUtil.getRuntimeQualifiedName(cls)));
+    final DefracConfig defracConfig = facet.getConfig();
+
+    if(defracConfig == null) {
+      LOG.error("Can't read defrac config");
+      return;
+    }
+
+    final DefracConfigurationBase platformConfig = defracConfig.getOrCreatePlatform(facet.getPlatform());
+    platformConfig.setMain(checkNotNull(JavaExecutionUtil.getRuntimeQualifiedName(cls)));
 
     try {
       defracConfig.commit(config.getProject());

@@ -35,6 +35,8 @@ public final class DefracProjectTemplatesFactory extends ProjectTemplatesFactory
   @NotNull @NonNls public static final String DEFRAC = "defrac";
   @NotNull @NonNls public static final String JAVA = "Java";
 
+  @NotNull public static final ProjectTemplate[] EMPTY_TEMPLATES = new ProjectTemplate[0];
+
   @NotNull
   @Override
   public String[] getGroups() {
@@ -54,6 +56,11 @@ public final class DefracProjectTemplatesFactory extends ProjectTemplatesFactory
   @NotNull
   @Override
   public ProjectTemplate[] createTemplates(@Nullable final String group, final WizardContext wizardContext) {
+    if(!wizardContext.isCreatingNewProject()) {
+      // ignore new module wizard
+      return EMPTY_TEMPLATES;
+    }
+
     final List<ProjectTemplate> templates = new ArrayList<ProjectTemplate>();
 
     templates.add(new DefracProjectTemplate("Generic", "Creates a new Multi-Platform project with a main entry point", new DefracModuleBuilder.Generic()));

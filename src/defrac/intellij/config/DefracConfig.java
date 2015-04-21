@@ -110,6 +110,36 @@ public final class DefracConfig extends DefracConfigurationBase {
   private JVMSettings jvm;
   private WebSettings web;
 
+  @NotNull
+  public DefracConfigurationBase getOrCreatePlatform(@NotNull final DefracPlatform platform) {
+    switch(platform) {
+      case ANDROID:
+        if(android == null) {
+          android = new AndroidSettings();
+        }
+        return android;
+      case GENERIC:
+        return this;
+      case IOS:
+        if(ios == null) {
+          ios = new IOSSettings();
+        }
+        return ios;
+      case JVM:
+        if(jvm == null) {
+          jvm = new JVMSettings();
+        }
+        return jvm;
+      case WEB:
+        if(web == null) {
+          web = new WebSettings();
+        }
+        return web;
+    }
+
+    throw new IllegalArgumentException("Unknown platform " + platform);
+  }
+
   @Nullable
   public DefracConfigurationBase getPlatform(@NotNull final DefracPlatform platform) {
     switch(platform) {
