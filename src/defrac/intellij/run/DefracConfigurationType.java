@@ -33,7 +33,6 @@ public final class DefracConfigurationType extends ConfigurationTypeBase {
   @NotNull
   @NonNls
   public static final String ID = "DEFRAC";
-
   @NotNull
   public static final String DISPLAY_NAME = DefracBundle.message("config.name");
   @NotNull
@@ -47,17 +46,12 @@ public final class DefracConfigurationType extends ConfigurationTypeBase {
   private final ConfigurationFactory factory = new DefracConfigurationFactory(this);
 
   public DefracConfigurationType() {
-<<<<<<< HEAD
     super(ID, DISPLAY_NAME, DESCRIPTION, DefracIcons.Defrac16x16);
-    addFactory(new DefracConfigurationFactory(this));
-=======
-    super(ID, DISPLAY_NAME, DESCRIPTION, DefracIcons.DEFRAC);
   }
 
   @Override
   public ConfigurationFactory[] getConfigurationFactories() {
     return new ConfigurationFactory[]{factory};
->>>>>>> df9721c... fix: run config for android modules
   }
 
   @NotNull
