@@ -35,7 +35,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
@@ -106,15 +105,6 @@ public final class DefracIpc implements ProcessListener {
     this.process = process;
 
     process.addProcessListener(this);
-
-    final OutputStream processInput = process.getProcessInput();
-
-    if(processInput != null) {
-      // This seems to fix IntelliJ's broken ANSI decoding for now
-      PrintStream printStream = new PrintStream(processInput);
-      printStream.println("");
-      printStream.flush();
-    }
   }
 
   public boolean compile(@Nullable final CompileContext context,

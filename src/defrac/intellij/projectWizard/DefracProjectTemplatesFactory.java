@@ -56,7 +56,7 @@ public final class DefracProjectTemplatesFactory extends ProjectTemplatesFactory
   public ProjectTemplate[] createTemplates(@Nullable final String group, final WizardContext wizardContext) {
     final List<ProjectTemplate> templates = new ArrayList<ProjectTemplate>();
 
-    templates.add(new DefracProjectTemplate("Generic", "Creates a new Multi-Platform project", new DefracModuleBuilder.Generic()));
+    templates.add(new DefracProjectTemplate("Generic", "Creates a new Multi-Platform project with a main entry point", new DefracModuleBuilder.Generic()));
 
     if(DefracPlatform.IOS.isAvailableOnHostOS()) {
       templates.add(new DefracProjectTemplate("iOS", "Creates a new iOS project based on native UIKit components", new DefracModuleBuilder.IOS()));

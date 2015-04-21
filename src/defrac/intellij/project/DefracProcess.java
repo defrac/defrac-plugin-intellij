@@ -21,6 +21,7 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.filters.BrowserHyperlinkInfo;
 import com.intellij.execution.process.KillableColoredProcessHandler;
+import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
@@ -51,7 +52,7 @@ public final class DefracProcess extends DefracProjectComponent {
   private static AtomicInteger WEB_SERVER_PORT = new AtomicInteger(0x8080);
 
   @Nullable
-  private ProcessHandler processHandler;
+  private OSProcessHandler processHandler;
 
   @Nullable
   private DefracIpc ipc;
@@ -185,6 +186,8 @@ public final class DefracProcess extends DefracProjectComponent {
 
     try {
       processHandler = KillableColoredProcessHandler.create(cmdLine);
+      processHandler.setShouldDestroyProcessRecursively(true);
+      processHandler.setHasPty(true);
       ipc = DefracIpc.getInstance(processHandler);
       processHandler.startNotify();
     } catch(final ExecutionException executionException) {
@@ -242,6 +245,7 @@ public final class DefracProcess extends DefracProjectComponent {
   private void killProcessHandler() {
     if(processHandler != null) {
       processHandler.destroyProcess();
+      processHandler.getProcess().destroy();
       processHandler = null;
       ipc = null;
     }

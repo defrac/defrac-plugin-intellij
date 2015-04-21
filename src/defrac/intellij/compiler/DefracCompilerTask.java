@@ -24,23 +24,17 @@ import com.intellij.openapi.compiler.CompileTask;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.ui.UIUtil;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.project.DefracConsoleView;
 import defrac.intellij.run.DefracRunConfiguration;
-import defrac.intellij.toolWindow.DefracToolWindowFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  *
@@ -91,29 +85,14 @@ public abstract class DefracCompilerTask implements CompileTask {
       UIUtil.invokeLaterIfNeeded(new Runnable() {
         @Override
         public void run() {
-          final ToolWindow toolWindow =
-              ToolWindowManager.
-                  getInstance(project).
-                  getToolWindow(DefracToolWindowFactory.TOOLWINDOW_ID);
+          final ConsoleView console =
+              DefracConsoleView.getInstance(project);
 
-          if(toolWindow.getContentManager().getContentCount() == 1 &&
-              checkNotNull(toolWindow.getContentManager().getContent(0)).getComponent() instanceof JLabel) {
-            toolWindow.activate(new Runnable() {
-              @Override
-              public void run() {
-                awaitBarrier();
-              }
-            });
-          } else {
-            final ConsoleView console =
-                DefracConsoleView.getInstance(project);
-
-            if(console != null) {
-              console.clear();
-            }
-
-            awaitBarrier();
+          if(console != null) {
+            console.clear();
           }
+
+          awaitBarrier();
         }
 
         private void awaitBarrier() {

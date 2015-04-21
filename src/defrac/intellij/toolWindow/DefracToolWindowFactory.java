@@ -16,17 +16,12 @@
 
 package defrac.intellij.toolWindow;
 
-import com.intellij.execution.filters.BrowserHyperlinkInfo;
 import com.intellij.execution.ui.ConsoleView;
-import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.content.Content;
-import defrac.intellij.DefracBundle;
 import defrac.intellij.project.DefracConsoleView;
-import defrac.intellij.project.DefracProcess;
-import icons.DefracIcons;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
@@ -50,12 +45,5 @@ public final class DefracToolWindowFactory implements ToolWindowFactory {
         toolWindow.getContentManager().getFactory().createContent(console.getComponent(), "", true);
 
     toolWindow.getContentManager().addContent(content);
-    toolWindow.setIcon(DefracIcons.ToolWindow);
-
-    console.print("Initializing ", ConsoleViewContentType.SYSTEM_OUTPUT);
-    console.printHyperlink(DefracBundle.message("name"), new BrowserHyperlinkInfo(DefracBundle.message("url")));
-    console.print(" ...\n", ConsoleViewContentType.SYSTEM_OUTPUT);
-
-    console.attachToProcess(DefracProcess.getInstance(project).getProcessHandler());
   }
 }
