@@ -80,6 +80,7 @@
     <fileTemplateGroup implementation="defrac.intellij.fileTemplate.DefracFileTemplateProvider"/>
     <projectTemplatesFactory implementation="defrac.intellij.projectWizard.DefracProjectTemplatesFactory"/>
     <runConfigurationProducer implementation="defrac.intellij.run.DefracRunConfigurationProducer" order="first"/>
+    <cachesInvalidator implementation="defrac.intellij.config.ConfigCacheInvalidator"/>
   </extensions>
 
   <project-components>

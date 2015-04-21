@@ -22,15 +22,11 @@ import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.stream.JsonReader;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.util.CachedValueProvider;
-import com.intellij.psi.util.CachedValuesManager;
-import com.intellij.psi.util.PsiModificationTracker;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.config.android.AndroidSettings;
 import defrac.intellij.config.ios.IOSSettings;
@@ -42,67 +38,23 @@ import org.jetbrains.annotations.Nullable;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
  *
  */
+@SuppressWarnings("unused,MismatchedReadAndWriteOfArray,FieldCanBeLocal")
 public final class DefracConfig extends DefracConfigurationBase {
-  @NotNull
-  private static JsonReader lenientReader(@NotNull final Reader reader) {
-    final JsonReader jsonReader = new JsonReader(reader);
-    jsonReader.setLenient(true);
-    return jsonReader;
-  }
 
   public static DefracConfig fromJson(@NotNull final VirtualFile file) throws IOException {
-    final Gson gson = new Gson();
-    Reader reader = null;
-
-    try {
-      reader = new InputStreamReader(file.getInputStream());
-      return gson.fromJson(lenientReader(reader), DefracConfig.class);
-    } finally {
-      Closeables.closeQuietly(reader);
-    }
+    return ConfigCache.getInstance().get(file);
   }
 
   public static DefracConfig fromJson(@NotNull final PsiFile file) throws IOException {
-    final AtomicReference<IOException> exceptionRef = new AtomicReference<IOException>(null);
-    final DefracConfig config = CachedValuesManager.getCachedValue(file, new CachedValueProvider<DefracConfig>() {
-      @Nullable
-      public Result<DefracConfig> compute() {
-
-        final Gson gson = new Gson();
-        Reader reader = null;
-
-        try {
-          reader = new InputStreamReader(file.getVirtualFile().getInputStream());
-          return Result.create(
-              gson.<DefracConfig>fromJson(lenientReader(reader), DefracConfig.class),
-              file, PsiModificationTracker.MODIFICATION_COUNT);
-        } catch(final IOException exception) {
-          exceptionRef.set(exception);
-          return null;
-        } finally {
-          Closeables.closeQuietly(reader);
-        }
-      }
-    });
-
-    final IOException exception = exceptionRef.get();
-
-    if(exception != null) {
-      assert config == null;
-      throw exception;
-    }
-
-    return config;
+    return ConfigCache.getInstance().get(file);
   }
 
-  @SuppressWarnings("MismatchedReadAndWriteOfArray")
   private String[] targets;
   private GenericSettings gen;
   private AndroidSettings android;
