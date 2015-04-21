@@ -270,6 +270,10 @@ public abstract class MultiPlatformCreateAction<T extends PsiElement> extends De
                            @NotNull final PsiDirectory dir,
                            @NotNull final DefracPlatform platform,
                            @NotNull final Set<DefracPlatform> enabledPlatforms) {
+      if(!enabledPlatforms.contains(platform)) {
+        return null;
+      }
+
       final PsiPackage psiPackage = JavaDirectoryService.getInstance().getPackage(dir);
 
       if(psiPackage == null) {
