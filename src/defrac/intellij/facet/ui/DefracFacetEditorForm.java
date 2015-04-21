@@ -250,7 +250,7 @@ public final class DefracFacetEditorForm {
     }
   }
 
-  private static enum DefaultSettingsFilter implements Condition<VirtualFile> {
+  private enum DefaultSettingsFilter implements Condition<VirtualFile> {
     INSTANCE;
 
     @Override

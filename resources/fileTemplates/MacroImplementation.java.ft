@@ -12,9 +12,9 @@ public class ${NAME} extends Macro {
   public MethodBody addValues(Parameter x, Parameter y) {
     return MethodBody(
       // int z = x + y;
-      Local(IntTypeReference(), "z", ADD(LocalGet(x), LocalGet(y))
+      Local("z", IntTypeReference(), ADD(LocalGet(x), LocalGet(y))),
       // return z
-      Return(LocalGet("z")))
+      Return(LocalGet("z"))
     );
   }
 

@@ -102,7 +102,7 @@ public enum DefracPlatform {
   @NotNull public final String displayName;
   @NotNull public final String abbreviation;
 
-  private DefracPlatform(@NotNull final String name,
+  DefracPlatform(@NotNull final String name,
                          @NotNull final String displayName,
                          @NotNull final String abbreviation) {
     this.name = name;

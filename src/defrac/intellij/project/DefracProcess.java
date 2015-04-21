@@ -48,7 +48,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
  */
 public final class DefracProcess extends DefracProjectComponent {
   @NotNull
-  private static AtomicInteger WEB_SERVER_PORT = new AtomicInteger(0x8080);
+  private static final AtomicInteger WEB_SERVER_PORT = new AtomicInteger(0x8080);
 
   @Nullable
   private ProcessHandler processHandler;
@@ -164,8 +164,11 @@ public final class DefracProcess extends DefracProjectComponent {
     cmd.add(String.valueOf(webServerPort));
 
     // let defrac know the current path to the project
-    cmd.add("--project");
-    cmd.add(FileUtil.toSystemDependentName(getProject().getBasePath()));
+    final String basePath = getProject().getBasePath();
+    if(!isNullOrEmpty(basePath)) {
+      cmd.add("--project");
+      cmd.add(FileUtil.toSystemDependentName(basePath));
+    }
 
     // if we have a valid sdk, let defrac know the actual path to it as well
     // and don't rely on DEFRAC_HOME being set

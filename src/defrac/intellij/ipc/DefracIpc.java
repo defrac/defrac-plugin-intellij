@@ -475,9 +475,9 @@ public final class DefracIpc implements ProcessListener {
     }
   }
 
-  private static interface Parser {
-    public void onFailure() throws InterruptedException, BrokenBarrierException;
-    public void onTextAvailable(final ProcessEvent event, final Key outputType)
+  private interface Parser {
+    void onFailure() throws InterruptedException, BrokenBarrierException;
+    void onTextAvailable(final ProcessEvent event, final Key outputType)
         throws InterruptedException, BrokenBarrierException;
   }
 
@@ -504,8 +504,8 @@ public final class DefracIpc implements ProcessListener {
     protected abstract void onMatch(@NotNull final Matcher matcher) throws InterruptedException, BrokenBarrierException;
   }
 
-  private static interface Task<V> {
+  private interface Task<V> {
     @NotNull
-    public V exec() throws IOException, InterruptedException, BrokenBarrierException;
+    V exec() throws IOException, InterruptedException, BrokenBarrierException;
   }
 }

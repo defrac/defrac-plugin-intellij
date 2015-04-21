@@ -16,13 +16,16 @@
 
 package defrac.intellij.action.create.ui;
 
+import com.intellij.lang.LangBundle;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.InputValidator;
+import com.intellij.openapi.ui.InputValidatorEx;
+import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.Ref;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.Producer;
-import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.action.create.MultiPlatformCreateAction;
 import defrac.intellij.ui.DefracPlatformChooser;
@@ -33,6 +36,7 @@ import javax.swing.*;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
  *
@@ -62,6 +66,9 @@ public final class MultiPlatformCreateDialog<T extends PsiElement> extends Dialo
   @Nullable
   private Producer<Boolean> okAction = null;
 
+  @Nullable
+  private InputValidator inputValidator;
+
   public MultiPlatformCreateDialog(@NotNull final Project project,
                                    @NotNull final Set<DefracPlatform> enabledPlatforms,
                                    @NotNull final MultiPlatformCreateAction.Creator<T> generic,
@@ -77,7 +84,6 @@ public final class MultiPlatformCreateDialog<T extends PsiElement> extends Dialo
     this.jvm = jvm;
     this.web = web;
 
-    setTitle(DefracBundle.message("dialog.new.delegate.title"));
     init();
 
     platformChooser.init(enabledPlatforms);
@@ -86,8 +92,35 @@ public final class MultiPlatformCreateDialog<T extends PsiElement> extends Dialo
 
   @Nullable
   @Override
+  protected ValidationInfo doValidate() {
+    if(inputValidator != null) {
+      final String text = className.getText();
+      final boolean canClose = inputValidator.canClose(text);
+
+      if(!canClose) {
+        String errorText = LangBundle.message("incorrect.name");
+
+        if(inputValidator instanceof InputValidatorEx) {
+          final String message = ((InputValidatorEx)inputValidator).getErrorText(text);
+          if(!isNullOrEmpty(message)) {
+            errorText = message;
+          }
+        }
+
+        return new ValidationInfo(errorText, className);
+      }
+    }
+
+    return super.doValidate();
+  }
+  @Nullable
+  @Override
   public JComponent getPreferredFocusedComponent() {
     return className;
+  }
+
+  public void setValidator(@Nullable final InputValidator value) {
+    inputValidator = value;
   }
 
   @Override

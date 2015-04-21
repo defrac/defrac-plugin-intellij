@@ -87,7 +87,7 @@ public abstract class MultiPlatformCreateAction<T extends PsiElement> extends De
     Project project = dir.getProject();
 
     try {
-      final Properties properties = FileTemplateManager.getInstance().getDefaultProperties(project);
+      final Properties properties = FileTemplateManager.getInstance(project).getDefaultProperties();
 
       //minus one for generic
       final boolean isAllPlatforms = enabledPlatforms.size() == (DefracPlatform.values().length - 1);
@@ -166,11 +166,19 @@ public abstract class MultiPlatformCreateAction<T extends PsiElement> extends De
             createAndroid(), createIOS(),
             createJVM(), createWeb());
 
+    updateDialog(project, facet, event, dialog);
+
     final MultiPlatformCreateDialog.Result<T> result = dialog.getResult(project, dir);
 
     if(result != null && result.generic != null) {
       view.selectElement(result.generic);
     }
+  }
+
+  protected void updateDialog(@NotNull final Project project,
+                              @NotNull final DefracFacet facet,
+                              @NotNull final AnActionEvent event,
+                              @NotNull final MultiPlatformCreateDialog<T> dialog) {
   }
 
   @NotNull
@@ -202,16 +210,16 @@ public abstract class MultiPlatformCreateAction<T extends PsiElement> extends De
 
   }
 
-  public static interface Creator<T extends PsiElement> {
+  public interface Creator<T extends PsiElement> {
     @Nullable
-    public T createElement(@NotNull final String name,
+    T createElement(@NotNull final String name,
                            @NotNull final Project project,
                            @NotNull final PsiDirectory dir,
                            @NotNull final DefracPlatform platform,
                            @NotNull final Set<DefracPlatform> enabledPlatforms);
   }
 
-  private static enum NullCreator implements Creator<PsiElement> {
+  private enum NullCreator implements Creator<PsiElement> {
     INSTANCE;
 
     @Nullable
@@ -242,14 +250,14 @@ public abstract class MultiPlatformCreateAction<T extends PsiElement> extends De
                                  @NotNull final Set<DefracPlatform> enabledPlatforms) {
       return createFileFromTemplate(
           name,
-          FileTemplateManager.getInstance().getInternalTemplate(templateName),
+          FileTemplateManager.getInstance(project).getInternalTemplate(templateName),
           dir, null, platform, enabledPlatforms);
     }
   }
 
   protected static final class PlatformSpecificCreator<T extends PsiElement> implements Creator<T> {
-    public static interface ModuleFilter {
-      public Module[] getModules(@NotNull final Project project, @NotNull final DefracPlatform platform);
+    public interface ModuleFilter {
+      Module[] getModules(@NotNull final Project project, @NotNull final DefracPlatform platform);
     }
 
     @NotNull private final Creator<T> creator;
@@ -292,39 +300,29 @@ public abstract class MultiPlatformCreateAction<T extends PsiElement> extends De
           return null;
         }
 
-        module = modules[0];
-        baseDir = null;
+        final ModuleBasedDirectoryChooser chooser =
+            new ModuleBasedDirectoryChooser(project, platform, modules).choose();
+
+        if(!chooser.hasResult()) {
+          return null;
+        }
+
+        module = chooser.getModule();
+        baseDir = chooser.getBaseDir();
       } else {
         if(availablePlatformModules.length == 1) {
           module = availablePlatformModules[0];
           baseDir = null;
         } else {
-          final PsiManager psiManager = PsiManager.getInstance(project);
-          final DirectoryChooser chooser = new DirectoryChooser(project);
-          final Map<PsiDirectory,Module> dirs = Maps.newHashMap();
+          final ModuleBasedDirectoryChooser chooser =
+              new ModuleBasedDirectoryChooser(project, platform, availablePlatformModules).choose();
 
-          for(final Module platformModule : availablePlatformModules) {
-            final ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(platformModule);
-            for(final VirtualFile sourceRoot : moduleRootManager.getSourceRoots()) {
-              final PsiDirectory candidate = psiManager.findDirectory(sourceRoot);
-              dirs.put(candidate, platformModule);
-            }
-          }
-
-          final PsiDirectory[] array = dirs.keySet().toArray(new PsiDirectory[dirs.size()]);
-          chooser.fillList(array, null, project, (Map<PsiDirectory, String>) null);
-          chooser.setTitle("Choose "+platform.displayName+" target ...");
-          chooser.show();
-
-          if(chooser.getExitCode() != DialogWrapper.OK_EXIT_CODE) {
+          if(!chooser.hasResult()) {
             return null;
           }
 
-          final PsiDirectory result =
-              chooser.getSelectedDirectory();
-
-          module = dirs.get(result);
-          baseDir = result;
+          module = chooser.getModule();
+          baseDir = chooser.getBaseDir();
         }
       }
 
@@ -336,6 +334,70 @@ public abstract class MultiPlatformCreateAction<T extends PsiElement> extends De
       }
 
       return creator.createElement(name, project, actualDir, platform, Collections.singleton(platform));
+    }
+
+    private static class ModuleBasedDirectoryChooser {
+      @NotNull
+      private final Project project;
+      @NotNull
+      private final DefracPlatform platform;
+      @NotNull
+      private final Module[] modules;
+      private boolean hasResult;
+      private Module module;
+      private PsiDirectory baseDir;
+
+      public ModuleBasedDirectoryChooser(@NotNull final Project project,
+                                         @NotNull final DefracPlatform platform,
+                                         @NotNull final Module[] modules) {
+        this.project = project;
+        this.platform = platform;
+        this.modules = modules;
+      }
+
+      boolean hasResult() {
+        return hasResult;
+      }
+
+      public Module getModule() {
+        return module;
+      }
+
+      public PsiDirectory getBaseDir() {
+        return baseDir;
+      }
+
+      public ModuleBasedDirectoryChooser choose() {
+        final Map<PsiDirectory,Module> dirs = Maps.newHashMap();
+        final PsiManager psiManager = PsiManager.getInstance(project);
+        final DirectoryChooser chooser = new DirectoryChooser(project);
+
+        for(final Module platformModule : modules) {
+          final ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(platformModule);
+          for(final VirtualFile sourceRoot : moduleRootManager.getSourceRoots()) {
+            final PsiDirectory candidate = psiManager.findDirectory(sourceRoot);
+            dirs.put(candidate, platformModule);
+          }
+        }
+
+        final PsiDirectory[] array = dirs.keySet().toArray(new PsiDirectory[dirs.size()]);
+        chooser.fillList(array, null, project, (Map<PsiDirectory, String>) null);
+        chooser.setTitle("Choose "+platform.displayName+" target ...");
+        chooser.show();
+
+        if(chooser.getExitCode() != DialogWrapper.OK_EXIT_CODE) {
+          hasResult = false;
+          return this;
+        }
+
+        final PsiDirectory result =
+            chooser.getSelectedDirectory();
+
+        module = dirs.get(result);
+        baseDir = result;
+        hasResult = true;
+        return this;
+      }
     }
   }
 }

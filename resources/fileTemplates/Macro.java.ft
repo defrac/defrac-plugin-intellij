@@ -9,10 +9,10 @@ public class ${NAME} {
   }
 
   #if(${PLATFORM_ALL} && ${PLATFORM_ALL} != "")@Macro("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#end${NAME}#addValues")#{else}
-  #if(${PLATFORM_ANDROID} && ${PLATFORM_ANDROID} != "")@MacroA5D("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#{end}{NAME}#addValues")#end
-  #if(${PLATFORM_IOS} && ${PLATFORM_IOS} != "")@MacroIOS("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#{end}{NAME}#addValues")#end
-  #if(${PLATFORM_JVM} && ${PLATFORM_JVM} != "")@MacroJVM("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#{end}{NAME}#addValues")#end
-  #if(${PLATFORM_WEB} && ${PLATFORM_WEB} != "")@MacroWeb("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#{end}{NAME}#addValues")#end
+  #if(${PLATFORM_ANDROID} && ${PLATFORM_ANDROID} != "")@MacroA5D("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#{end}${NAME}#addValues")#end
+  #if(${PLATFORM_IOS} && ${PLATFORM_IOS} != "")@MacroIOS("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#{end}${NAME}#addValues")#end
+  #if(${PLATFORM_JVM} && ${PLATFORM_JVM} != "")@MacroJVM("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#{end}${NAME}#addValues")#end
+  #if(${PLATFORM_WEB} && ${PLATFORM_WEB} != "")@MacroWeb("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#{end}${NAME}#addValues")#end
   #end
   public int addValues(int x, int y) {
     // This is the default implementation when no macro is present
@@ -21,10 +21,10 @@ public class ${NAME} {
   }
 
   #if(${PLATFORM_ALL} && ${PLATFORM_ALL} != "")@Macro("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#end${NAME}#println")#{else}
-  #if(${PLATFORM_ANDROID} && ${PLATFORM_ANDROID} != "")@MacroA5D("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#{end}{NAME}#println")#end
-  #if(${PLATFORM_IOS} && ${PLATFORM_IOS} != "")@MacroIOS("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#{end}{NAME}#println")#end
-  #if(${PLATFORM_JVM} && ${PLATFORM_JVM} != "")@MacroJVM("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#{end}{NAME}#println")#end
-  #if(${PLATFORM_WEB} && ${PLATFORM_WEB} != "")@MacroWeb("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#{end}{NAME}#println")#end
+  #if(${PLATFORM_ANDROID} && ${PLATFORM_ANDROID} != "")@MacroA5D("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#{end}${NAME}#println")#end
+  #if(${PLATFORM_IOS} && ${PLATFORM_IOS} != "")@MacroIOS("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#{end}${NAME}#println")#end
+  #if(${PLATFORM_JVM} && ${PLATFORM_JVM} != "")@MacroJVM("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#{end}${NAME}#println")#end
+  #if(${PLATFORM_WEB} && ${PLATFORM_WEB} != "")@MacroWeb("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#{end}${NAME}#println")#end
   #end
   public void println(int value) {
     // This is the default implementation when no macro is present

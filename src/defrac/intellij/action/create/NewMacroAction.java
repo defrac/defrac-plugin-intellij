@@ -16,12 +16,18 @@
 
 package defrac.intellij.action.create;
 
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.InputValidatorEx;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Conditions;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiNameHelper;
+import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
+import defrac.intellij.action.create.ui.MultiPlatformCreateDialog;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.fileTemplate.DefracFileTemplateProvider;
 import defrac.intellij.project.DefracProjectUtil;
@@ -49,6 +55,29 @@ public class NewMacroAction extends MultiPlatformCreateAction<PsiFile> {
 
   public NewMacroAction() {
     super(Conditions.and(IS_GENERIC, IS_IN_SOURCE));
+  }
+
+  @Override
+  protected void updateDialog(@NotNull final Project project,
+                              @NotNull final DefracFacet facet,
+                              @NotNull final AnActionEvent event,
+                              @NotNull final MultiPlatformCreateDialog<PsiFile> dialog) {
+    dialog.setTitle(DefracBundle.message("dialog.new.delegate.title"));
+    dialog.setValidator(new InputValidatorEx() {
+      public String getErrorText(String inputString) {
+        return inputString.length() > 0 && !PsiNameHelper.getInstance(project).isIdentifier(inputString)
+            ? "This is not a valid Java class name"
+            : null;
+      }
+
+      public boolean checkInput(String inputString) {
+        return true;
+      }
+
+      public boolean canClose(String inputString) {
+        return !StringUtil.isEmptyOrSpaces(inputString) && this.getErrorText(inputString) == null;
+      }
+    });
   }
 
   @NotNull

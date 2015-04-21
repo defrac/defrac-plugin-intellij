@@ -331,8 +331,7 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
   private static Properties templateProperties(@NotNull final Project project,
                                                @NotNull final String packageName,
                                                @NotNull final String className) {
-    //TODO(tim): FileTemplateManager.getInstance(project)
-    final Properties properties = new Properties(FileTemplateManager.getInstance().getDefaultProperties());
+    final Properties properties = new Properties(FileTemplateManager.getInstance(project).getDefaultProperties());
     properties.put("NAME", className);
     properties.put("PACKAGE_NAME", packageName);
     return properties;

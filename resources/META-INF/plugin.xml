@@ -26,6 +26,7 @@
 
   <change-notes>
     <![CDATA[<ul>
+      <li>2014-04-21 - Restrict to IntelliJ IDEA 141</li>
       <li>2015-04-20 - ToolWindow and Actions</li>
       <li>2015-04-09 - Fix broken SDK model in facet dialog</li>
       <li>2014-12-05 - Check for array component type, add reference to main</li>
@@ -39,7 +40,7 @@
     </ul>]]>
   </change-notes>
 
-  <idea-version since-build="139.225"/>
+  <idea-version since-build="141"/>
 
   <depends>com.intellij.modules.java</depends>
   <depends>com.intellij.modules.json</depends>

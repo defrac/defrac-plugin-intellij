@@ -59,7 +59,8 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
   public String ALTERNATIVE_JRE_PATH;
   public boolean ENABLE_SWING_INSPECTOR;
   public String ENV_VARIABLES;
-  private Map<String, String> envs = Maps.newLinkedHashMap();
+  @NotNull
+  private final Map<String, String> envs = Maps.newLinkedHashMap();
   public boolean PASS_PARENT_ENVS = true;
 
   public DefracRunConfiguration(@NotNull final Project project,

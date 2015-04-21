@@ -69,8 +69,7 @@ public final class DefracFileTemplateProvider implements FileTemplateGroupDescri
   public static String getText(@NotNull final Project project,
                                @NotNull final String template,
                                @NotNull final Properties properties) throws IOException {
-    //TODO(tim):  FileTemplateManager.getInstance(project)
-    final FileTemplateManager templateManager = FileTemplateManager.getInstance();
+    final FileTemplateManager templateManager = FileTemplateManager.getInstance(project);
     final Properties defaultProperties = templateManager.getDefaultProperties();
 
     for(final Map.Entry<Object, Object> entry : defaultProperties.entrySet()) {

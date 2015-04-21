@@ -17,7 +17,6 @@
 package defrac.intellij.compiler;
 
 import com.intellij.openapi.compiler.CompileContext;
-import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.ipc.DefracIpc;
 import defrac.intellij.run.DefracRunConfiguration;

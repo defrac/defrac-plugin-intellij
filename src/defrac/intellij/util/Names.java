@@ -49,8 +49,8 @@ public final class Names {
   @NotNull @NonNls public static final String settingsSuffix = ".settings";
   @NotNull @NonNls public static final String default_settings = "default"+settingsSuffix;
 
-  @NotNull @NonNls public static String defrac_dni_ReadOnly = "defrac.dni.ReadOnly";
-  @NotNull @NonNls public static String defrac_dni_WriteOnly = "defrac.dni.WriteOnly";
+  @NotNull @NonNls public static final String defrac_dni_ReadOnly = "defrac.dni.ReadOnly";
+  @NotNull @NonNls public static final String defrac_dni_WriteOnly = "defrac.dni.WriteOnly";
 
   @NotNull public static final Set<String> ALL_DELEGATES = ImmutableSet.of(
       defrac_annotation_Delegate,
