@@ -17,7 +17,7 @@
 <idea-plugin version="2">
   <id>defrac.intellij</id>
   <name>defrac Support</name>
-  <version>0.0.10</version>
+  <version>0.0.11</version>
   <vendor email="team@defrac.com" url="https://www.defrac.com">defrac inc.</vendor>
 
   <description>
@@ -26,6 +26,7 @@
 
   <change-notes>
     <![CDATA[<ul>
+      <li>2014-04-22 - Completion for @RepresentedBy and validation of @Intrinsic</li>
       <li>2014-04-21 - Restrict to IntelliJ IDEA 141</li>
       <li>2015-04-20 - ToolWindow and Actions</li>
       <li>2015-04-09 - Fix broken SDK model in facet dialog</li>
