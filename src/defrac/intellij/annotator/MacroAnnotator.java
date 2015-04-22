@@ -67,7 +67,7 @@ public final class MacroAnnotator implements Annotator {
     final PsiAnnotation annotation =
         PsiTreeUtil.getParentOfType(element, PsiAnnotation.class, /*strict=*/false);
 
-    if(!isMacroAnnotation(annotation)) {
+    if(annotation == null || !isMacroAnnotation(annotation)) {
       return;
     }
 

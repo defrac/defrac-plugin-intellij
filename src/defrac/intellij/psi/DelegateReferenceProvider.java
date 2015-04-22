@@ -26,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.intellij.psi.util.PsiTreeUtil.getParentOfType;
+import static defrac.intellij.psi.DefracPsiUtil.getValue;
 import static defrac.intellij.psi.DefracPsiUtil.isDelegateAnnotation;
 
 /**
@@ -79,11 +80,5 @@ public final class DelegateReferenceProvider extends PsiReferenceProvider {
   @Override
   public boolean acceptsTarget(@NotNull final PsiElement target) {
     return target instanceof PsiLiteralExpression;
-  }
-
-  @Nullable
-  private static String getValue(@NotNull final PsiLiteralExpression literalExp) {
-    final Object value = literalExp.getValue();
-    return value instanceof String ? (String)value : null;
   }
 }

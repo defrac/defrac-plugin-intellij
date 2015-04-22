@@ -184,6 +184,22 @@ public final class DefracPsiUtil {
         : nameOfAnnotation.equals(qualifiedName);
   }
 
+  @Contract("null -> false")
+  public static boolean isIntrinsicAnnotation(@Nullable final PsiAnnotation annotation) {
+    if(annotation == null) {
+      return false;
+    }
+
+    final String qualifiedName = annotation.getQualifiedName();
+    return qualifiedName != null
+        && isIntrinsicAnnotation(qualifiedName);
+  }
+
+  @Contract("null -> false")
+  public static boolean isIntrinsicAnnotation(@Nullable final String qualifiedName) {
+    return Names.defrac_dni_Intrinsic.equals(qualifiedName);
+  }
+
   public static boolean isSignatureEqual(@NotNull final PsiMethod thisMethod,
                                          @NotNull final PsiMethod thatMethod) {
     // there is no check for type parameters here due to erasure
@@ -528,5 +544,44 @@ public final class DefracPsiUtil {
     }
 
     return set;
+  }
+
+  @Nullable
+  public static String getValue(@NotNull final PsiLiteralExpression literalExp) {
+    final Object value = literalExp.getValue();
+    return value instanceof String ? (String)value : null;
+  }
+
+  @Nullable
+  @Contract("null -> null")
+  public static String intrinsicNameOf(@Nullable final PsiModifierListOwner element) {
+    if(element == null) {
+      return null;
+    }
+
+    final PsiModifierList modifierList = element.getModifierList();
+    if(modifierList == null) {
+      return null;
+    }
+
+    final PsiAnnotation annotation = modifierList.findAnnotation(Names.defrac_dni_Intrinsic);
+    if(annotation == null) {
+      return null;
+    }
+
+    final PsiAnnotationParameterList parameterList =
+        annotation.getParameterList();
+    final PsiNameValuePair[] attributes = parameterList.getAttributes();
+
+    if(attributes.length < 1) {
+      return null;
+    }
+
+    final PsiElement value = attributes[0].getValue();
+    if(value instanceof PsiLiteralExpression) {
+      return getValue((PsiLiteralExpression)value);
+    }
+
+    return null;
   }
 }

@@ -55,6 +55,7 @@
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.UnsupportedAnnotator"/>
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.WriteOnlyAnnotator"/>
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.IncompatibleReadWriteAnnotator"/>
+    <annotator language="JAVA" implementationClass="defrac.intellij.annotator.IntrinsicAnnotator"/>
     <configurationType implementation="defrac.intellij.run.DefracConfigurationType"/>
     <programRunner implementation="defrac.intellij.run.DefracJvmRunner" order="last"/>
     <programRunner implementation="defrac.intellij.run.DefracRunner" order="last"/>
@@ -81,6 +82,7 @@
     <projectTemplatesFactory implementation="defrac.intellij.projectWizard.DefracProjectTemplatesFactory"/>
     <runConfigurationProducer implementation="defrac.intellij.run.DefracRunConfigurationProducer" order="first"/>
     <cachesInvalidator implementation="defrac.intellij.config.ConfigCacheInvalidator"/>
+    <completion.contributor implementationClass="defrac.intellij.completion.ios.IOSCompletionContributor" order="first" language="JAVA"/>
   </extensions>
 
   <project-components>

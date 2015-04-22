@@ -63,7 +63,7 @@ public final class DelegateAnnotator implements Annotator {
     final PsiAnnotation annotation =
         getParentOfType(element, PsiAnnotation.class, /*strict=*/false);
 
-    if(!isDelegateAnnotation(annotation)) {
+    if(annotation == null || !isDelegateAnnotation(annotation)) {
       return;
     }
 

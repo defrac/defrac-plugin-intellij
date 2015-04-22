@@ -26,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static defrac.intellij.psi.DefracPsiUtil.getValue;
 import static defrac.intellij.psi.DefracPsiUtil.isMacroAnnotation;
 
 /**
@@ -115,11 +116,5 @@ public final class MacroReferenceProvider extends PsiReferenceProvider {
   @Override
   public boolean acceptsTarget(@NotNull final PsiElement target) {
     return target instanceof PsiLiteralExpression;
-  }
-
-  @Nullable
-  private static String getValue(@NotNull final PsiLiteralExpression literalExp) {
-    final Object value = literalExp.getValue();
-    return value instanceof String ? (String)value : null;
   }
 }

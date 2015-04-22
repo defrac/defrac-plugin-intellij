@@ -62,7 +62,7 @@ public class NewMacroAction extends MultiPlatformCreateAction<PsiFile> {
                               @NotNull final DefracFacet facet,
                               @NotNull final AnActionEvent event,
                               @NotNull final MultiPlatformCreateDialog<PsiFile> dialog) {
-    dialog.setTitle(DefracBundle.message("dialog.new.delegate.title"));
+    dialog.setTitle(DefracBundle.message("dialog.new.macro.title"));
     dialog.setValidator(new InputValidatorEx() {
       public String getErrorText(String inputString) {
         return inputString.length() > 0 && !PsiNameHelper.getInstance(project).isIdentifier(inputString)

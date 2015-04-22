@@ -52,6 +52,9 @@ public final class Names {
   @NotNull @NonNls public static final String defrac_dni_ReadOnly = "defrac.dni.ReadOnly";
   @NotNull @NonNls public static final String defrac_dni_WriteOnly = "defrac.dni.WriteOnly";
 
+  @NotNull @NonNls public static final String defrac_dni_Intrinsic = "defrac.dni.Intrinsic";
+  @NotNull @NonNls public static final String defrac_dni_RepresentedBy = "defrac.dni.RepresentedBy";
+
   @NotNull public static final Set<String> ALL_DELEGATES = ImmutableSet.of(
       defrac_annotation_Delegate,
       defrac_annotation_DelegateA5D,
