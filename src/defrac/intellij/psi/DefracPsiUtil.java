@@ -19,13 +19,14 @@ package defrac.intellij.psi;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Ref;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.CachedValueProvider;
-import com.intellij.psi.util.CachedValuesManager;
-import com.intellij.psi.util.MethodSignature;
-import com.intellij.psi.util.PsiModificationTracker;
+import com.intellij.psi.search.searches.ReferencesSearch;
+import com.intellij.psi.util.*;
+import com.intellij.util.Processor;
+import com.intellij.util.Query;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.Contract;
@@ -583,5 +584,39 @@ public final class DefracPsiUtil {
     }
 
     return null;
+  }
+
+  /**
+   * Finds the delegated class for a given delegate
+   *
+   * <p>The delegated class contains the Delegate annotation to the given class.
+   *
+   * @param klass The delegate class
+   * @return The delegated class; {@literal null} if the given class isn't a delegate
+   */
+  @Contract("null -> null")
+  @Nullable
+  public static PsiClass getDelegatedClass(@Nullable final PsiClass klass) {
+    if(klass == null) {
+      return null;
+    }
+
+    //TODO(joa): such cost, much slow ... can we cache this?
+    final Query<PsiReference> query = ReferencesSearch.search(klass);
+    final Ref<PsiClass> ref = Ref.create();
+
+    query.forEach(new Processor<PsiReference>() {
+      @Override
+      public boolean process(final PsiReference reference) {
+        if(reference instanceof DelegateClassReference) {
+          ref.set(PsiTreeUtil.getParentOfType(reference.getElement(), PsiClass.class));
+          return false;
+        }
+
+        return true;
+      }
+    });
+
+    return ref.get();
   }
 }

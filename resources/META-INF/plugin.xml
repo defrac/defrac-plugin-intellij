@@ -84,6 +84,7 @@
     <runConfigurationProducer implementation="defrac.intellij.run.DefracRunConfigurationProducer" order="first"/>
     <cachesInvalidator implementation="defrac.intellij.config.ConfigCacheInvalidator"/>
     <completion.contributor implementationClass="defrac.intellij.completion.ios.IOSCompletionContributor" order="first" language="JAVA"/>
+    <lang.foldingBuilder language="JAVA" implementationClass="defrac.intellij.psi.DelegateFoldingBuilder"/>
   </extensions>
 
   <project-components>
