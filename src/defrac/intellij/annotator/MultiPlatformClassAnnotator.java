@@ -24,9 +24,10 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.ClassKind;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
+import defrac.intellij.annotator.quickfix.RemoveFinalQuickFix;
 import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.psi.DelegateClassReference;
-import defrac.intellij.psi.validation.DelegateValidator;
+import defrac.intellij.psi.InjectionClassReference;
+import defrac.intellij.psi.validation.MultiPlatformClassValidator;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 
@@ -39,13 +40,13 @@ import static com.intellij.psi.util.PsiTreeUtil.getParentOfType;
 import static com.intellij.psi.util.PsiUtil.mapElements;
 import static defrac.intellij.annotator.DefracAnnotatorUtil.reportMissingImplementations;
 import static defrac.intellij.annotator.DefracAnnotatorUtil.reportMoreGenericAnnotation;
-import static defrac.intellij.psi.DefracPsiUtil.isDelegateAnnotation;
+import static defrac.intellij.psi.DefracPsiUtil.isInjectAnnotation;
 
 /**
  *
  */
-public final class DelegateAnnotator implements Annotator {
-  public DelegateAnnotator() {}
+public final class MultiPlatformClassAnnotator implements Annotator {
+  public MultiPlatformClassAnnotator() {}
 
   @Override
   public void annotate(@NotNull final PsiElement element,
@@ -63,15 +64,35 @@ public final class DelegateAnnotator implements Annotator {
     final PsiAnnotation annotation =
         getParentOfType(element, PsiAnnotation.class, /*strict=*/false);
 
-    if(annotation == null || !isDelegateAnnotation(annotation)) {
+    if(annotation == null || !isInjectAnnotation(annotation)) {
       return;
     }
 
-    final boolean isGeneric = Names.defrac_annotation_Delegate.equals(annotation.getQualifiedName());
-    final PsiClass klass = getParentOfType(element, PsiClass.class, /*strict=*/false);
+    final boolean isGeneric = Names.defrac_annotation_Inject.equals(annotation.getQualifiedName());
+    final PsiClass injectorClass = getParentOfType(element, PsiClass.class, /*strict=*/false);
 
-    if(klass == null) {
+    if(injectorClass == null) {
       return;
+    }
+
+    // Warn about static final fields
+    for(final PsiField field : injectorClass.getFields()) {
+      final PsiModifierList modifierList = field.getModifierList();
+
+      if(modifierList == null || modifierList.hasModifierProperty(PsiModifier.PRIVATE)) {
+        continue;
+      }
+
+      if(    modifierList.hasModifierProperty(PsiModifier.STATIC)
+          && modifierList.hasModifierProperty(PsiModifier.FINAL)) {
+        final PsiElement nameIdentifier = field.getNameIdentifier();
+
+        holder.
+            createWarningAnnotation(
+                nameIdentifier,
+                DefracBundle.message("annotator.multiPlatformClass.constant", field.getName())).
+            registerFix(new RemoveFinalQuickFix(field));
+      }
     }
 
     final PsiReference[] references =
@@ -81,11 +102,11 @@ public final class DelegateAnnotator implements Annotator {
     String target = null;
 
     for(final PsiReference reference : references) {
-      if(!(reference instanceof DelegateClassReference)) {
+      if(!(reference instanceof InjectionClassReference)) {
         continue;
       }
 
-      final DelegateClassReference defracRef = (DelegateClassReference)reference;
+      final InjectionClassReference defracRef = (InjectionClassReference)reference;
 
       if(isNullOrEmpty(defracRef.getValue())) {
         holder.createErrorAnnotation(element, DefracBundle.message("annotator.expect.qualifiedName"));
@@ -105,12 +126,12 @@ public final class DelegateAnnotator implements Annotator {
         } else {
           final Annotation errorAnnotation = holder.
               createErrorAnnotation(element, DefracBundle.message("annotator.unresolved", defracRef.getValue()));
-          final PsiClass superClass = klass.getSuperClass();
+          final PsiClass superClass = injectorClass.getSuperClass();
 
           final CreateClassOrPackageFix fix = DefracAnnotatorUtil.createCreateClassOrPackageFix(
               target,
-              checkNotNull(DefracFacet.getInstance(klass)).
-                  getDelegateSearchScope(DefracPlatform.byDelegateAnnotation(annotation.getQualifiedName())),
+              checkNotNull(DefracFacet.getInstance(injectorClass)).
+                  getMultiPlatformClassSearchScope(DefracPlatform.byInjectAnnotation(annotation.getQualifiedName())),
               element,
               ClassKind.CLASS,
               superClass == null ? null : checkNotNull(superClass.getQualifiedName()),
@@ -122,8 +143,8 @@ public final class DelegateAnnotator implements Annotator {
           return;
         }
       } else {
-        for(final PsiElement result : mapElements(resolveResults)) {
-          final DefracFacet elementFacet = DefracFacet.getInstance(result);
+        for(final PsiElement injectionClass : mapElements(resolveResults)) {
+          final DefracFacet elementFacet = DefracFacet.getInstance(injectionClass);
 
           if(elementFacet != null) {
             if(!platformImplementations.add(elementFacet.getPlatform())) {
@@ -131,7 +152,7 @@ public final class DelegateAnnotator implements Annotator {
             }
           }
 
-          DelegateValidator.annotate(element, holder, klass, result);
+          MultiPlatformClassValidator.annotate(element, holder, injectorClass, injectionClass);
         }
       }
     }
@@ -140,16 +161,16 @@ public final class DelegateAnnotator implements Annotator {
       reportMissingImplementations(
           element, holder,
           facet,
-          klass, platformImplementations,
-          DefracPlatform.DELEGATE_ANNOTATION_TO_PLATFORM,
+          injectorClass, platformImplementations,
+          DefracPlatform.INJECT_ANNOTATION_TO_PLATFORM,
           target,
-          /*isDelegate=*/true);
+          /*isMultiPlatformClass=*/true);
     } else {
       reportMoreGenericAnnotation(
-          holder, annotation, klass,
-          Names.defrac_annotation_Delegate,
-          DefracPlatform.byDelegateAnnotation(checkNotNull(annotation.getQualifiedName())),
-          /*isDelegate=*/true);
+          holder, annotation, injectorClass,
+          Names.defrac_annotation_Inject,
+          DefracPlatform.byInjectAnnotation(checkNotNull(annotation.getQualifiedName())),
+          /*isMultiPlatformClass=*/true);
     }
   }
 }

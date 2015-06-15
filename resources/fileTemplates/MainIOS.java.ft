@@ -1,0 +1,17 @@
+#if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
+
+import defrac.app.ScreenAppDelegate;
+import defrac.ios.uikit.UIKit;
+import defrac.ui.Screen;
+
+#parse("File Header.java")
+public final class Main extends ScreenAppDelegate {
+  public static void main(String[] args) {
+    UIKit.applicationMain(args, null, Main.class);
+  }
+
+  @Override
+  protected Screen createScreen() {
+    return new ${NAME}();
+  }
+}

@@ -19,13 +19,14 @@ package defrac.intellij.psi;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Ref;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.CachedValueProvider;
-import com.intellij.psi.util.CachedValuesManager;
-import com.intellij.psi.util.MethodSignature;
-import com.intellij.psi.util.PsiModificationTracker;
+import com.intellij.psi.search.searches.ReferencesSearch;
+import com.intellij.psi.util.*;
+import com.intellij.util.Processor;
+import com.intellij.util.Query;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.Contract;
@@ -36,7 +37,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.intellij.psi.util.PsiTypesUtil.compareTypes;
+import static com.intellij.psi.util.PsiUtil.mapElements;
 import static com.intellij.psi.util.PsiUtil.setModifierProperty;
 
 /**
@@ -95,32 +99,53 @@ public final class DefracPsiUtil {
   private DefracPsiUtil() {}
 
   @Contract("null -> false")
-  public static boolean isDelegateAnnotation(@Nullable final PsiElement element) {
-    return element instanceof PsiAnnotation && isDelegateAnnotation((PsiAnnotation)element);
+  public static boolean isInjectorAnnotation(@Nullable final PsiElement element) {
+    return element instanceof PsiAnnotation && isInjectorAnnotation((PsiAnnotation) element);
   }
 
   @Contract("null -> false")
-  public static boolean isDelegateAnnotation(@Nullable final PsiAnnotation annotation) {
-    return isDelegateAnnotation(annotation, null);
-  }
-
-  @Contract("null, _ -> false")
-  public static boolean isDelegateAnnotation(@Nullable final PsiAnnotation annotation,
-                                             @Nullable final DefracPlatform platform) {
+  public static boolean isInjectorAnnotation(@Nullable final PsiAnnotation annotation) {
     if(annotation == null) {
       return false;
     }
 
     final String qualifiedName = annotation.getQualifiedName();
     return qualifiedName != null
-        && isDelegateAnnotation(qualifiedName, DefracPlatform.PLATFORM_TO_DELEGATE_ANNOTATION.get(platform));
+        && isInjectorAnnotation(qualifiedName);
+  }
+
+  @Contract("null -> false")
+  public static boolean isInjectorAnnotation(@Nullable final String qualifiedName) {
+    return Names.defrac_annotation_Injector.equals(qualifiedName);
+  }
+
+  @Contract("null -> false")
+  public static boolean isInjectAnnotation(@Nullable final PsiElement element) {
+    return element instanceof PsiAnnotation && isInjectAnnotation((PsiAnnotation) element);
+  }
+
+  @Contract("null -> false")
+  public static boolean isInjectAnnotation(@Nullable final PsiAnnotation annotation) {
+    return isInjectAnnotation(annotation, null);
   }
 
   @Contract("null, _ -> false")
-  public static boolean isDelegateAnnotation(@Nullable final String qualifiedName,
-                                             @Nullable final String nameOfAnnotation) {
+  public static boolean isInjectAnnotation(@Nullable final PsiAnnotation annotation,
+                                           @Nullable final DefracPlatform platform) {
+    if(annotation == null) {
+      return false;
+    }
+
+    final String qualifiedName = annotation.getQualifiedName();
+    return qualifiedName != null
+        && isInjectAnnotation(qualifiedName, DefracPlatform.PLATFORM_TO_INJECT_ANNOTATION.get(platform));
+  }
+
+  @Contract("null, _ -> false")
+  public static boolean isInjectAnnotation(@Nullable final String qualifiedName,
+                                           @Nullable final String nameOfAnnotation) {
     return nameOfAnnotation == null
-        ? Names.ALL_DELEGATES.contains(qualifiedName)
+        ? Names.ALL_INJECTS.contains(qualifiedName)
         : nameOfAnnotation.equals(qualifiedName);
   }
 
@@ -462,10 +487,108 @@ public final class DefracPsiUtil {
     return list != null && list.findAnnotation(DefracPlatform.PLATFORM_TO_MACRO_ANNOTATION.get(platform)) != null;
   }
 
-  public static boolean hasDelegate(@NotNull final PsiModifierListOwner element,
-                                 @NotNull final DefracPlatform platform) {
+  public static boolean hasInjection(@NotNull final PsiModifierListOwner element,
+                                     @NotNull final DefracPlatform platform) {
     final PsiModifierList list = element.getModifierList();
-    return list != null && list.findAnnotation(DefracPlatform.PLATFORM_TO_DELEGATE_ANNOTATION.get(platform)) != null;
+    return list != null && list.findAnnotation(DefracPlatform.PLATFORM_TO_INJECT_ANNOTATION.get(platform)) != null;
+  }
+
+  public static boolean hasInjector(@NotNull final PsiModifierListOwner element) {
+    final PsiModifierList list = element.getModifierList();
+    return list != null && list.findAnnotation(Names.defrac_annotation_Injector) != null;
+  }
+
+  /**
+   * Find the injector via the @Injector annotation
+   * @param element The current class; the injection
+   * @return The injector if found via annotation; null if not found or no annotation is present
+   */
+  @Nullable
+  public static PsiClass getInjector(@NotNull final PsiModifierListOwner element) {
+    final PsiModifierList list = element.getModifierList();
+
+    return list == null
+        ? null
+        : findClassInDefracAnnotation(
+            list.findAnnotation(Names.defrac_annotation_Injector),
+            InjectorClassReference.class);
+  }
+
+  /**
+   * Find the injection via the @Inject annotation
+   *
+   * <p>This method looks for the more specific annotation first
+   *
+   * @param element The current class; the injector
+   * @param platform The platform of the injection
+   * @return The injection if found via annotation; null if not found or no annotation is present
+   */
+  @Nullable
+  public static PsiClass getInjection(@NotNull final PsiModifierListOwner element,
+                                      @NotNull final DefracPlatform platform) {
+    final PsiModifierList list = element.getModifierList();
+
+    if(list == null) {
+      return null;
+    }
+
+    PsiAnnotation annotation =
+        list.findAnnotation(DefracPlatform.PLATFORM_TO_INJECT_ANNOTATION.get(platform));
+
+    if(annotation == null && !platform.isGeneric()) {
+      annotation =
+          list.findAnnotation(Names.defrac_annotation_Inject);
+    }
+
+    return findClassInDefracAnnotation(annotation, InjectionClassReference.class);
+  }
+
+  @Contract("null, _ -> null")
+  @Nullable
+  private static PsiClass findClassInDefracAnnotation(@Nullable final PsiAnnotation annotation,
+                                                      @NotNull final Class<? extends ClassReferenceBase> referenceType) {
+    if(annotation == null) {
+      return null;
+
+    }
+    final PsiAnnotationParameterList parameterList = annotation.getParameterList();
+    final PsiNameValuePair[] attributes = parameterList.getAttributes();
+
+    if(attributes.length == 0) {
+      return null;
+    }
+
+    final PsiAnnotationMemberValue value = attributes[0].getValue();
+
+    if(value == null) {
+      return null;
+    }
+
+    final PsiReference[] references = value.getReferences();
+
+    for(final PsiReference reference : references) {
+      if(!referenceType.isInstance(reference)) {
+        continue;
+      }
+
+      final ClassReferenceBase defracRef = (ClassReferenceBase)reference;
+
+      if(isNullOrEmpty(defracRef.getValue())) {
+        continue;
+      }
+
+      final ResolveResult[] resolveResults = defracRef.multiResolve();
+
+      if(resolveResults.length != 0) {
+        for(final PsiElement result : mapElements(resolveResults)) {
+          if(result instanceof PsiClass) {
+            return (PsiClass)result;
+          }
+        }
+      }
+    }
+
+    return null;
   }
 
   @Nullable
@@ -527,8 +650,6 @@ public final class DefracPsiUtil {
     return Names.defrac_dni_ReadOnly.equals(qualifiedName);
   }
 
-
-
   @NotNull
   public static Set<PsiClass> mapToContainingClasses(@NotNull final List<PsiMethod> methods) {
     final Set<PsiClass> set = Sets.newLinkedHashSet();
@@ -583,5 +704,63 @@ public final class DefracPsiUtil {
     }
 
     return null;
+  }
+
+
+  /**
+   * Finds the injector class for a given injection
+   *
+   * <p>The injector class contains the &auml;Inject annotation to the given class.
+   *
+   * @param klass The injected class
+   * @return The injector; {@literal null} if the given class isn't an injection
+   */
+  @Contract("null -> null")
+  @Nullable
+  public static PsiClass findInjector(@Nullable final PsiClass klass) {
+    if(klass == null) {
+      return null;
+    }
+
+    return CachedValuesManager.getCachedValue(klass, new CachedValueProvider<PsiClass>() {
+      @Nullable
+      @Override
+      public Result<PsiClass> compute() {
+        final Query<PsiReference> query = ReferencesSearch.search(klass);
+        final Ref<PsiClass> ref = Ref.create();
+
+        query.forEach(new Processor<PsiReference>() {
+          @Override
+          public boolean process(final PsiReference reference) {
+            if(reference instanceof InjectionClassReference) {
+              ref.set(PsiTreeUtil.getParentOfType(reference.getElement(), PsiClass.class));
+              return false;
+            }
+
+            return true;
+          }
+        });
+
+        final PsiClass result = ref.get();
+
+        if(result == null) {
+          return Result.create(null, PsiModificationTracker.MODIFICATION_COUNT);
+        } else {
+          return Result.create(result, checkNotNull(result.getModifierList()));
+        }
+      }
+    });
+  }
+
+  @Contract("null -> false")
+  public static boolean hasUsage(@Nullable final PsiElement element) {
+    if(element == null) {
+      return false;
+    }
+
+    final Query<PsiReference> query =
+        ReferencesSearch.search(element, element.getUseScope());
+
+    return query.findFirst() != null;
   }
 }

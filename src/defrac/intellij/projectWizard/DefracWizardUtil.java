@@ -34,20 +34,27 @@ import java.awt.event.ActionListener;
 public final class DefracWizardUtil {
   @NotNull @NonNls public static final String DEFAULT_APP_NAME = "myapp";
   @NotNull @NonNls public static final String DEFAULT_MAIN_CLASS_NAME = "com.example.Main";
+  @NotNull @NonNls public static final String DEFAULT_MAIN_SCREEN_CLASS_NAME = "com.example.MainScreen";
 
   static final class ApplicationSettingsController {
     boolean packageTextFieldChangedByUser;
 
-    ApplicationSettingsController(final JTextField applicationNameTextField,
-                                  final JTextField packageNameTextField,
-                                  final JLabel errorLabel) {
+    ApplicationSettingsController(@NotNull final JTextField applicationNameTextField,
+                                  @NotNull final JTextField packageNameTextField,
+                                  @Nullable final JTextField mainClassTextField,
+                                  @NotNull final JLabel errorLabel,
+                                  @Nullable final String mainClassName) {
       applicationNameTextField.getDocument().addDocumentListener(new DocumentAdapter() {
         @Override
         protected void textChanged(final DocumentEvent documentEvent) {
           if(!packageTextFieldChangedByUser) {
             final String appName = applicationNameTextField.getText().trim();
             if(appName.length() > 0) {
-              packageNameTextField.setText(getDefaultPackageNameByModuleName(appName));
+              final String defaultPackageName = getDefaultPackageNameByModuleName(appName);
+              packageNameTextField.setText(defaultPackageName);
+              if(mainClassTextField != null) {
+                mainClassTextField.setText(defaultPackageName + '.' + mainClassName);
+              }
             }
             packageTextFieldChangedByUser = false;
           }
@@ -101,10 +108,12 @@ public final class DefracWizardUtil {
     packageNameTextField.setText(getDefaultPackageNameByModuleName(defaultAppName));
   }
 
-  public static void handleApplicationSettingsInput(final JTextField applicationNameTextField,
-                                                    final JTextField packageNameTextField,
-                                                    final JLabel errorLabel) {
-    new ApplicationSettingsController(applicationNameTextField, packageNameTextField, errorLabel);
+  public static void handleApplicationSettingsInput(@NotNull final JTextField applicationNameTextField,
+                                                    @NotNull final JTextField packageNameTextField,
+                                                    @Nullable final JTextField mainClassTextField,
+                                                    @NotNull final JLabel errorLabel,
+                                                    @Nullable final String mainClassName) {
+    new ApplicationSettingsController(applicationNameTextField, packageNameTextField, mainClassTextField, errorLabel, mainClassName);
   }
 
   public static void handlePlatformsSettingsInput(final JCheckBox webCheckBox,

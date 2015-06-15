@@ -24,7 +24,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.ClassKind;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
-import defrac.intellij.annotator.quickfix.RemoveDelegateQuickFix;
+import defrac.intellij.annotator.quickfix.RemoveInjectQuickFix;
 import defrac.intellij.annotator.quickfix.RemoveMacroQuickFix;
 import defrac.intellij.config.DefracConfig;
 import defrac.intellij.facet.DefracFacet;
@@ -53,7 +53,6 @@ public final class DefracAnnotatorUtil {
       @Nullable final String template) {
     final PsiPackage package$;
 
-
     final int lastIndexOfDot = qualifiedName.lastIndexOf('.');
 
     if(lastIndexOfDot == -1) {
@@ -81,7 +80,7 @@ public final class DefracAnnotatorUtil {
                                                  @NotNull final PsiModifierListOwner annotatedElement,
                                                  @NotNull final String nameOfGenericAnnotation,
                                                  @NotNull final DefracPlatform platform,
-                                                 final boolean isDelegate) {
+                                                 final boolean isMultiPlatformClass) {
     final PsiAnnotation[] thatAnnotations = checkNotNull(annotatedElement.getModifierList()).getAnnotations();
 
     for(final PsiAnnotation thatAnnotation : thatAnnotations) {
@@ -118,8 +117,8 @@ public final class DefracAnnotatorUtil {
         holder.
             createWarningAnnotation(thisAnnotation, DefracBundle.message("annotator.platform.redundant")).
             registerFix(
-                isDelegate
-                    ? new RemoveDelegateQuickFix((PsiClass)annotatedElement, platform)
+                isMultiPlatformClass
+                    ? new RemoveInjectQuickFix((PsiClass)annotatedElement, platform)
                     : new RemoveMacroQuickFix((PsiMethod)annotatedElement, platform));
       }
 
@@ -134,7 +133,7 @@ public final class DefracAnnotatorUtil {
                                                   @NotNull final Set<DefracPlatform> implementations,
                                                   @NotNull final Map<String, DefracPlatform> nameToPlatform,
                                                   @Nullable final String target,
-                                                  final boolean isDelegate) {
+                                                  final boolean isMultiPlatformClass) {
     // don't report that a platform is missing if the project is not
     // generic since it's not required!
     if(!facet.getPlatform().isGeneric()) {
@@ -168,12 +167,12 @@ public final class DefracAnnotatorUtil {
                   createErrorAnnotation(element,
                       DefracBundle.message("annotator.platform.missing", platform.displayName));
 
-          if(isDelegate) {
+          if(isMultiPlatformClass) {
             if(target != null) {
               final PsiClass superClass = ((PsiClass) annotatedElement).getSuperClass();
               final CreateClassOrPackageFix fix = DefracAnnotatorUtil.createCreateClassOrPackageFix(
                   target,
-                  checkNotNull(DefracFacet.getInstance(annotatedElement)).getDelegateSearchScope(platform),
+                  checkNotNull(DefracFacet.getInstance(annotatedElement)).getMultiPlatformClassSearchScope(platform),
                   element,
                   ClassKind.CLASS,
                   superClass == null ? null : checkNotNull(superClass.getQualifiedName()),

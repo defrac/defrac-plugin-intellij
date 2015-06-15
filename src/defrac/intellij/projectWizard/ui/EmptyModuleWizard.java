@@ -38,7 +38,7 @@ public final class EmptyModuleWizard {
 
   public EmptyModuleWizard(@Nullable final String name) {
     DefracWizardUtil.initializeApplicationSettingsInput(applicationNameTextField, packageNameTextField, name);
-    DefracWizardUtil.handleApplicationSettingsInput(applicationNameTextField, packageNameTextField, errorLabel);
+    DefracWizardUtil.handleApplicationSettingsInput(applicationNameTextField, packageNameTextField, null, errorLabel, null);
     DefracWizardUtil.handlePlatformsSettingsInput(webCheckBox, iosCheckBox, androidCheckBox, jvmCheckBox, errorLabel);
 
     errorLabel.setForeground(JBColor.RED);

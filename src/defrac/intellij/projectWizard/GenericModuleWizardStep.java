@@ -61,5 +61,6 @@ public final class GenericModuleWizardStep extends ModuleWizardStep {
     moduleBuilder.setJVMSupported(wizard.isJVMSupported());
     moduleBuilder.setAndroidSupported(wizard.isAndroidSupported());
     moduleBuilder.setMainClassName(wizard.getMainClassName());
+    moduleBuilder.setName(wizard.getApplicationName());
   }
 }

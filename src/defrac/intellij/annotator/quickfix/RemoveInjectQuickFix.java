@@ -24,18 +24,18 @@ import com.intellij.psi.PsiFile;
 import defrac.intellij.DefracPlatform;
 import org.jetbrains.annotations.NotNull;
 
-import static defrac.intellij.psi.DefracPsiUtil.hasDelegate;
-import static defrac.intellij.psi.DefracPsiUtil.isDelegateAnnotation;
+import static defrac.intellij.psi.DefracPsiUtil.hasInjection;
+import static defrac.intellij.psi.DefracPsiUtil.isInjectAnnotation;
 
 /**
  *
  */
-public final class RemoveDelegateQuickFix extends RemoveAnnotationQuickFix {
+public final class RemoveInjectQuickFix extends RemoveAnnotationQuickFix {
   @NotNull
   private final DefracPlatform platform;
 
-  public RemoveDelegateQuickFix(@NotNull final PsiClass klass,
-                                @NotNull final DefracPlatform platform) {
+  public RemoveInjectQuickFix(@NotNull final PsiClass klass,
+                              @NotNull final DefracPlatform platform) {
     super(klass);
     this.platform = platform;
   }
@@ -47,24 +47,24 @@ public final class RemoveDelegateQuickFix extends RemoveAnnotationQuickFix {
 
     //TODO(joa): ugly
     switch(platform) {
-      case ANDROID: name = "A5D"; break;
-      case IOS:     name = "IOS"; break;
-      case JVM:     name = "JVM"; break;
-      case WEB:     name = "Web"; break;
-      default:      name =    ""; break;
+      case ANDROID: name = "Android"; break;
+      case IOS:     name = "IOS"    ; break;
+      case JVM:     name = "JVM"    ; break;
+      case WEB:     name = "Web"    ; break;
+      default:      name =    ""    ; break;
     }
 
-    return "Remove @Delegate"+name;
+    return "Remove @Inject"+name;
   }
 
   @Override
   public boolean isAvailable(@NotNull final Project project, final Editor editor, final PsiFile file) {
     return super.isAvailable(project, editor, file)
-        && hasDelegate(element, platform);
+        && hasInjection(element, platform);
   }
 
   @Override
   protected boolean isAnnotation(@NotNull final PsiAnnotation annotation) {
-    return isDelegateAnnotation(annotation, platform);
+    return isInjectAnnotation(annotation, platform);
   }
 }

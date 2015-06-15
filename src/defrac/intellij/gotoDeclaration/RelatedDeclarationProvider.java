@@ -20,7 +20,7 @@ import com.google.common.collect.Lists;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.navigation.GotoRelatedProvider;
 import com.intellij.psi.*;
-import defrac.intellij.psi.DelegateClassReference;
+import defrac.intellij.psi.InjectionClassReference;
 import defrac.intellij.psi.MacroMethodReference;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.intellij.psi.util.PsiUtil.mapElements;
-import static defrac.intellij.psi.DefracPsiUtil.isDelegateAnnotation;
+import static defrac.intellij.psi.DefracPsiUtil.isInjectAnnotation;
 import static defrac.intellij.psi.DefracPsiUtil.isMacroAnnotation;
 
 /**
@@ -102,19 +102,19 @@ public final class RelatedDeclarationProvider extends GotoRelatedProvider {
     final ArrayList<GotoRelatedItem> items = Lists.newArrayListWithCapacity(0);
 
     for(final PsiAnnotation annotation : modifiers.getAnnotations()) {
-      if(!isDelegateAnnotation(annotation)) {
+      if(!isInjectAnnotation(annotation)) {
         continue;
       }
 
-      final DelegateClassReference reference =
-          DelegateClassReference.getInstance(annotation);
+      final InjectionClassReference reference =
+          InjectionClassReference.getInstance(annotation);
 
       if(reference == null) {
         continue;
       }
 
       for(final PsiElement element : mapElements(reference.multiResolve())) {
-        items.add(new GotoRelatedItem(element, "Delegate"));
+        items.add(new GotoRelatedItem(element, "Injection"));
       }
     }
 

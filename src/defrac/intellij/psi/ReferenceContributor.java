@@ -35,11 +35,17 @@ public final class ReferenceContributor extends PsiReferenceContributor {
 
   @Override
   public void registerReferenceProviders(@NotNull final PsiReferenceRegistrar registrar) {
-    // TODO(joa): withReference of a delegate / macro class
+    // TODO(joa): withReference of a multi-platform / macro class
     registrar.registerReferenceProvider(
         psiElement(PsiLiteralExpression.class).
             withSuperParent(3, psiElement(PsiAnnotation.class)),
-        new DelegateReferenceProvider()
+        new InjectionReferenceProvider()
+    );
+
+    registrar.registerReferenceProvider(
+        psiElement(PsiLiteralExpression.class).
+            withSuperParent(3, psiElement(PsiAnnotation.class)),
+        new InjectorReferenceProvider()
     );
 
     registrar.registerReferenceProvider(

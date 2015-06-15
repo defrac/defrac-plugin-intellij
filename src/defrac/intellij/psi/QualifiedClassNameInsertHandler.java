@@ -32,7 +32,7 @@ enum QualifiedClassNameInsertHandler implements InsertHandler<LookupElement> {
   @Override
   public void handleInsert(@NotNull final InsertionContext context,
                            @NotNull final LookupElement item) {
-    // When auto-completion happens for @Macro or @Delegate we always need the
+    // When auto-completion happens for @Macro or @Inject we always need the
     // fully qualified class name. IntelliJ IDEA inserts the class name by default
     // and I couldn't find a way to prevent this from happening.
     //

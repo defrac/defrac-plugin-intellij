@@ -26,8 +26,9 @@
 
   <change-notes>
     <![CDATA[<ul>
-      <li>2014-04-22 - Completion for @RepresentedBy and validation of @Intrinsic</li>
-      <li>2014-04-21 - Restrict to IntelliJ IDEA 141</li>
+      <li>2015-06-15 - Rename annotations and align with 0.3.x
+      <li>2015-04-22 - Completion for @RepresentedBy and validation of @Intrinsic</li>
+      <li>2015-04-21 - Restrict to IntelliJ IDEA 141</li>
       <li>2015-04-20 - ToolWindow and Actions</li>
       <li>2015-04-09 - Fix broken SDK model in facet dialog</li>
       <li>2014-12-05 - Check for array component type, add reference to main</li>
@@ -50,7 +51,8 @@
   <resource-bundle>defrac.intellij.DefracBundle</resource-bundle>
 
   <extensions defaultExtensionNs="com.intellij">
-    <annotator language="JAVA" implementationClass="defrac.intellij.annotator.DelegateAnnotator"/>
+    <annotator language="JAVA" implementationClass="defrac.intellij.annotator.MultiPlatformClassAnnotator"/>
+    <annotator language="JAVA" implementationClass="defrac.intellij.annotator.InjectionAnnotator"/>
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.MacroAnnotator"/>
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.ReadOnlyAnnotator"/>
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.UnsupportedAnnotator"/>
@@ -64,13 +66,15 @@
     <framework.detector implementation="defrac.intellij.facet.DefracFrameworkDetector"/>
     <fileTypeFactory implementation="defrac.intellij.fileType.DefracFileTypeFactory"/>
     <gotoDeclarationHandler implementation="defrac.intellij.gotoDeclaration.GotoMacroDeclarationHandler" order="first"/>
-    <gotoDeclarationHandler implementation="defrac.intellij.gotoDeclaration.GotoDelegateDeclarationHandler" order="first"/>
+    <gotoDeclarationHandler implementation="defrac.intellij.gotoDeclaration.GotoInjectionDeclarationHandler" order="first"/>
+    <gotoDeclarationHandler implementation="defrac.intellij.gotoDeclaration.GotoInjectorDeclarationHandler" order="first"/>
     <gotoRelatedProvider implementation="defrac.intellij.gotoDeclaration.RelatedDeclarationProvider"/>
     <lang.refactoringSupport order="first" language="JAVA" implementationClass="defrac.intellij.psi.RefactoringSupport"/>
     <methodReferencesSearch implementation="defrac.intellij.findUsages.MacroMethodReferencesSearch"/>
     <projectViewPane implementation="defrac.intellij.projectView.DefracProjectViewPane"/>
     <psi.referenceContributor implementation="defrac.intellij.psi.ReferenceContributor"/>
-    <referencesSearch implementation="defrac.intellij.findUsages.DelegateClassReferencesSearch"/>
+    <referencesSearch implementation="defrac.intellij.findUsages.InjectionClassReferencesSearch"/>
+    <referencesSearch implementation="defrac.intellij.findUsages.InjectorClassReferencesSearch"/>
     <referencesSearch implementation="defrac.intellij.findUsages.MacroClassReferencesSearch"/>
     <sdkType implementation="defrac.intellij.sdk.DefracSdkType"/>
     <nonProjectFileWritingAccessExtension implementation="defrac.intellij.fileType.DefracSettingsWritingAccess"/>
@@ -99,18 +103,18 @@
   </project-components>
 
   <actions>
-    <action id="defrac.action.new.delegate"
-            class="defrac.intellij.action.create.NewDelegateAction"
-            icon="DefracIcons.NewDelegate"
-            text="New Delegate"
-            description="Creates a new Delegate">
+    <action id="defrac.action.new.multiPlatformClass"
+            class="defrac.intellij.action.create.NewMultiPlatformClassAction"
+            icon="DefracIcons.NewMultiPlatformClass"
+            text="Multi-Platform Class"
+            description="Creates a new Multi-Platform Class">
       <add-to-group group-id="NewGroup" anchor="last"/>
     </action>
 
     <action id="defrac.action.new.macro"
             class="defrac.intellij.action.create.NewMacroAction"
             icon="DefracIcons.NewMacro"
-            text="New Macro"
+            text="Macro"
             description="Creates a new Macro">
       <add-to-group group-id="NewGroup" anchor="last"/>
     </action>

@@ -42,7 +42,7 @@ public final class DefracIcons {
 
   @NotNull public static final Icon AndroidModule = load("/icons/module.android.png");
 
-  @NotNull public static final Icon NewDelegate = Defrac13x13;
+  @NotNull public static final Icon NewMultiPlatformClass = Defrac13x13;
 
   @NotNull public static final Icon NewMacro = Defrac13x13;
 

@@ -34,12 +34,15 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.SdkTypeId;
+import com.intellij.openapi.roots.LanguageLevelProjectExtension;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.pom.java.LanguageLevel;
+import defrac.intellij.DefracPlatform;
 import defrac.intellij.config.DefracConfig;
 import defrac.intellij.fileTemplate.DefracFileTemplateProvider;
 import defrac.intellij.sdk.DefracSdkType;
@@ -81,11 +84,60 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
     @Override
     public void createTemplate(@NotNull final Project project, @NotNull final File baseDir,
                                @NotNull final String packageName,
-                               @NotNull final String className) throws IOException {
-      final File sourceDir = new File(baseDir, "src" + File.separator + "java");
-      final File packageDir = new File(sourceDir, packageName.replace('.', File.separatorChar));
+                               @NotNull final String className,
+                               final boolean isLambdaSupported) throws IOException {
+      final String packagePath = packageName.replace('.', File.separatorChar);
 
-      write(project, new File(packageDir, className + ".java"), DefracFileTemplateProvider.GENERIC_APP, packageName, className);
+      final File genericSrcDir = new File(baseDir, "src" + File.separator + "java");
+      final File genericPackageDir = new File(genericSrcDir, packagePath);
+
+      write(project,
+          new File(genericPackageDir, className + ".java"),
+          isLambdaSupported
+              ? DefracFileTemplateProvider.MAIN_SCREEN_8
+              : DefracFileTemplateProvider.MAIN_SCREEN
+          , packageName, className, getApplicationName());
+
+      write(project,
+          new File(genericPackageDir, "DisplayListController.java"),
+          isLambdaSupported
+              ? DefracFileTemplateProvider.DISPLAY_LIST_CONTROLLER_8
+              : DefracFileTemplateProvider.DISPLAY_LIST_CONTROLLER
+          , packageName, className, getApplicationName());
+
+      createMain(androidSupported, project, baseDir, packagePath, packageName, className, DefracPlatform.ANDROID, DefracFileTemplateProvider.MAIN_ANDROID);
+      createMain(iosSupported, project, baseDir, packagePath, packageName, className, DefracPlatform.IOS, DefracFileTemplateProvider.MAIN_IOS);
+
+      if(jvmSupported) {
+        final File jvmSrcDir = new File(baseDir, "src" + File.separator + "java." + DefracPlatform.JVM.name);
+        final File jvmPackageDir = new File(jvmSrcDir, packagePath);
+
+        write(project,
+            new File(jvmPackageDir, "Main.java"),
+            isLambdaSupported
+                ? DefracFileTemplateProvider.MAIN_JVM_8
+                : DefracFileTemplateProvider.MAIN_JVM,
+            packageName, className, getApplicationName());
+      }
+
+      createMain(webSupported, project, baseDir, packagePath, packageName, className, DefracPlatform.WEB, DefracFileTemplateProvider.MAIN_WEB);
+    }
+
+    private void createMain(final boolean supported,
+                            @NotNull final Project project,
+                            @NotNull final File baseDir,
+                            @NotNull final String packagePath,
+                            @NotNull final String packageName,
+                            @NotNull final String className,
+                            @NotNull final DefracPlatform platform,
+                            @NotNull final String template) throws IOException {
+      if(supported) {
+        final File srcDir = new File(baseDir, "src" + File.separator + "java." + platform.name);
+        final File packageDir = new File(srcDir, packagePath);
+
+        write(project,
+            new File(packageDir, "Main.java"), template, packageName, className, getApplicationName());
+      }
     }
   }
 
@@ -107,13 +159,14 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
     public void createTemplate(@NotNull final Project project,
                                @NotNull final File baseDir,
                                @NotNull final String packageName,
-                               @NotNull final String className) throws IOException {
+                               @NotNull final String className,
+                               final boolean isLambdaSupported) throws IOException {
       final File sourceDir = new File(baseDir, "src" + File.separator + "java.ios");
       final File packageDir = new File(sourceDir, packageName.replace('.', File.separatorChar));
 
-      write(project, new File(packageDir, className + ".java"), DefracFileTemplateProvider.IOS_APP, packageName, className);
-      write(project, new File(packageDir, className + "Controller.java"), DefracFileTemplateProvider.IOS_APP_CONTROLLER, packageName, className);
-      write(project, new File(packageDir, className + "Delegate.java"), DefracFileTemplateProvider.IOS_APP_DELEGATE, packageName, className);
+      write(project, new File(packageDir, className + ".java"), DefracFileTemplateProvider.IOS_APP, packageName, className, getApplicationName());
+      write(project, new File(packageDir, className + "Controller.java"), DefracFileTemplateProvider.IOS_APP_CONTROLLER, packageName, className, getApplicationName());
+      write(project, new File(packageDir, className + "Delegate.java"), DefracFileTemplateProvider.IOS_APP_DELEGATE, packageName, className, getApplicationName());
     }
   }
 
@@ -131,7 +184,11 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
     }
 
     @Override
-    public void createTemplate(@NotNull final Project project, @NotNull final File baseDir, @NotNull final String packageName, @NotNull final String className) throws IOException {
+    public void createTemplate(@NotNull final Project project,
+                               @NotNull final File baseDir,
+                               @NotNull final String packageName,
+                               @NotNull final String className,
+                               final boolean isLambdaSupported) throws IOException {
       // no template
     }
   }
@@ -147,10 +204,10 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
   @Nullable
   private Sdk defracSdk;
 
-  private boolean webSupported;
-  private boolean iosSupported;
-  private boolean jvmSupported;
-  private boolean androidSupported;
+  boolean webSupported;
+  boolean iosSupported;
+  boolean jvmSupported;
+  boolean androidSupported;
 
   @Override
   public Icon getNodeIcon() {
@@ -168,6 +225,9 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
   public void setApplicationName(@NotNull final String value) {
     applicationName = value;
   }
+
+  @NotNull
+  public String getApplicationName() { return applicationName; }
 
   public void setPackageName(@NotNull final String value) {
     packageName = value;
@@ -309,31 +369,38 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
 
   private void createTemplate(@NotNull final Project project) throws IOException {
     final File baseDir = VfsUtilCore.virtualToIoFile(project.getBaseDir());
-    createTemplate(project, baseDir, getJavaPackageName(), getJavaClassName());
+    final LanguageLevel languageLevel =
+        LanguageLevelProjectExtension.getInstance(project).getLanguageLevel();
+
+    createTemplate(project, baseDir, getJavaPackageName(), getJavaClassName(), languageLevel.isAtLeast(LanguageLevel.JDK_1_8));
   }
 
   public abstract void createTemplate(@NotNull final Project project,
                                       @NotNull final File baseDir,
                                       @NotNull final String packageName,
-                                      @NotNull final String className) throws IOException;
+                                      @NotNull final String className,
+                                      final boolean lambdaSupported) throws IOException;
 
   private static void write(@NotNull final Project project,
                             @NotNull final File file,
                             @NotNull final String template,
                             @NotNull final String packageName,
-                            @NotNull final String className) throws IOException {
+                            @NotNull final String className,
+                            @NotNull final String applicationName) throws IOException {
     FileUtil.writeToFile(
         file,
-        DefracFileTemplateProvider.getText(project, template, templateProperties(project, packageName, className)));
+        DefracFileTemplateProvider.getText(project, template, templateProperties(project, packageName, className, applicationName)));
   }
 
   @NotNull
   private static Properties templateProperties(@NotNull final Project project,
                                                @NotNull final String packageName,
-                                               @NotNull final String className) {
+                                               @NotNull final String className,
+                                               @NotNull final String applicationName) {
     final Properties properties = new Properties(FileTemplateManager.getInstance(project).getDefaultProperties());
     properties.put("NAME", className);
     properties.put("PACKAGE_NAME", packageName);
+    properties.put("APPLICATION_NAME", applicationName);
     return properties;
   }
 

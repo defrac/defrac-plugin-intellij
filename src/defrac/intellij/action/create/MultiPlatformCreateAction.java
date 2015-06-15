@@ -72,11 +72,12 @@ public abstract class MultiPlatformCreateAction<T extends PsiElement> extends De
 
   @Nullable
   protected static PsiFile createFileFromTemplate(@Nullable String name,
-                                                @NotNull FileTemplate template,
-                                                @NotNull PsiDirectory dir,
-                                                @Nullable String defaultTemplateProperty,
-                                                @NotNull final DefracPlatform platform,
-                                                @NotNull final Set<DefracPlatform> enabledPlatforms) {
+                                                  @NotNull FileTemplate template,
+                                                  @NotNull PsiDirectory dir,
+                                                  @Nullable String defaultTemplateProperty,
+                                                  @NotNull final DefracPlatform platform,
+                                                  @NotNull final Set<DefracPlatform> enabledPlatforms,
+                                                  final boolean isAllPlatforms) {
     if(name != null) {
       final CreateFileAction.MkDirs mkdirs = new CreateFileAction.MkDirs(name, dir);
       name = mkdirs.newName;
@@ -88,9 +89,6 @@ public abstract class MultiPlatformCreateAction<T extends PsiElement> extends De
 
     try {
       final Properties properties = FileTemplateManager.getInstance(project).getDefaultProperties();
-
-      //minus one for generic
-      final boolean isAllPlatforms = enabledPlatforms.size() == (DefracPlatform.values().length - 1);
 
       for(final DefracPlatform enabledPlatform : enabledPlatforms) {
         properties.setProperty(getPlatformKey(enabledPlatform), Boolean.TRUE.toString());
@@ -213,10 +211,11 @@ public abstract class MultiPlatformCreateAction<T extends PsiElement> extends De
   public interface Creator<T extends PsiElement> {
     @Nullable
     T createElement(@NotNull final String name,
-                           @NotNull final Project project,
-                           @NotNull final PsiDirectory dir,
-                           @NotNull final DefracPlatform platform,
-                           @NotNull final Set<DefracPlatform> enabledPlatforms);
+                    @NotNull final Project project,
+                    @NotNull final PsiDirectory dir,
+                    @NotNull final DefracPlatform targetPlatform,
+                    @NotNull final Set<DefracPlatform> enabledPlatforms,
+                    final boolean isAllPlatforms);
   }
 
   private enum NullCreator implements Creator<PsiElement> {
@@ -227,8 +226,9 @@ public abstract class MultiPlatformCreateAction<T extends PsiElement> extends De
     public PsiElement createElement(@NotNull final String name,
                                     @NotNull final Project project,
                                     @NotNull final PsiDirectory dir,
-                                    @NotNull final DefracPlatform platform,
-                                    @NotNull final Set<DefracPlatform> enabledPlatforms) {
+                                    @NotNull final DefracPlatform targetPlatform,
+                                    @NotNull final Set<DefracPlatform> enabledPlatforms,
+                                    final boolean isAllPlatforms) {
       return null;
     }
   }
@@ -246,12 +246,13 @@ public abstract class MultiPlatformCreateAction<T extends PsiElement> extends De
     public PsiFile createElement(@NotNull final String name,
                                  @NotNull final Project project,
                                  @NotNull final PsiDirectory dir,
-                                 @NotNull final DefracPlatform platform,
-                                 @NotNull final Set<DefracPlatform> enabledPlatforms) {
+                                 @NotNull final DefracPlatform targetPlatform,
+                                 @NotNull final Set<DefracPlatform> enabledPlatforms,
+                                 final boolean isAllPlatforms) {
       return createFileFromTemplate(
           name,
           FileTemplateManager.getInstance(project).getInternalTemplate(templateName),
-          dir, null, platform, enabledPlatforms);
+          dir, null, targetPlatform, enabledPlatforms, isAllPlatforms);
     }
   }
 
@@ -276,9 +277,10 @@ public abstract class MultiPlatformCreateAction<T extends PsiElement> extends De
     public T createElement(@NotNull final String name,
                            @NotNull final Project project,
                            @NotNull final PsiDirectory dir,
-                           @NotNull final DefracPlatform platform,
-                           @NotNull final Set<DefracPlatform> enabledPlatforms) {
-      if(!enabledPlatforms.contains(platform)) {
+                           @NotNull final DefracPlatform targetPlatform,
+                           @NotNull final Set<DefracPlatform> enabledPlatforms,
+                           final boolean isAllPlatforms) {
+      if(!enabledPlatforms.contains(targetPlatform)) {
         return null;
       }
 
@@ -288,7 +290,7 @@ public abstract class MultiPlatformCreateAction<T extends PsiElement> extends De
         return null;
       }
 
-      final Module[] availablePlatformModules = moduleFilter.getModules(project, platform);
+      final Module[] availablePlatformModules = moduleFilter.getModules(project, targetPlatform);
 
       final Module module;
       final PsiDirectory baseDir;
@@ -301,7 +303,7 @@ public abstract class MultiPlatformCreateAction<T extends PsiElement> extends De
         }
 
         final ModuleBasedDirectoryChooser chooser =
-            new ModuleBasedDirectoryChooser(project, platform, modules).choose();
+            new ModuleBasedDirectoryChooser(project, targetPlatform, modules).choose();
 
         if(!chooser.hasResult()) {
           return null;
@@ -315,7 +317,7 @@ public abstract class MultiPlatformCreateAction<T extends PsiElement> extends De
           baseDir = null;
         } else {
           final ModuleBasedDirectoryChooser chooser =
-              new ModuleBasedDirectoryChooser(project, platform, availablePlatformModules).choose();
+              new ModuleBasedDirectoryChooser(project, targetPlatform, availablePlatformModules).choose();
 
           if(!chooser.hasResult()) {
             return null;
@@ -333,7 +335,9 @@ public abstract class MultiPlatformCreateAction<T extends PsiElement> extends De
         return null;
       }
 
-      return creator.createElement(name, project, actualDir, platform, Collections.singleton(platform));
+      return creator.createElement(
+          name, project, actualDir, targetPlatform,
+          Collections.singleton(targetPlatform), isAllPlatforms);
     }
 
     private static class ModuleBasedDirectoryChooser {

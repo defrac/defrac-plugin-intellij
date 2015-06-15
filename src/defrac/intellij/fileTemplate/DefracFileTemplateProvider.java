@@ -35,26 +35,52 @@ import java.util.Properties;
 /**
  */
 public final class DefracFileTemplateProvider implements FileTemplateGroupDescriptorFactory {
-  @NotNull @NonNls public static final String GENERIC_APP = "GenericApplication.java";
+  @NotNull @NonNls public static final String MAIN_ANDROID = "MainAndroid.java";
+  @NotNull @NonNls public static final String MAIN_IOS = "MainIOS.java";
+  @NotNull @NonNls public static final String MAIN_JVM = "MainJVM.java";
+  @NotNull @NonNls public static final String MAIN_JVM_8= "MainJVM_JDK8.java";
+  @NotNull @NonNls public static final String MAIN_WEB = "MainWeb.java";
+
+  @NotNull @NonNls public static final String MAIN_SCREEN = "MainScreen.java";
+  @NotNull @NonNls public static final String MAIN_SCREEN_8 = "MainScreen_JDK8.java";
+
+  @NotNull @NonNls public static final String DISPLAY_LIST_CONTROLLER = "DisplayListController.java";
+  @NotNull @NonNls public static final String DISPLAY_LIST_CONTROLLER_8 = "DisplayListController_JDK8.java";
+
   @NotNull @NonNls public static final String IOS_APP = "IOSApplication.java";
   @NotNull @NonNls public static final String IOS_APP_CONTROLLER = "IOSApplicationController.java";
   @NotNull @NonNls public static final String IOS_APP_DELEGATE = "IOSApplicationDelegate.java";
-  @NotNull @NonNls public static final String DELEGATE = "Delegate.java";
-  @NotNull @NonNls public static final String DELEGATE_IMPLEMENTATION = "DelegateImplementation.java";
+  @NotNull @NonNls public static final String MULTI_PLATFORM_CLASS = "MultiPlatformClass.java";
+  @NotNull @NonNls public static final String MULTI_PLATFORM_CLASS_INJECTION = "MultiPlatformClassInjection.java";
   @NotNull @NonNls public static final String MACRO = "Macro.java";
   @NotNull @NonNls public static final String MACRO_IMPLEMENTATION = "MacroImplementation.java";
+
+  @NotNull
+  private static final String[] ALL_TEMPLATES = {
+      MAIN_ANDROID,
+      MAIN_IOS,
+      MAIN_JVM,
+      MAIN_JVM_8,
+      MAIN_WEB,
+      MAIN_SCREEN,
+      MAIN_SCREEN_8,
+      DISPLAY_LIST_CONTROLLER,
+      DISPLAY_LIST_CONTROLLER_8,
+      IOS_APP,
+      IOS_APP_CONTROLLER,
+      IOS_APP_DELEGATE,
+      MULTI_PLATFORM_CLASS,
+      MULTI_PLATFORM_CLASS_INJECTION,
+      MACRO,
+      MACRO_IMPLEMENTATION
+  };
 
   @Override
   public FileTemplateGroupDescriptor getFileTemplatesDescriptor() {
     final FileTemplateGroupDescriptor group = new FileTemplateGroupDescriptor("Defrac", DefracIcons.Defrac16x16);
-    group.addTemplate(new FileTemplateDescriptor(GENERIC_APP, StdFileTypes.JAVA.getIcon()));
-    group.addTemplate(new FileTemplateDescriptor(IOS_APP, StdFileTypes.JAVA.getIcon()));
-    group.addTemplate(new FileTemplateDescriptor(IOS_APP_DELEGATE, StdFileTypes.JAVA.getIcon()));
-    group.addTemplate(new FileTemplateDescriptor(IOS_APP_CONTROLLER, StdFileTypes.JAVA.getIcon()));
-    group.addTemplate(new FileTemplateDescriptor(DELEGATE, StdFileTypes.JAVA.getIcon()));
-    group.addTemplate(new FileTemplateDescriptor(DELEGATE_IMPLEMENTATION, StdFileTypes.JAVA.getIcon()));
-    group.addTemplate(new FileTemplateDescriptor(MACRO, StdFileTypes.JAVA.getIcon()));
-    group.addTemplate(new FileTemplateDescriptor(MACRO_IMPLEMENTATION, StdFileTypes.JAVA.getIcon()));
+    for(final String template : ALL_TEMPLATES) {
+      group.addTemplate(new FileTemplateDescriptor(template, StdFileTypes.JAVA.getIcon()));
+    }
     return group;
   }
 

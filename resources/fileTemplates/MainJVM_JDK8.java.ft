@@ -1,0 +1,18 @@
+#if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
+
+import defrac.concurrent.Dispatchers;
+import defrac.ui.FrameBuilder;
+
+#parse("File Header.java")
+public final class Main {
+  public static void main(String[] args) {
+    Dispatchers.FOREGROUND.exec(() ->
+        FrameBuilder.
+            forScreen(new ${NAME}()).
+            title("${APPLICATION_NAME}").
+            width(1027).
+            height(768).
+            resizable().
+            show());
+  }
+}

@@ -27,13 +27,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.intellij.psi.util.PsiTreeUtil.getParentOfType;
 import static defrac.intellij.psi.DefracPsiUtil.getValue;
-import static defrac.intellij.psi.DefracPsiUtil.isDelegateAnnotation;
+import static defrac.intellij.psi.DefracPsiUtil.isInjectAnnotation;
 
 /**
  *
  */
-public final class DelegateReferenceProvider extends PsiReferenceProvider {
-  public DelegateReferenceProvider() {}
+public final class InjectionReferenceProvider extends PsiReferenceProvider {
+  public InjectionReferenceProvider() {}
 
   @NotNull
   @Override
@@ -58,19 +58,19 @@ public final class DelegateReferenceProvider extends PsiReferenceProvider {
       return PsiReference.EMPTY_ARRAY;
     }
 
-    // (2) get delegate annotation
+    // (2) get inject annotation
     final PsiAnnotation annotation =
         getParentOfType(element, PsiAnnotation.class, /*strict=*/false);
 
-    if(!isDelegateAnnotation(annotation)) {
+    if(!isInjectAnnotation(annotation)) {
       return PsiReference.EMPTY_ARRAY;
     }
 
     final DefracPlatform targetPlatform =
-        DefracPlatform.byDelegateAnnotation(checkNotNull(annotation.getQualifiedName()));
+        DefracPlatform.byInjectAnnotation(checkNotNull(annotation.getQualifiedName()));
 
     return new PsiReference[] {
-        new DelegateClassReference(
+        new InjectionClassReference(
             value,
             (PsiLiteralExpression)element,
             targetPlatform)

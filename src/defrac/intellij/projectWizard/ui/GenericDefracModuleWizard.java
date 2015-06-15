@@ -39,13 +39,13 @@ public final class GenericDefracModuleWizard {
 
   public GenericDefracModuleWizard(@Nullable final String name) {
     DefracWizardUtil.initializeApplicationSettingsInput(applicationNameTextField, packageNameTextField, name);
-    DefracWizardUtil.handleApplicationSettingsInput(applicationNameTextField, packageNameTextField, errorLabel);
+    DefracWizardUtil.handleApplicationSettingsInput(applicationNameTextField, packageNameTextField, mainClassNameTextField, errorLabel, "MainScreen");
     DefracWizardUtil.handlePlatformsSettingsInput(webCheckBox, iosCheckBox, androidCheckBox, jvmCheckBox, errorLabel);
     DefracWizardUtil.handleMainClassSettingsInput(mainClassNameTextField, errorLabel);
 
     errorLabel.setForeground(JBColor.RED);
 
-    mainClassNameTextField.setText(DefracWizardUtil.DEFAULT_MAIN_CLASS_NAME);
+    mainClassNameTextField.setText(DefracWizardUtil.DEFAULT_MAIN_SCREEN_CLASS_NAME);
   }
 
   @NotNull

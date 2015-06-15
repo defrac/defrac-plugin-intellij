@@ -258,12 +258,12 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
   }
 
   @NotNull
-  public GlobalSearchScope getDelegateSearchScope() {
-    return getDelegateSearchScope(null);
+  public GlobalSearchScope getMultiPlatformClassSearchScope() {
+    return getMultiPlatformClassSearchScope(null);
   }
 
   @NotNull
-  public GlobalSearchScope getDelegateSearchScope(@Nullable final DefracPlatform targetPlatform) {
+  public GlobalSearchScope getMultiPlatformClassSearchScope(@Nullable final DefracPlatform targetPlatform) {
     // Search only in non-macro-library modules that match the platform of the current
     // module. If the current module is generic, we search in all eligible modules
     final Module thisModule = getModule();

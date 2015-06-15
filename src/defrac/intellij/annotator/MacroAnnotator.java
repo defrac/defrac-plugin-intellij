@@ -231,13 +231,13 @@ public final class MacroAnnotator implements Annotator {
           platformImplementations,
           DefracPlatform.MACRO_ANNOTATION_TO_PLATFORM,
           target,
-          /*isDelegate=*/false);
+          /*isMultiPlatformClass=*/false);
     } else {
       DefracAnnotatorUtil.reportMoreGenericAnnotation(
           holder, annotation, method,
           Names.defrac_annotation_Macro,
           DefracPlatform.byMacroAnnotation(checkNotNull(annotation.getQualifiedName())),
-          /*isDelegate=*/false);
+          /*isMultiPlatformClass=*/false);
     }
   }
 

@@ -35,7 +35,7 @@ public final class IOSModuleWizard {
 
   public IOSModuleWizard(@Nullable final String name) {
     DefracWizardUtil.initializeApplicationSettingsInput(applicationNameTextField, packageNameTextField, name);
-    DefracWizardUtil.handleApplicationSettingsInput(applicationNameTextField, packageNameTextField, errorLabel);
+    DefracWizardUtil.handleApplicationSettingsInput(applicationNameTextField, packageNameTextField, mainClassNameTextField, errorLabel, "Main");
     DefracWizardUtil.handleMainClassSettingsInput(mainClassNameTextField, errorLabel);
 
     errorLabel.setForeground(JBColor.RED);

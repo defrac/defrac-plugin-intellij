@@ -1,0 +1,38 @@
+#if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
+
+import defrac.display.Stage;
+import defrac.lang.Procedure;
+import defrac.ui.DisplayList;
+import defrac.ui.Screen;
+
+#parse("File Header.java")
+final class ${NAME} extends Screen {
+  DisplayList displayList;
+
+  @Override
+  protected void onCreate() {
+    // Create a new DisplayList component
+    displayList = new DisplayList();
+
+    // The root of the DisplayList is created asynchronously
+    // and we instantiate a controller to display some squares
+    // when ready
+    displayList.onStageReady(new DisplayListController());
+
+    // Make the DisplayList component the rootView of this Screen
+    // It will be displayed at 100% width and height
+    rootView(displayList);
+  }
+
+  @Override
+  protected void onResume() {
+    super.onResume();
+    displayList.onResume();
+  }
+
+  @Override
+  protected void onPause() {
+    super.onPause();
+    displayList.onPause();
+  }
+}

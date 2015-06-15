@@ -25,7 +25,6 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.SearchScope;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.psi.DelegateClassReference;
 import org.jetbrains.annotations.NotNull;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -33,8 +32,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  *
  */
-public final class DelegateClassReferencesSearch extends ReferencesSearchBase<PsiElement, ReferencesSearch.SearchParameters> {
-  public DelegateClassReferencesSearch() {}
+abstract class MultiPlatformClassReferencesSearchBase extends ReferencesSearchBase<PsiElement, ReferencesSearch.SearchParameters> {
+  public MultiPlatformClassReferencesSearchBase() {}
 
   @NotNull
   @Override
@@ -54,9 +53,7 @@ public final class DelegateClassReferencesSearch extends ReferencesSearchBase<Ps
   }
 
   @Override
-  protected boolean isReferenceCandidate(@NotNull final PsiReference reference) {
-    return reference instanceof DelegateClassReference;
-  }
+  protected abstract boolean isReferenceCandidate(@NotNull final PsiReference reference);
 
   @NotNull
   protected SearchScope getSearchScope(@NotNull final ReferencesSearch.SearchParameters queryParameter,
@@ -70,9 +67,9 @@ public final class DelegateClassReferencesSearch extends ReferencesSearchBase<Ps
 
     // Build the search scope for the class
     // ====================================
-    // (1) @Delegate class is only referenced in defrac projects
-    // (2) @Delegate class is never referenced in macro projects
-    // (3) @Delegate class is only referenced in generic or their platform
+    // (1) @Inject(or) class is only referenced in defrac projects
+    // (2) @Inject(or) class is never referenced in macro projects
+    // (3) @Inject(or) class is only referenced in generic or their platform
 
     final Module[] modules = ModuleManager.getInstance(element.getProject()).getModules();
     GlobalSearchScope scope = GlobalSearchScope.EMPTY_SCOPE;

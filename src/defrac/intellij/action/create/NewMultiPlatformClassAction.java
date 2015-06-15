@@ -38,7 +38,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  *
  */
-public class NewDelegateAction extends MultiPlatformCreateAction<PsiFile> {
+public class NewMultiPlatformClassAction extends MultiPlatformCreateAction<PsiFile> {
   @NotNull
   private static final PlatformSpecificCreator.ModuleFilter MODULE_FILTER =
       new PlatformSpecificCreator.ModuleFilter() {
@@ -53,7 +53,7 @@ public class NewDelegateAction extends MultiPlatformCreateAction<PsiFile> {
         }
       };
 
-  public NewDelegateAction() {
+  public NewMultiPlatformClassAction() {
     super(Conditions.and(IS_GENERIC, IS_IN_SOURCE));
   }
 
@@ -62,7 +62,7 @@ public class NewDelegateAction extends MultiPlatformCreateAction<PsiFile> {
                               @NotNull final DefracFacet facet,
                               @NotNull final AnActionEvent event,
                               @NotNull final MultiPlatformCreateDialog<PsiFile> dialog) {
-    dialog.setTitle(DefracBundle.message("dialog.new.delegate.title"));
+    dialog.setTitle(DefracBundle.message("dialog.new.multiPlatformClass.title"));
     dialog.setValidator(new InputValidatorEx() {
       public String getErrorText(String inputString) {
         return inputString.length() > 0 && !PsiNameHelper.getInstance(project).isQualifiedName(inputString)
@@ -83,13 +83,13 @@ public class NewDelegateAction extends MultiPlatformCreateAction<PsiFile> {
   @NotNull
   @Override
   protected Creator<PsiFile> createGeneric() {
-    return new TemplateBasedCreator(DefracFileTemplateProvider.DELEGATE);
+    return new TemplateBasedCreator(DefracFileTemplateProvider.MULTI_PLATFORM_CLASS);
   }
 
   @NotNull
   @Override
   protected Creator<PsiFile> creatorForPlatform(@NotNull final DefracPlatform platform) {
     return new PlatformSpecificCreator<PsiFile>(
-        new TemplateBasedCreator(DefracFileTemplateProvider.DELEGATE_IMPLEMENTATION), MODULE_FILTER);
+        new TemplateBasedCreator(DefracFileTemplateProvider.MULTI_PLATFORM_CLASS_INJECTION), MODULE_FILTER);
   }
 }

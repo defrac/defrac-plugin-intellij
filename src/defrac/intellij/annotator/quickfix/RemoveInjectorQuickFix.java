@@ -19,51 +19,33 @@ package defrac.intellij.annotator.quickfix;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiMethod;
-import defrac.intellij.DefracPlatform;
 import org.jetbrains.annotations.NotNull;
 
-import static defrac.intellij.psi.DefracPsiUtil.hasMacro;
-import static defrac.intellij.psi.DefracPsiUtil.isMacroAnnotation;
+import static defrac.intellij.psi.DefracPsiUtil.isInjectorAnnotation;
 
 /**
  *
  */
-public final class RemoveMacroQuickFix extends RemoveAnnotationQuickFix {
-  @NotNull
-  private final DefracPlatform platform;
-
-  public RemoveMacroQuickFix(@NotNull final PsiMethod method,
-                             @NotNull final DefracPlatform platform) {
-    super(method);
-    this.platform = platform;
+public final class RemoveInjectorQuickFix extends RemoveAnnotationQuickFix {
+  public RemoveInjectorQuickFix(@NotNull final PsiClass klass) {
+    super(klass);
   }
 
   @NotNull
   @Override
   public String getText() {
-    final String name;
-
-    //TODO(joa): ugly
-    switch(platform) {
-      case ANDROID: name = "Android"; break;
-      case IOS:     name = "IOS"    ; break;
-      case JVM:     name = "JVM"    ; break;
-      case WEB:     name = "Web"    ; break;
-      default:      name =    ""    ; break;
-    }
-
-    return "Remove @Macro"+name;
+    return "Remove @Injector";
   }
 
   @Override
   public boolean isAvailable(@NotNull final Project project, final Editor editor, final PsiFile file) {
-    return super.isAvailable(project, editor, file) && hasMacro(element, platform);
+    return super.isAvailable(project, editor, file);
   }
 
   @Override
   protected boolean isAnnotation(@NotNull final PsiAnnotation annotation) {
-    return isMacroAnnotation(annotation, platform);
+    return isInjectorAnnotation(annotation);
   }
 }

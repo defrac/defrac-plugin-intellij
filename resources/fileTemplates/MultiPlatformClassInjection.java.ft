@@ -1,4 +1,7 @@
 #if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
+#set ($INJECTOR = "${NAME}")
+
+import defrac.annotation.Injector;
 
 #if(${PLATFORM_ALL} && ${PLATFORM_ALL} != "")
 #set ($NAME = "${NAME}Impl")
@@ -13,6 +16,7 @@
 #end
 
 #parse("File Header.java")
+@Injector("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#{end}${INJECTOR}")
 public class ${NAME} {
   public ${NAME}() {
 

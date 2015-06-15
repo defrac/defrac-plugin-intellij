@@ -189,7 +189,11 @@ public final class MultiPlatformCreateDialog<T extends PsiElement> extends Dialo
                                                         @NotNull final String name,
                                                         @NotNull final DefracPlatform platform,
                                                         @NotNull final Set<DefracPlatform> enabledPlatforms) {
-    return creator.createElement(name, project, dir, platform, enabledPlatforms);
+
+    //minus one for generic
+    final boolean isAllPlatforms = enabledPlatforms.size() == (DefracPlatform.values().length - 1);
+
+    return creator.createElement(name, project, dir, platform, enabledPlatforms, isAllPlatforms);
   }
 
   public static class Result<T extends PsiElement> {

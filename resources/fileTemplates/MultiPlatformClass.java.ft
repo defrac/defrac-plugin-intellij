@@ -1,0 +1,16 @@
+#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
+
+import defrac.annotation.#if(${PLATFORM_ALL} && ${PLATFORM_ALL} != "")Inject#{else}*#end;
+
+#parse("File Header.java")
+#if(${PLATFORM_ALL} && ${PLATFORM_ALL} != "")@Inject("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#end${NAME}Impl")#{else}
+#if(${PLATFORM_ANDROID} && ${PLATFORM_ANDROID} != "")@InjectAndroid("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#{end}Android${NAME}")#end
+#if(${PLATFORM_IOS} && ${PLATFORM_IOS} != "")@InjectIOS("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#{end}IOS${NAME}")#end
+#if(${PLATFORM_JVM} && ${PLATFORM_JVM} != "")@InjectJVM("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#{end}JVM${NAME}")#end
+#if(${PLATFORM_WEB} && ${PLATFORM_WEB} != "")@InjectWeb("#if(${PACKAGE_NAME} && ${PACKAGE_NAME} != "")${PACKAGE_NAME}.#{end}Web${NAME}")#end
+#end
+public class ${NAME} {
+  public ${NAME}() {
+
+  }
+}

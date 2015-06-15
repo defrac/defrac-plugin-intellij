@@ -1,0 +1,82 @@
+#if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
+
+import defrac.display.*;
+import defrac.display.event.raw.*;
+import defrac.event.*;
+import defrac.lang.*;
+
+#parse("File Header.java")
+final class DisplayListController implements Procedure<Stage> {
+  Layer container;
+  Stats stats;
+
+  DisplayListController() {}
+
+  @Override
+  public void apply(Stage stage) {
+    stage.
+        addChild(container = new Layer()).
+        addChild(stats = new Stats());
+
+    for(Quad quad : createQuads()) {
+      container.addChild(
+          quad.
+              centerRegistrationPoint().
+              moveBy(50, 50));
+    }
+
+    container.
+        centerRegistrationPoint().
+        moveBy(100, 100);
+
+    stage.
+        globalEvents().
+        onResize.
+        add(new EventListener<ResizeEvent>() {
+          @Override
+          public void onEvent(ResizeEvent event) {
+            layout(event.width, event.height);
+          }
+        });
+
+    stage.
+        globalEvents().
+        onEnterFrame.
+        add(new EventListener<EnterFrameEvent>() {
+          @Override
+          public void onEvent(EnterFrameEvent event) {
+            updateFrame();
+          }
+        });
+
+    layout(stage.width(), stage.height());
+  }
+
+  void updateFrame() {
+    container.rotateBy(-0.01f);
+
+    for(DisplayObject child : container) {
+      child.rotateBy(0.05f);
+    }
+  }
+
+  void layout(float width, float height) {
+    container.moveTo(width * 0.5f, height * 0.5f);
+  }
+
+  static Quad[] createQuads() {
+    Quad[] quads = {
+        new Quad(100, 100, 0xf0588c7e),
+        new Quad(100, 100, 0xf0f2e394),
+        new Quad(100, 100, 0xf0f2ae72),
+        new Quad(100, 100, 0xf0d96459)
+    };
+
+    quads[0].moveTo(  0,   0);
+    quads[1].moveTo(100,   0);
+    quads[2].moveTo(  0, 100);
+    quads[3].moveTo(100, 100);
+
+    return quads;
+  }
+}

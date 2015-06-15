@@ -22,7 +22,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
 
-import static defrac.intellij.psi.DefracPsiUtil.isDelegateAnnotation;
+import static defrac.intellij.psi.DefracPsiUtil.isInjectAnnotation;
 import static defrac.intellij.psi.DefracPsiUtil.isMacroAnnotation;
 
 /**
@@ -34,14 +34,14 @@ public final class RefactoringSupport extends JavaRefactoringSupportProvider {
   @Override
   public boolean isMemberInplaceRenameAvailable(@NotNull final PsiElement elementToRename,
                                                 final PsiElement context) {
-    // disable in-place rename for @Delegate and @Macro annotations
+    // disable in-place rename for @Inject and @Macro annotations
     // since it does weird stuff at the moment (qualified name is truncated)
 
     final PsiAnnotation annotation = PsiTreeUtil.getParentOfType(context, PsiAnnotation.class);
 
     //noinspection SimplifiableIfStatement
     if(    annotation == null
-        || !(isMacroAnnotation(annotation) || isDelegateAnnotation(annotation))) {
+        || !(isMacroAnnotation(annotation) || isInjectAnnotation(annotation))) {
       return super.isMemberInplaceRenameAvailable(elementToRename, context);
     } else {
       return false;

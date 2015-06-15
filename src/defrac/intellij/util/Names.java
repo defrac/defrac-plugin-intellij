@@ -26,17 +26,18 @@ import java.util.Set;
  *
  */
 public final class Names {
-  @NotNull @NonNls public static final String defrac_annotation_Delegate = "defrac.annotation.Delegate";
-  @NotNull @NonNls public static final String defrac_annotation_DelegateA5D = "defrac.annotation.DelegateA5D";
-  @NotNull @NonNls public static final String defrac_annotation_DelegateIOS = "defrac.annotation.DelegateIOS";
-  @NotNull @NonNls public static final String defrac_annotation_DelegateJVM = "defrac.annotation.DelegateJVM";
-  @NotNull @NonNls public static final String defrac_annotation_DelegateWeb = "defrac.annotation.DelegateWeb";
+  @NotNull @NonNls public static final String defrac_annotation_Inject = "defrac.annotation.Inject";
+  @NotNull @NonNls public static final String defrac_annotation_InjectAndroid = "defrac.annotation.InjectAndroid";
+  @NotNull @NonNls public static final String defrac_annotation_InjectIOS = "defrac.annotation.InjectIOS";
+  @NotNull @NonNls public static final String defrac_annotation_InjectJVM = "defrac.annotation.InjectJVM";
+  @NotNull @NonNls public static final String defrac_annotation_InjectWeb = "defrac.annotation.InjectWeb";
+  @NotNull @NonNls public static final String defrac_annotation_Injector = "defrac.annotation.Injector";
   @NotNull @NonNls public static final String defrac_annotation_Macro = "defrac.annotation.Macro";
-  @NotNull @NonNls public static final String defrac_annotation_MacroA5D = "defrac.annotation.MacroA5D";
+  @NotNull @NonNls public static final String defrac_annotation_MacroAndroid = "defrac.annotation.MacroAndroid";
   @NotNull @NonNls public static final String defrac_annotation_MacroIOS = "defrac.annotation.MacroIOS";
   @NotNull @NonNls public static final String defrac_annotation_MacroJVM = "defrac.annotation.MacroJVM";
   @NotNull @NonNls public static final String defrac_annotation_MacroWeb = "defrac.annotation.MacroWeb";
-  @NotNull @NonNls public static final String defrac_annotation_UnsupportedA5D = "defrac.annotation.UnsupportedA5D";
+  @NotNull @NonNls public static final String defrac_annotation_UnsupportedAndroid = "defrac.annotation.UnsupportedAndroid";
   @NotNull @NonNls public static final String defrac_annotation_UnsupportedIOS = "defrac.annotation.UnsupportedIOS";
   @NotNull @NonNls public static final String defrac_annotation_UnsupportedJVM = "defrac.annotation.UnsupportedJVM";
   @NotNull @NonNls public static final String defrac_annotation_UnsupportedWeb = "defrac.annotation.UnsupportedWeb";
@@ -55,24 +56,24 @@ public final class Names {
   @NotNull @NonNls public static final String defrac_dni_Intrinsic = "defrac.dni.Intrinsic";
   @NotNull @NonNls public static final String defrac_dni_RepresentedBy = "defrac.dni.RepresentedBy";
 
-  @NotNull public static final Set<String> ALL_DELEGATES = ImmutableSet.of(
-      defrac_annotation_Delegate,
-      defrac_annotation_DelegateA5D,
-      defrac_annotation_DelegateIOS,
-      defrac_annotation_DelegateJVM,
-      defrac_annotation_DelegateWeb
+  @NotNull public static final Set<String> ALL_INJECTS = ImmutableSet.of(
+      defrac_annotation_Inject,
+      defrac_annotation_InjectAndroid,
+      defrac_annotation_InjectIOS,
+      defrac_annotation_InjectJVM,
+      defrac_annotation_InjectWeb
   );
 
   @NotNull public static final Set<String> ALL_MACROS = ImmutableSet.of(
       defrac_annotation_Macro,
-      defrac_annotation_MacroA5D,
+      defrac_annotation_MacroAndroid,
       defrac_annotation_MacroIOS,
       defrac_annotation_MacroJVM,
       defrac_annotation_MacroWeb
   );
 
   @NotNull public static final Set<String> ALL_UNSUPPORTED = ImmutableSet.of(
-      defrac_annotation_UnsupportedA5D,
+      defrac_annotation_UnsupportedAndroid,
       defrac_annotation_UnsupportedIOS,
       defrac_annotation_UnsupportedJVM,
       defrac_annotation_UnsupportedWeb

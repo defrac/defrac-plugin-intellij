@@ -39,17 +39,17 @@ public enum DefracPlatform {
 
   @NotNull
   public static final Map<String, DefracPlatform> MACRO_ANNOTATION_TO_PLATFORM = ImmutableMap.of(
-      Names.defrac_annotation_Macro   , GENERIC,
-      Names.defrac_annotation_MacroA5D, ANDROID,
-      Names.defrac_annotation_MacroIOS, IOS,
-      Names.defrac_annotation_MacroJVM, JVM,
-      Names.defrac_annotation_MacroWeb, WEB
+      Names.defrac_annotation_Macro       , GENERIC,
+      Names.defrac_annotation_MacroAndroid, ANDROID,
+      Names.defrac_annotation_MacroIOS    , IOS,
+      Names.defrac_annotation_MacroJVM    , JVM,
+      Names.defrac_annotation_MacroWeb    , WEB
   );
 
   @NotNull
   public static final Map<DefracPlatform, String> PLATFORM_TO_MACRO_ANNOTATION = ImmutableMap.of(
       GENERIC, Names.defrac_annotation_Macro,
-      ANDROID, Names.defrac_annotation_MacroA5D,
+      ANDROID, Names.defrac_annotation_MacroAndroid,
       IOS    , Names.defrac_annotation_MacroIOS,
       JVM    , Names.defrac_annotation_MacroJVM,
       WEB    , Names.defrac_annotation_MacroWeb
@@ -57,36 +57,36 @@ public enum DefracPlatform {
 
   @NotNull
   public static final Map<String, DefracPlatform> UNSUPPORTED_ANNOTATION_TO_PLATFORM = ImmutableMap.of(
-      Names.defrac_annotation_UnsupportedA5D, ANDROID,
-      Names.defrac_annotation_UnsupportedIOS, IOS,
-      Names.defrac_annotation_UnsupportedJVM, JVM,
-      Names.defrac_annotation_UnsupportedWeb, WEB
+      Names.defrac_annotation_UnsupportedAndroid, ANDROID,
+      Names.defrac_annotation_UnsupportedIOS    , IOS,
+      Names.defrac_annotation_UnsupportedJVM    , JVM,
+      Names.defrac_annotation_UnsupportedWeb    , WEB
   );
 
   @NotNull
   public static final Map<DefracPlatform, String> PLATFORM_TO_UNSUPPORTED_ANNOTATION = ImmutableMap.of(
-      ANDROID, Names.defrac_annotation_UnsupportedA5D,
+      ANDROID, Names.defrac_annotation_UnsupportedAndroid,
       IOS    , Names.defrac_annotation_UnsupportedIOS,
       JVM    , Names.defrac_annotation_UnsupportedJVM,
       WEB    , Names.defrac_annotation_UnsupportedWeb
   );
 
   @NotNull
-  public static final Map<String, DefracPlatform> DELEGATE_ANNOTATION_TO_PLATFORM = ImmutableMap.of(
-      Names.defrac_annotation_Delegate   , GENERIC,
-      Names.defrac_annotation_DelegateA5D, ANDROID,
-      Names.defrac_annotation_DelegateIOS, IOS,
-      Names.defrac_annotation_DelegateJVM, JVM,
-      Names.defrac_annotation_DelegateWeb, WEB
+  public static final Map<String, DefracPlatform> INJECT_ANNOTATION_TO_PLATFORM = ImmutableMap.of(
+      Names.defrac_annotation_Inject       , GENERIC,
+      Names.defrac_annotation_InjectAndroid, ANDROID,
+      Names.defrac_annotation_InjectIOS    , IOS,
+      Names.defrac_annotation_InjectJVM    , JVM,
+      Names.defrac_annotation_InjectWeb    , WEB
   );
 
   @NotNull
-  public static final Map<DefracPlatform, String> PLATFORM_TO_DELEGATE_ANNOTATION = ImmutableMap.of(
-      GENERIC, Names.defrac_annotation_Delegate,
-      ANDROID, Names.defrac_annotation_DelegateA5D,
-      IOS    , Names.defrac_annotation_DelegateIOS,
-      JVM    , Names.defrac_annotation_DelegateJVM,
-      WEB    , Names.defrac_annotation_DelegateWeb
+  public static final Map<DefracPlatform, String> PLATFORM_TO_INJECT_ANNOTATION = ImmutableMap.of(
+      GENERIC, Names.defrac_annotation_Inject,
+      ANDROID, Names.defrac_annotation_InjectAndroid,
+      IOS    , Names.defrac_annotation_InjectIOS,
+      JVM    , Names.defrac_annotation_InjectJVM,
+      WEB    , Names.defrac_annotation_InjectWeb
   );
 
   @NotNull
@@ -103,8 +103,8 @@ public enum DefracPlatform {
   @NotNull public final String abbreviation;
 
   DefracPlatform(@NotNull final String name,
-                         @NotNull final String displayName,
-                         @NotNull final String abbreviation) {
+                 @NotNull final String displayName,
+                 @NotNull final String abbreviation) {
     this.name = name;
     this.displayName = displayName;
     this.abbreviation = abbreviation;
@@ -148,8 +148,8 @@ public enum DefracPlatform {
   }
 
   @NotNull
-  public static DefracPlatform byDelegateAnnotation(@NotNull final String qualifiedName) {
-    return checkNotNull(DELEGATE_ANNOTATION_TO_PLATFORM.get(qualifiedName));
+  public static DefracPlatform byInjectAnnotation(@NotNull final String qualifiedName) {
+    return checkNotNull(INJECT_ANNOTATION_TO_PLATFORM.get(qualifiedName));
   }
 
   @NotNull

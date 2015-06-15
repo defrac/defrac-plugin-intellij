@@ -29,13 +29,13 @@ TODO
 [✓] Error Highlighting
   (✓) Unsupported java.*
   (✓) Support for @Unsupported
-  (✓) Broken reference to @Delegate
+  (✓) Broken reference to @Inject
   (✓) Broken reference to @Macro
   (✓) Writing @ReadOnly field
   (✓) Reading @WriteOnly field
-[✓] GotoDeclarationHandler @Macro/@Delegate
-[✓] SafeDeleteProcessor @Macro/@Delegate
-[✓] Rename @Macro/@Delegate (works already at declaration site)
+[✓] GotoDeclarationHandler @Macro/@Inject
+[✓] SafeDeleteProcessor @Macro/@Inject
+[✓] Rename @Macro/@Inject (works already at declaration site)
 [ ] Web
   ( ) @FunctionRef parameter
   ( ) @FunctionalInterface
