@@ -59,6 +59,12 @@ public final class AccessMethodDetector extends PsiRecursiveElementVisitor  {
 
     final PsiMember member = (PsiMember)element;
 
+    final PsiModifierList modifiers = member.getModifierList();
+
+    if(modifiers == null || !modifiers.hasModifierProperty(PsiModifier.PRIVATE)) {
+      return;
+    }
+
     if(member.getContainingClass() != klass) {
       accessMethodFound = true;
     }
