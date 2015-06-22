@@ -17,7 +17,7 @@
 <idea-plugin version="2">
   <id>defrac.intellij</id>
   <name>defrac Support</name>
-  <version>0.0.13</version>
+  <version>0.0.14</version>
   <vendor email="team@defrac.com" url="https://www.defrac.com">defrac inc.</vendor>
 
   <description>
@@ -26,6 +26,7 @@
 
   <change-notes>
     <![CDATA[<ul>
+      <li>2015-06-22 - Fix detection of synthetic access methods</li>
       <li>2015-06-16 - Updates to annotators and new project wizard</li>
       <li>2015-06-15 - Rename annotations and align with 0.3.x</li>
       <li>2015-04-22 - Completion for @RepresentedBy and validation of @Intrinsic</li>
@@ -43,7 +44,7 @@
     </ul>]]>
   </change-notes>
 
-  <idea-version since-build="141.177"/>
+  <idea-version since-build="141.177" until-build="141.9999"/>
 
   <depends>com.intellij.modules.java</depends>
   <depends>com.intellij.modules.json</depends>
