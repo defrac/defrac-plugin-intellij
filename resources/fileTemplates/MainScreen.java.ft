@@ -11,6 +11,8 @@ final class ${NAME} extends Screen {
 
   @Override
   protected void onCreate() {
+    super.onCreate();
+
     // Create a new DisplayList component
     displayList = new DisplayList();
 
