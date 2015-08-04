@@ -17,7 +17,7 @@
 <idea-plugin version="2">
   <id>defrac.intellij</id>
   <name>defrac Support</name>
-  <version>0.0.14</version>
+  <version>0.0.15</version>
   <vendor email="team@defrac.com" url="https://www.defrac.com">defrac inc.</vendor>
 
   <description>
@@ -26,6 +26,7 @@
 
   <change-notes>
     <![CDATA[<ul>
+      <li>2015-08-04 - Migration from GSON to defrac JSON</li>
       <li>2015-06-22 - Fix detection of synthetic access methods</li>
       <li>2015-06-16 - Updates to annotators and new project wizard</li>
       <li>2015-06-15 - Rename annotations and align with 0.3.x</li>
