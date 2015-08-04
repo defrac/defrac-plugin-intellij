@@ -451,16 +451,17 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
 
   private void createDefaultSettings(@NotNull final Project project) throws IOException {
     final DefracConfig config = new DefracConfig();
-    config.setName(applicationName);
-    config.setPackage(packageName);
-    config.setVersion(isNullOrEmpty(version) ? "1.0" : version);
+
+    config.
+            setName(applicationName).
+            setPackage(packageName).
+            setVersion(isNullOrEmpty(version) ? "1.0" : version);
 
     if(!mainClassName.isEmpty()) {
       config.setMain(mainClassName);
     }
 
     config.setTargets(targets());
-
     config.commit(project);
   }
 

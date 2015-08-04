@@ -38,6 +38,9 @@ public enum DefracPlatform {
   WEB("web", "Web", "web");
 
   @NotNull
+  public static final DefracPlatform[] EMPTY_ARRAY = new DefracPlatform[0];
+
+  @NotNull
   public static final Map<String, DefracPlatform> MACRO_ANNOTATION_TO_PLATFORM = ImmutableMap.of(
       Names.defrac_annotation_Macro       , GENERIC,
       Names.defrac_annotation_MacroAndroid, ANDROID,
@@ -90,7 +93,7 @@ public enum DefracPlatform {
   );
 
   @NotNull
-  private static final Map<String, DefracPlatform> NAME_TO_PLATFORM = ImmutableMap.of(
+  public static final Map<String, DefracPlatform> NAME_TO_PLATFORM = ImmutableMap.of(
       GENERIC.name, GENERIC,
       ANDROID.name, ANDROID,
       IOS.name    , IOS,

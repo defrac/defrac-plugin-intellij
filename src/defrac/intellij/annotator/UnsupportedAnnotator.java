@@ -22,7 +22,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.PsiUtil;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
-import defrac.intellij.config.DefracConfig;
+import defrac.intellij.config.DefracConfigOracle;
 import defrac.intellij.facet.DefracFacet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -97,7 +97,7 @@ public final class UnsupportedAnnotator implements Annotator {
     final DefracPlatform platform = facet.getPlatform();
 
     if(platform.isGeneric()) {
-      final DefracConfig config = facet.getConfig();
+      final DefracConfigOracle config = facet.getConfigOracle();
 
       if(config != null) {
         for(final DefracPlatform targetPlatform : config.getTargets()) {

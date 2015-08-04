@@ -26,7 +26,7 @@ import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.annotator.quickfix.RemoveInjectQuickFix;
 import defrac.intellij.annotator.quickfix.RemoveMacroQuickFix;
-import defrac.intellij.config.DefracConfig;
+import defrac.intellij.config.DefracConfigOracle;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.psi.MacroMethodReference;
 import defrac.intellij.util.Names;
@@ -153,7 +153,7 @@ public final class DefracAnnotatorUtil {
     }
 
     // now report all missing implementations for configured targets
-    final DefracConfig config = facet.getConfig();
+    final DefracConfigOracle config = facet.getConfigOracle();
 
     if(config != null) {
       for(final DefracPlatform platform : config.getTargets()) {

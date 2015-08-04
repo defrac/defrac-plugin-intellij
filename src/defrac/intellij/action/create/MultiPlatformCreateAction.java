@@ -44,7 +44,7 @@ import com.intellij.util.IncorrectOperationException;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.action.DefracAction;
 import defrac.intellij.action.create.ui.MultiPlatformCreateDialog;
-import defrac.intellij.config.DefracConfig;
+import defrac.intellij.config.DefracConfigOracle;
 import defrac.intellij.facet.DefracFacet;
 import org.apache.velocity.runtime.parser.ParseException;
 import org.jetbrains.annotations.NotNull;
@@ -146,7 +146,7 @@ public abstract class MultiPlatformCreateAction<T extends PsiElement> extends De
     }
 
     final DefracFacet facet = getFacet(event);
-    final DefracConfig config = facet.getConfig();
+    final DefracConfigOracle config = facet.getConfigOracle();
     if(config == null) {
       return;
     }

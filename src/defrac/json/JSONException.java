@@ -14,17 +14,26 @@
  * limitations under the License.
  */
 
-package defrac.intellij.config.ios;
+package defrac.json;
 
 /**
  *
  */
-@SuppressWarnings("unused,MismatchedReadAndWriteOfArray")
-public final class XCodeSettings {
-  protected String organization;
-  protected String classPrefix;
-  protected String project;
-  protected String source;
-  protected String build;
-  protected String scheme;
+public final class JSONException extends RuntimeException {
+  private static final long serialVersionUID = 984245996151683099L;
+
+  public JSONException() {
+  }
+
+  public JSONException(final String message) {
+    super(message);
+  }
+
+  public JSONException(final String message, final Throwable cause) {
+    super(message, cause);
+  }
+
+  public JSONException(final Throwable cause) {
+    super(cause);
+  }
 }

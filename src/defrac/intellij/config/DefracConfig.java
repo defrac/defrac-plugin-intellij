@@ -18,154 +18,38 @@ package defrac.intellij.config;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import defrac.intellij.DefracPlatform;
-import defrac.intellij.config.android.AndroidSettings;
-import defrac.intellij.config.ios.IOSSettings;
-import defrac.intellij.config.jvm.JVMSettings;
-import defrac.intellij.config.web.WebSettings;
+import defrac.json.JSON;
+import defrac.json.JSONObject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Collections;
-
-import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
  *
  */
-@SuppressWarnings("unused,MismatchedReadAndWriteOfArray,FieldCanBeLocal")
-public final class DefracConfig extends DefracConfigurationBase {
-
-  public static DefracConfig fromJson(@NotNull final VirtualFile file) throws IOException {
-    return ConfigCache.getInstance().get(file);
-  }
-
+public final class DefracConfig extends DefracConfigBase {
+  @NotNull
   public static DefracConfig fromJson(@NotNull final PsiFile file) throws IOException {
-    return ConfigCache.getInstance().get(file);
-  }
-
-  private String[] targets;
-  private GenericSettings gen;
-  private AndroidSettings android;
-  private IOSSettings ios;
-  private JVMSettings jvm;
-  private WebSettings web;
-
-  @NotNull
-  public DefracConfigurationBase getOrCreatePlatform(@NotNull final DefracPlatform platform) {
-    switch(platform) {
-      case ANDROID:
-        if(android == null) {
-          android = new AndroidSettings();
-        }
-        return android;
-      case GENERIC:
-        return this;
-      case IOS:
-        if(ios == null) {
-          ios = new IOSSettings();
-        }
-        return ios;
-      case JVM:
-        if(jvm == null) {
-          jvm = new JVMSettings();
-        }
-        return jvm;
-      case WEB:
-        if(web == null) {
-          web = new WebSettings();
-        }
-        return web;
-    }
-
-    throw new IllegalArgumentException("Unknown platform " + platform);
-  }
-
-  @Nullable
-  public DefracConfigurationBase getPlatform(@NotNull final DefracPlatform platform) {
-    switch(platform) {
-      case ANDROID:
-        return android;
-      case GENERIC:
-        return this;
-      case IOS:
-        return ios;
-      case JVM:
-        return jvm;
-      case WEB:
-        return web;
-    }
-
-    throw new IllegalArgumentException("Unknown platform " + platform);
+    return new DefracConfig(ConfigCache.getInstance().get(file.getVirtualFile()));
   }
 
   @NotNull
-  public DefracPlatform[] getTargets() {
-    final ArrayList<DefracPlatform> platforms =
-        Lists.newArrayListWithExpectedSize(targets.length);
-
-    for(final String target : targets) {
-      if(isNullOrEmpty(target)) {
-        continue;
-      }
-
-      final DefracPlatform platform = DefracPlatform.byName(target);
-
-      if(platform == null) {
-        continue;
-      }
-
-      platforms.add(platform);
-    }
-
-    return platforms.toArray(new DefracPlatform[platforms.size()]);
+  public static DefracConfig fromJson(@NotNull final VirtualFile file) throws IOException {
+    return new DefracConfig(ConfigCache.getInstance().get(file));
   }
 
   @NotNull
-  public DefracConfig setTargets(@NotNull final String[] value) {
-    targets = value;
-    return this;
-  }
-
-  @NotNull
-  public DefracConfig setGenericSettings(@NotNull final GenericSettings value) {
-    gen = value;
-    return this;
-  }
-
-  @NotNull
-  public DefracConfig setAndroidSettings(@NotNull final AndroidSettings value) {
-    android = value;
-    return this;
-  }
-
-  @NotNull
-  public DefracConfig setIOSSettings(@NotNull final IOSSettings value) {
-    ios = value;
-    return this;
-  }
-
-  @NotNull
-  public DefracConfig setJVMSettings(@NotNull final JVMSettings value) {
-    jvm = value;
-    return this;
-  }
-
-  @NotNull
-  public DefracConfig setWebSettings(@NotNull final WebSettings value) {
-    web = value;
-    return this;
+  public static DefracConfig fromJson(@NotNull final String url) throws IOException {
+    return new DefracConfig(ConfigCache.getInstance().get(url));
   }
 
   public void commit(@NotNull final Project project) throws IOException {
@@ -182,19 +66,40 @@ public final class DefracConfig extends DefracConfigurationBase {
 
     try {
       out = new BufferedWriter(new PrintWriter(supplier.get()));
-
-      final Gson gson =
-          new GsonBuilder().
-              disableHtmlEscaping().
-              setPrettyPrinting().
-              create();
-
-      gson.toJson(this, DefracConfig.class, out);
+      out.write(JSON.stringify(json, /*prettyPrint=*/true));
     } finally {
       Closeables.close(out, true);
     }
   }
 
   public DefracConfig() {
+    super();
+  }
+
+  public DefracConfig(@NotNull final JSON json) {
+    super(json);
+  }
+
+  @Nullable
+  public DefracConfigBase getOrCreatePlatform(final DefracPlatform platform) {
+    if(platform.isGeneric() || !(json instanceof JSONObject)) {
+      return null;
+    }
+
+    final JSONObject obj = (JSONObject)json;
+
+    if(obj.contains(platform.name)) {
+      final JSON platformObject = obj.get(platform.name);
+
+      if(platformObject.isObject()) {
+        return new DefracConfigBase(platformObject);
+      }
+
+      return null;
+    } else {
+      final JSONObject platformObject = new JSONObject();
+      obj.put(platform.name, platformObject);
+      return new DefracConfigBase(platformObject);
+    }
   }
 }

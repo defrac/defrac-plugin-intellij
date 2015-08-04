@@ -34,7 +34,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiMethodUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import defrac.intellij.config.DefracConfig;
-import defrac.intellij.config.DefracConfigurationBase;
+import defrac.intellij.config.DefracConfigBase;
 import defrac.intellij.facet.DefracFacet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -96,7 +96,13 @@ public final class DefracRunConfigurationProducer extends JavaRunConfigurationPr
       return;
     }
 
-    final DefracConfigurationBase platformConfig = defracConfig.getOrCreatePlatform(facet.getPlatform());
+    final DefracConfigBase platformConfig = defracConfig.getOrCreatePlatform(facet.getPlatform());
+
+    if(platformConfig == null) {
+      LOG.error("Can't create platform specific config");
+      return;
+    }
+
     platformConfig.setMain(checkNotNull(JavaExecutionUtil.getRuntimeQualifiedName(cls)));
 
     try {

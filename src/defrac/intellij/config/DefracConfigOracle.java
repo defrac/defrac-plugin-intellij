@@ -16,27 +16,96 @@
 
 package defrac.intellij.config;
 
+import com.google.common.base.Function;
+import com.google.common.base.Predicates;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
+import defrac.json.JSON;
+import defrac.json.JSONObject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.google.common.collect.Iterators.*;
 
 /**
  *
  */
 public final class DefracConfigOracle {
+  @NotNull
   private static final Splitter PATH_SPLITTER = Splitter.on('/').trimResults().omitEmptyStrings();
+
+  @NotNull
+  private static final Function<JSON, String> JSON_STRING_TO_STRING = new Function<JSON, String>() {
+    @Override
+    public String apply(@Nullable final JSON json) {
+      return json == null
+          ? null
+          : json.stringValue();
+    }
+  };
+
+  @NotNull
+  private static final Function<JSON, String[]> JSON_ARRAY_TO_STRING_ARRAY = new Function<JSON, String[]>() {
+    @Override
+    public String[] apply(@Nullable final JSON json) {
+      return json == null || !json.isArray()
+          ? null
+          : toArray(
+              filter(
+                transform(
+                  checkNotNull(json.asArray()).iterator(),
+                  JSON_STRING_TO_STRING
+                ),
+              Predicates.notNull()
+            ), String.class);
+    }
+  };
+
+  @NotNull
+  private static final Function<JSON, DefracPlatform[]> JSON_ARRAY_TO_PLATFORM_ARRAY = new Function<JSON, DefracPlatform[]>() {
+    @Override
+    public DefracPlatform[] apply(@Nullable final JSON json) {
+      final String[] strings = JSON_ARRAY_TO_STRING_ARRAY.apply(json);
+
+      if(strings == null) {
+        return null;
+      }
+
+      final ArrayList<DefracPlatform> platforms = Lists.newArrayListWithExpectedSize(strings.length);
+
+      for(final String string : strings) {
+        if("android".equalsIgnoreCase(string)) {
+          platforms.add(DefracPlatform.ANDROID);
+        } else if("ios".equalsIgnoreCase(string)) {
+          platforms.add(DefracPlatform.IOS);
+        } else if("jvm".equalsIgnoreCase(string)) {
+          platforms.add(DefracPlatform.JVM);
+        } else if("web".equalsIgnoreCase(string)) {
+          platforms.add(DefracPlatform.WEB);
+        }
+      }
+
+      return platforms.toArray(new DefracPlatform[platforms.size()]);
+    }
+  };
+
+  @NotNull
+  private static final Function<JSON, Boolean> JSON_BOOLEAN_TO_BOOLEAN = new Function<JSON, Boolean>() {
+    @Override
+    public Boolean apply(@Nullable final JSON json) {
+      return "true".equals(JSON_STRING_TO_STRING.apply(json));
+    }
+  };
 
   public static DefracConfigOracle join(@NotNull final DefracPlatform platform,
                                         @NotNull final DefracConfig localConfig,
@@ -68,6 +137,11 @@ public final class DefracConfigOracle {
   @NotNull
   public String[] getResources() {
     return lookupStringArray("resources");
+  }
+
+  @NotNull
+  public DefracPlatform[] getTargets() {
+    return lookupPlatformArray("targets");
   }
 
   @NotNull
@@ -148,31 +222,37 @@ public final class DefracConfigOracle {
 
   @NotNull
   private String lookupString(@NotNull final String fieldName, @NotNull final String defaultValue) {
-    return lookup(fieldName, String.class, defaultValue);
+    return lookup(fieldName, String.class, defaultValue, JSON_STRING_TO_STRING);
   }
 
   @NotNull
   private String[] lookupStringArray(@NotNull final String fieldName) {
-    return lookup(fieldName, String[].class, ArrayUtil.EMPTY_STRING_ARRAY);
+    return lookup(fieldName, String[].class, ArrayUtil.EMPTY_STRING_ARRAY, JSON_ARRAY_TO_STRING_ARRAY);
+  }
+
+  @NotNull
+  private DefracPlatform[] lookupPlatformArray(@NotNull final String fieldName) {
+    return lookup(fieldName, DefracPlatform[].class, DefracPlatform.EMPTY_ARRAY, JSON_ARRAY_TO_PLATFORM_ARRAY);
   }
 
   private boolean lookupBoolean(@NotNull final String fieldName) {
-    return lookup(fieldName, Boolean.class, false);
+    return lookup(fieldName, Boolean.class, false, JSON_BOOLEAN_TO_BOOLEAN);
   }
 
   @NotNull
   private <A, B extends A> A lookup(
       @NotNull final String fieldPath,
       @NotNull Class<A> typeOfValue,
-      @NotNull final B defaultValue) {
+      @NotNull final B defaultValue,
+      @NotNull final Function<JSON, A> flattener) {
     try {
-      A firstTry = extract(fieldPath, typeOfValue, localConfig);
+      A firstTry = extract(fieldPath, typeOfValue, flattener, localConfig.json);
 
       if(firstTry != null) {
         return firstTry;
       }
 
-      A secondTry = extract(fieldPath, typeOfValue, globalConfig);
+      A secondTry = extract(fieldPath, typeOfValue, flattener, globalConfig.json);
 
       if(secondTry != null) {
         return secondTry;
@@ -189,13 +269,14 @@ public final class DefracConfigOracle {
   @Nullable
   private <A> A extract(@NotNull final String fieldPath,
                         @NotNull final Class<A> typeOfValue,
-                        @NotNull final DefracConfig genericConfig) throws NoSuchFieldException, IllegalAccessException {
-    final DefracConfigurationBase platformConfig =
-        genericConfig.getPlatform(platform);
+                        @NotNull final Function<JSON, A> flattener,
+                        @NotNull final JSON genericConfig) throws NoSuchFieldException, IllegalAccessException {
+    final JSON platformConfig =
+        genericConfig.asObject(JSONObject.EMPTY).optObject(platform.name);
 
-    if(platformConfig != null) {
+    if(platformConfig != JSONObject.EMPTY) {
       try {
-        final A value = walkPath(fieldPath, typeOfValue, platformConfig);
+        final A value = walkPath(fieldPath, typeOfValue, flattener, platformConfig.asObject(JSONObject.EMPTY));
 
         if(value != null) {
           return value;
@@ -205,55 +286,34 @@ public final class DefracConfigOracle {
       }
     }
 
-    return walkPath(fieldPath, typeOfValue, genericConfig);
+    return walkPath(fieldPath, typeOfValue, flattener, genericConfig.asObject(JSONObject.EMPTY));
   }
 
 
   @Nullable
   private <A> A walkPath(@NotNull final String fieldPath,
                          @NotNull final Class<A> typeOfValue,
-                         @NotNull final Object config) throws NoSuchFieldException, IllegalAccessException {
+                         @NotNull final Function<JSON, A> flattener,
+                         @NotNull final JSONObject config) throws NoSuchFieldException, IllegalAccessException {
     final Iterator<String> pathElements = PATH_SPLITTER.split(fieldPath).iterator();
-    Object current = config;
+    JSON current = config;
 
     while(pathElements.hasNext()) {
       final String pathElement = pathElements.next();
-      final Field field = getField(current, pathElement);
 
-      current = field.get(current);
+      if(current instanceof JSONObject) {
+        final JSONObject obj = (JSONObject)current;
 
-      if(current == null) {
+        if(!obj.contains(pathElement)) {
+          return null;
+        }
+
+        current = obj.get(pathElement);
+      } else {
         return null;
       }
     }
 
-    return typeOfValue.cast(current);
-  }
-
-  @NotNull
-  private Field getField(@NotNull Object config,
-                         @NotNull String name) throws NoSuchFieldException {
-    Class<?> klass = config.getClass();
-
-    while(klass != Object.class) {
-      try {
-        return makeAccessible(klass.getField(name));
-      } catch(final NoSuchFieldException ignored) {
-        try {
-          return makeAccessible(klass.getDeclaredField(name));
-        } catch(final NoSuchFieldException alsoIgnored) {
-          // nada
-        }
-      }
-      klass = klass.getSuperclass();
-    }
-
-    throw new NoSuchFieldException("No such field: "+name);
-  }
-
-  @NotNull
-  private static Field makeAccessible(@NotNull final Field field) {
-    field.setAccessible(true);
-    return field;
+    return typeOfValue.cast(flattener.apply(current));
   }
 }

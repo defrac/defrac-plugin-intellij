@@ -20,8 +20,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.io.Closeables;
-import com.google.gson.Gson;
-import com.google.gson.stream.JsonReader;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.ThrowableComputable;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -29,6 +27,7 @@ import com.intellij.openapi.vfs.VirtualFileAdapter;
 import com.intellij.openapi.vfs.VirtualFileEvent;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.PsiFile;
+import defrac.json.JSON;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -49,20 +48,13 @@ final class ConfigCache {
   }
 
   @NotNull
-  private static JsonReader lenientReader(@NotNull final Reader reader) {
-    final JsonReader jsonReader = new JsonReader(reader);
-    jsonReader.setLenient(true);
-    return jsonReader;
-  }
-
-  @NotNull
-  private final LoadingCache<String, DefracConfig> cache =
+  private final LoadingCache<String, JSON> cache =
       CacheBuilder.
           newBuilder().
           maximumSize(100).
-          build(new CacheLoader<String, DefracConfig>() {
+          build(new CacheLoader<String, JSON>() {
             @Override
-            public DefracConfig load(final String url) throws Exception {
+            public JSON load(final String url) throws Exception {
               final VirtualFile file =
                   VirtualFileManager.getInstance().findFileByUrl(url);
 
@@ -71,15 +63,14 @@ final class ConfigCache {
               }
 
               return ApplicationManager.getApplication().runReadAction(
-                  new ThrowableComputable<DefracConfig, Exception>() {
+                  new ThrowableComputable<JSON, Exception>() {
                     @Override
-                    public DefracConfig compute() throws Exception {
-                      final Gson gson = new Gson();
+                    public JSON compute() throws Exception {
                       Reader reader = null;
 
                       try {
                         reader = new InputStreamReader(file.getInputStream());
-                        return gson.fromJson(lenientReader(reader), DefracConfig.class);
+                        return JSON.parse(reader);
                       } finally {
                         Closeables.closeQuietly(reader);
                       }
@@ -94,15 +85,15 @@ final class ConfigCache {
     cache.cleanUp();
   }
 
-  public DefracConfig get(@NotNull final PsiFile file) throws IOException {
+  public JSON get(@NotNull final PsiFile file) throws IOException {
     return get(file.getVirtualFile());
   }
 
-  public DefracConfig get(@NotNull final VirtualFile file) throws IOException {
+  public JSON get(@NotNull final VirtualFile file) throws IOException {
     return get(file.getUrl());
   }
 
-  public DefracConfig get(@NotNull final String url) throws IOException {
+  public JSON get(@NotNull final String url) throws IOException {
     try {
       return cache.get(url);
     } catch(final ExecutionException executionException) {

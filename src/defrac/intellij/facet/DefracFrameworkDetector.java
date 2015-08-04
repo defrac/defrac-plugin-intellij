@@ -29,7 +29,7 @@ import com.intellij.openapi.startup.StartupManager;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.util.indexing.FileContent;
 import defrac.intellij.DefracPlatform;
-import defrac.intellij.config.DefracConfig;
+import defrac.intellij.config.DefracConfigOracle;
 import defrac.intellij.fileType.DefracSettingsFileType;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NonNls;
@@ -71,7 +71,7 @@ public final class DefracFrameworkDetector extends FacetBasedFrameworkDetector<D
       model.setSdk(ModuleRootManager.getInstance(module).getSdk());
     }
 
-    final DefracConfig config = facet.getConfig();
+    final DefracConfigOracle config = facet.getConfigOracle();
 
     if(config != null) {
       final DefracPlatform[] targets = config.getTargets();
