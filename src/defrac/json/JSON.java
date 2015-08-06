@@ -93,7 +93,7 @@ public abstract class JSON {
 
     stringBuilder.append('"');
     for(final char c : chars) {
-      if(c == '\\' || c == '"' || c == '/') {
+      if(c == '\\' || c == '"') {
         // we have to encode either '\', '"', or '/'
         // so we prepend a '\'
         stringBuilder.append('\\').append(c);
