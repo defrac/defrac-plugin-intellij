@@ -16,31 +16,23 @@
 
 package defrac.intellij.run;
 
+import com.intellij.debugger.engine.RemoteDebugProcessHandler;
 import com.intellij.execution.ExecutionException;
-import com.intellij.execution.ExecutionResult;
-import com.intellij.execution.Executor;
-import com.intellij.execution.configurations.RunProfileState;
+import com.intellij.execution.configurations.CommandLineState;
+import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
-import com.intellij.execution.runners.ProgramRunner;
-import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.xdebugger.DefaultDebugProcessHandler;
 import defrac.intellij.DefracBundle;
-import defrac.intellij.config.DefracConfigOracle;
+import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.project.DefracProcess;
-import defrac.intellij.run.web.DefracBrowserUtil;
-import defrac.intellij.sdk.DefracVersion;
+import defrac.intellij.ipc.DefracIpc;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.io.File;
-import java.net.URI;
 
 /**
  *
  */
-public final class WebRunningState implements RunProfileState {
+public final class WebRunningState extends CommandLineState {
   @NotNull
   private final ExecutionEnvironment environment;
 
@@ -50,14 +42,14 @@ public final class WebRunningState implements RunProfileState {
 
   public WebRunningState(@NotNull final ExecutionEnvironment environment,
                          @NotNull final DefracRunConfiguration configuration) {
+    super(environment);
     this.environment = environment;
     this.configuration = configuration;
   }
 
-  @Nullable
+  @NotNull
   @Override
-  public ExecutionResult execute(final Executor executor,
-                                 @NotNull final ProgramRunner runner) throws ExecutionException {
+  protected ProcessHandler startProcess() throws ExecutionException {
     final Module module = configuration.getConfigurationModule().getModule();
     final DefracFacet facet = DefracFacet.getInstance(module);
 
@@ -65,35 +57,45 @@ public final class WebRunningState implements RunProfileState {
       throw new ExecutionException(DefracBundle.message("facet.error.facetMissing", module));
     }
 
-    final Sdk defracSdk = facet.getDefracSdk();
+    final DefracIpc ipc = DefracIpc.getInstance(module.getProject());
 
-    if(defracSdk == null) {
-      throw new ExecutionException(DefracBundle.message("facet.error.noSDK"));
+    if(ipc == null) {
+      throw new ExecutionException(DefracBundle.message("ipc.error.ipcMissing"));
     }
 
-    final DefracVersion defracVersion = facet.getDefracVersion();
+    final DefracRunContext context = new DefracRunContext(module.getProject());
 
-    if(defracVersion == null) {
-      throw new ExecutionException(DefracBundle.message("facet.error.noVersion"));
+    try {
+      final boolean running = ipc.open(context, DefracPlatform.WEB);
+
+      if(!running) {
+        throw new ExecutionException("Could not start web app");
+      }
+    } catch(Throwable e) {
+      throw new ExecutionException(e);
     }
 
-    final DefracConfigOracle config = facet.getConfigOracle();
-
-    if(config == null) {
-      throw new ExecutionException(DefracBundle.message("facet.error.noSettings"));
+    if(configuration.DEBUG) {
+      return new RemoteDebugProcessHandler(environment.getProject());
     }
 
-    final File browser = DefracBrowserUtil.getBrowser(config);
-    final int port = DefracProcess.getInstance(environment.getProject()).getWebServerPort();
-    final URI uri = URI.create("http://127.0.0.1:"+port+'/');
+    return new DefaultDebugProcessHandler() {
+      @Override
+      protected void destroyProcessImpl() {
+        try {
+          ipc.close(context, DefracPlatform.WEB);
+        } catch(Throwable e) {
+          notifyProcessTerminated(-1);
+          return;
+        }
 
-    if(!DefracBrowserUtil.isChromium(browser)) {
-      BrowserUtil.browse(uri);
-    } else {
-      //TODO(joa): intellij remote debug for chrome...
-      BrowserUtil.browse(uri);
-    }
+        notifyProcessTerminated(0);
+      }
 
-    return null;
+      @Override
+      protected void detachProcessImpl() {
+        notifyProcessDetached();
+      }
+    };
   }
 }

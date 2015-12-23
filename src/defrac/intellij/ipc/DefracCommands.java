@@ -24,6 +24,10 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class DefracCommands {
   @NotNull @NonNls public static final String COMPILE = "compile";
+  @NotNull @NonNls public static final String RUN = "run";
+  @NotNull @NonNls public static final String DEBUG = "debug";
+  @NotNull @NonNls public static final String OPEN = "open";
+  @NotNull @NonNls public static final String CLOSE = "close";
   @NotNull @NonNls public static final String COMPILE_RESULT = "\\[info\\] Compiled (\\d+) units? in (\\d+(s|ms)) \\((\\d+) errors?, (\\d+) warnings?\\)";
 
   @NotNull @NonNls public static final String PACKAGE = "package";

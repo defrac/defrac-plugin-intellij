@@ -33,13 +33,9 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiMethodUtil;
 import com.intellij.psi.util.PsiTreeUtil;
-import defrac.intellij.config.DefracConfig;
-import defrac.intellij.config.DefracConfigBase;
 import defrac.intellij.facet.DefracFacet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  */
@@ -65,7 +61,8 @@ public final class DefracRunConfigurationProducer extends JavaRunConfigurationPr
 
     sourceElement.set(cls);
 
-    updateConfig(config, context, cls);
+    setupConfigurationModule(context, config);
+    config.setGeneratedName();
 
     return true;
   }
@@ -78,38 +75,6 @@ public final class DefracRunConfigurationProducer extends JavaRunConfigurationPr
     return cls != null
         && Comparing.equal(JavaExecutionUtil.getRuntimeQualifiedName(cls), config.MAIN_CLASS_NAME)
         && Comparing.equal(context.getModule(), config.getConfigurationModule().getModule());
-  }
-
-  private void updateConfig(@NotNull final DefracRunConfiguration config,
-                            @NotNull final ConfigurationContext context,
-                            @NotNull final PsiClass cls) {
-    setupConfigurationModule(context, config);
-    config.setGeneratedName();
-
-    final DefracFacet facet = checkNotNull(DefracFacet.getInstance(cls));
-
-    // always update main class in defrac config
-    final DefracConfig defracConfig = facet.getConfig();
-
-    if(defracConfig == null) {
-      LOG.error("Can't read defrac config");
-      return;
-    }
-
-    final DefracConfigBase platformConfig = defracConfig.getOrCreatePlatform(facet.getPlatform());
-
-    if(platformConfig == null) {
-      LOG.error("Can't create platform specific config");
-      return;
-    }
-
-    platformConfig.setMain(checkNotNull(JavaExecutionUtil.getRuntimeQualifiedName(cls)));
-
-    try {
-      defracConfig.commit(config.getProject());
-    } catch(Exception e) {
-      LOG.error(e);
-    }
   }
 
   @Nullable

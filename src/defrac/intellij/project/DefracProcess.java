@@ -42,6 +42,7 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
@@ -50,6 +51,8 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 public final class DefracProcess extends DefracProjectComponent {
   @NotNull
   private static final AtomicInteger WEB_SERVER_PORT = new AtomicInteger(0x8080);
+  @NotNull
+  private static final AtomicInteger DEBUG_PORT = new AtomicInteger(5050);
 
   @Nullable
   private OSProcessHandler processHandler;
@@ -59,9 +62,11 @@ public final class DefracProcess extends DefracProjectComponent {
 
   private int webServerPort;
 
+  private int debugPort;
+
   @NotNull
   public static DefracProcess getInstance(@NotNull final Project project) {
-    return project.getComponent(DefracProcess.class);
+    return checkNotNull(project.getComponent(DefracProcess.class));
   }
 
   public DefracProcess(@NotNull final Project project) {
@@ -71,6 +76,7 @@ public final class DefracProcess extends DefracProjectComponent {
   @Override
   protected void doInitComponent(@NotNull final Project project) {
     webServerPort = WEB_SERVER_PORT.getAndIncrement();
+    debugPort = DEBUG_PORT.getAndIncrement();
     killProcessHandler();
   }
 
@@ -238,6 +244,10 @@ public final class DefracProcess extends DefracProjectComponent {
 
   public int getWebServerPort() {
     return webServerPort;
+  }
+
+  public int getDebugPort() {
+    return debugPort;
   }
 
   @Override

@@ -64,7 +64,6 @@ public final class DefracRunningState extends CommandLineState {
 
     final GeneralCommandLine cmdLine =
         DefracCommandLineBuilder.forFacet(facet).
-            debug(isDebug).
             command("run").
             build();
 

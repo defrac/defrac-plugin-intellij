@@ -52,6 +52,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaRunConfigurationModule>
     implements CommonJavaRunConfigurationParameters, RunConfigurationWithSuppressedDefaultDebugAction, RunConfigurationWithSuppressedDefaultRunAction {
   public String MAIN_CLASS_NAME;
+  public boolean DEBUG;
   public String VM_PARAMETERS;
   public String PROGRAM_PARAMETERS;
   public String WORKING_DIRECTORY;
@@ -116,12 +117,11 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
 
     MAIN_CLASS_NAME = config.getMain();
 
-    final boolean isDebug =
-        DefaultDebugExecutor.EXECUTOR_ID.equals(executor.getId());
+    final boolean isDebug = DefaultDebugExecutor.EXECUTOR_ID.equals(executor.getId());
 
     switch(facet.getPlatform()) {
       case JVM: return new JvmRunningState(environment, this, facet);
-      case WEB: return new WebRunningState(environment, this);
+      //case WEB: return new WebRunningState(environment, this);
       default:  return new DefracRunningState(environment, facet, isDebug);
     }
   }

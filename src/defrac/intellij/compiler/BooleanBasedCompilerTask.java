@@ -19,6 +19,7 @@ package defrac.intellij.compiler;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.ipc.DefracIpc;
 import defrac.intellij.project.DefracProcess;
@@ -49,7 +50,7 @@ public abstract class BooleanBasedCompilerTask extends DefracCompilerTask {
 
     final Future<Boolean> future =
         PooledThreadExecutor.INSTANCE.
-            submit(createCallable(context, configuration, facet, ipc));
+            submit(createCallable(new DefracCompileContext(context), configuration, facet, ipc));
 
     for(;;) {
       if(context.getProgressIndicator().isCanceled()) {
@@ -71,7 +72,7 @@ public abstract class BooleanBasedCompilerTask extends DefracCompilerTask {
     }
   }
 
-  protected abstract Callable<Boolean> createCallable(@NotNull final CompileContext context,
+  protected abstract Callable<Boolean> createCallable(@NotNull final DefracCompileContext context,
                                                       @NotNull final DefracRunConfiguration configuration,
                                                       @NotNull final DefracFacet facet,
                                                       @NotNull final DefracIpc ipc);

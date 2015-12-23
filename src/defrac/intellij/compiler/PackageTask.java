@@ -16,7 +16,6 @@
 
 package defrac.intellij.compiler;
 
-import com.intellij.openapi.compiler.CompileContext;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.ipc.DefracIpc;
 import defrac.intellij.run.DefracRunConfiguration;
@@ -50,7 +49,7 @@ public final class PackageTask extends BooleanBasedCompilerTask {
 
 
   @Override
-  protected Callable<Boolean> createCallable(@NotNull final CompileContext context,
+  protected Callable<Boolean> createCallable(@NotNull final DefracCompileContext context,
                                              @NotNull final DefracRunConfiguration configuration,
                                              @NotNull final DefracFacet facet,
                                              @NotNull final DefracIpc ipc) {
