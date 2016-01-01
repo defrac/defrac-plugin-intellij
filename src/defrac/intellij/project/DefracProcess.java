@@ -51,8 +51,6 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 public final class DefracProcess extends DefracProjectComponent {
   @NotNull
   private static final AtomicInteger WEB_SERVER_PORT = new AtomicInteger(0x8080);
-  @NotNull
-  private static final AtomicInteger DEBUG_PORT = new AtomicInteger(5050);
 
   @Nullable
   private OSProcessHandler processHandler;
@@ -61,8 +59,6 @@ public final class DefracProcess extends DefracProjectComponent {
   private DefracIpc ipc;
 
   private int webServerPort;
-
-  private int debugPort;
 
   @NotNull
   public static DefracProcess getInstance(@NotNull final Project project) {
@@ -76,7 +72,6 @@ public final class DefracProcess extends DefracProjectComponent {
   @Override
   protected void doInitComponent(@NotNull final Project project) {
     webServerPort = WEB_SERVER_PORT.getAndIncrement();
-    debugPort = DEBUG_PORT.getAndIncrement();
     killProcessHandler();
   }
 
@@ -239,15 +234,6 @@ public final class DefracProcess extends DefracProjectComponent {
   public ProcessHandler getProcessHandler() {
     tryInitProcess();
     return processHandler;
-  }
-
-
-  public int getWebServerPort() {
-    return webServerPort;
-  }
-
-  public int getDebugPort() {
-    return debugPort;
   }
 
   @Override

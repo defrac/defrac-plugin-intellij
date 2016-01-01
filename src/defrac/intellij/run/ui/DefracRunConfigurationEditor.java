@@ -16,6 +16,8 @@
 
 package defrac.intellij.run.ui;
 
+import com.google.common.base.Strings;
+import com.intellij.execution.configurations.ModuleBasedConfiguration;
 import com.intellij.execution.ui.ConfigurationModuleSelector;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.ConfigurationException;
@@ -38,6 +40,7 @@ public final class DefracRunConfigurationEditor extends SettingsEditor<DefracRun
   private JPanel componentPanel;
   private JLabel moduleLabel;
   private JComboBox moduleComboBox;
+  private JTextField mainClassTextField;
 
   public DefracRunConfigurationEditor(@NotNull final Project project) {
     this.moduleSelector = new ConfigurationModuleSelector(project, moduleComboBox) {
@@ -53,6 +56,11 @@ public final class DefracRunConfigurationEditor extends SettingsEditor<DefracRun
             && !facet.getPlatform().isGeneric()
             && !facet.isMacroLibrary();
       }
+
+      @Override
+      public void applyTo(final ModuleBasedConfiguration configurationModule) {
+        super.applyTo(configurationModule);
+      }
     };
 
     moduleLabel.setLabelFor(moduleComboBox);
@@ -60,11 +68,13 @@ public final class DefracRunConfigurationEditor extends SettingsEditor<DefracRun
 
   @Override
   protected void resetEditorFrom(final DefracRunConfiguration configuration) {
+    mainClassTextField.setText(Strings.nullToEmpty(configuration.getRunClass()));
     moduleSelector.reset(configuration);
   }
 
   @Override
   protected void applyEditorTo(final DefracRunConfiguration configuration) throws ConfigurationException {
+    configuration.setRunClass(mainClassTextField.getText());
     moduleSelector.applyTo(configuration);
   }
 

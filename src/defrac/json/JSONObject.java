@@ -18,6 +18,7 @@ package defrac.json;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
+import com.sun.javafx.beans.annotations.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,6 +44,11 @@ public class JSONObject extends JSON {
 
   public JSONObject(final int initialCapacity, final float loadFactor) {
     values = new LinkedHashMap<String, JSON>(initialCapacity, loadFactor);
+  }
+
+  @NotNull
+  public JSONObject copy() {
+    return new JSONObject(new LinkedHashMap<String, JSON>(values));
   }
 
   @Override

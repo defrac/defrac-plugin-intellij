@@ -21,6 +21,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.util.ArrayUtil;
 import defrac.intellij.compiler.CompileTask;
 import defrac.intellij.compiler.DefracCompilerTask;
+import defrac.intellij.compiler.LoadTask;
 import defrac.intellij.compiler.PackageTask;
 import org.jetbrains.annotations.NotNull;
 
@@ -37,6 +38,7 @@ public final class DefracCompileTasks extends DefracProjectComponent {
     final CompilerManager manager =
         CompilerManager.getInstance(project);
 
+    installTask(manager, LoadTask.INSTANCE);
     installTask(manager, CompileTask.INSTANCE);
     installTask(manager, PackageTask.INSTANCE);
   }

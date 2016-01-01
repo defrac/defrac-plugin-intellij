@@ -14,32 +14,21 @@
  * limitations under the License.
  */
 
-package defrac.intellij.run;
+package defrac.intellij.ui;
 
-import com.intellij.openapi.compiler.CompilerMessageCategory;
-import com.intellij.openapi.project.Project;
-import defrac.intellij.ipc.DefracIpc;
-import org.jetbrains.annotations.NotNull;
+import com.intellij.ui.ListCellRendererWrapper;
+import defrac.intellij.sdk.DefracVersion;
+
+import javax.swing.*;
 
 /**
  * @author Tim Richter
  */
-public final class DefracRunContext implements DefracIpc.Context {
-  @NotNull
-  private final Project project;
-
-  public DefracRunContext(@NotNull final Project project) {
-    this.project = project;
-  }
-
+public final class DefracVersionRenderer extends ListCellRendererWrapper<Object> {
   @Override
-  public void addMessage(@NotNull final CompilerMessageCategory category, @NotNull final String message) {
-
-  }
-
-  @NotNull
-  @Override
-  public Project getProject() {
-    return project;
+  public void customize(JList list, Object value, int index, boolean selected, boolean hasFocus) {
+    if(value instanceof DefracVersion) {
+      setText(((DefracVersion)value).getName());
+    }
   }
 }

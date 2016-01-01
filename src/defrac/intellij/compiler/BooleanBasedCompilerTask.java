@@ -17,25 +17,24 @@
 package defrac.intellij.compiler;
 
 import com.intellij.openapi.compiler.CompileContext;
-import com.intellij.openapi.compiler.CompilerMessageCategory;
-import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.project.Project;
+import defrac.concurrent.Future;
+import defrac.concurrent.Futures;
 import defrac.intellij.facet.DefracFacet;
+import defrac.intellij.ipc.DefracCommandLineParser;
 import defrac.intellij.ipc.DefracIpc;
 import defrac.intellij.project.DefracProcess;
 import defrac.intellij.run.DefracRunConfiguration;
+import defrac.lang.Attempt;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.ide.PooledThreadExecutor;
 
-import java.util.concurrent.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
  */
 public abstract class BooleanBasedCompilerTask extends DefracCompilerTask {
-  @NotNull
-  private static final Logger LOG = Logger.getInstance(BooleanBasedCompilerTask.class.getName());
-
   @Override
   protected boolean doCompile(@NotNull final CompileContext context,
                               @NotNull final DefracRunConfiguration configuration,
@@ -44,36 +43,72 @@ public abstract class BooleanBasedCompilerTask extends DefracCompilerTask {
         DefracProcess.getInstance(context.getProject()).getIpc();
 
     if(ipc == null) {
-      context.addMessage(CompilerMessageCategory.ERROR, "Couldn't find defrac facet", null, -1, -1);
+      reportError(context, "Couldn't find defrac facet");
       return false;
     }
 
-    final Future<Boolean> future =
-        PooledThreadExecutor.INSTANCE.
-            submit(createCallable(new DefracCompileContext(context), configuration, facet, ipc));
+    final DefracIpc.Executor executor = doCompile(context, configuration, facet, ipc);
 
-    for(;;) {
+    if(executor == null) {
+      // noop
+      return true;
+    }
+
+    executor.addListener(new DefracIpc.ExecutorListener() {
+      @Override
+      public void onMessage(@NotNull final DefracCommandLineParser.Message message) {
+        context.addMessage(message.category, message.text, null, -1, -1);
+      }
+
+      @Override
+      public void onError(@NotNull final Exception exception) {
+        reportError(context, exception.getMessage());
+
+        executor.dispose();
+      }
+
+      @Override
+      public void onComplete(final int exitCode) {
+        executor.dispose();
+      }
+
+      @Override
+      public void onCancel() {
+        executor.dispose();
+      }
+    });
+
+    final Future<Boolean> future = ipc.submit(executor);
+
+    for(; ; ) {
       if(context.getProgressIndicator().isCanceled()) {
-        future.cancel(/*mayInterruptIfRunning=*/true);
-        return false;
-      } else {
-        try {
-          return future.get(100, TimeUnit.MILLISECONDS);
-        } catch(final InterruptedException interrupt) {
-          Thread.currentThread().interrupt();
-          return false;
-        } catch(final ExecutionException exception) {
-          LOG.error(exception);
-          return false;
-        } catch(final TimeoutException timeout) {
-          /* retry */
+        if(executor.listening()) {
+          executor.cancel();
         }
+        return false;
+      }
+
+      try {
+        final Attempt<Boolean> attempt =
+            Futures.await(future, PooledThreadExecutor.INSTANCE, 100, TimeUnit.MILLISECONDS);
+
+        if(attempt != null) {
+          if(attempt.isSuccess()) {
+            return attempt.get();
+          }
+
+          return false;
+        }
+      } catch(final InterruptedException interrupt) {
+        Thread.currentThread().interrupt();
+        return false;
       }
     }
   }
 
-  protected abstract Callable<Boolean> createCallable(@NotNull final DefracCompileContext context,
-                                                      @NotNull final DefracRunConfiguration configuration,
-                                                      @NotNull final DefracFacet facet,
-                                                      @NotNull final DefracIpc ipc);
+  @Nullable
+  protected abstract DefracIpc.Executor doCompile(@NotNull final CompileContext context,
+                                                  @NotNull final DefracRunConfiguration configuration,
+                                                  @NotNull final DefracFacet facet,
+                                                  @NotNull final DefracIpc ipc);
 }

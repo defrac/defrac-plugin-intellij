@@ -21,13 +21,17 @@ import com.intellij.facet.ui.FacetEditorTab;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.SdkAdditionalData;
+import com.intellij.openapi.projectRoots.SdkModel;
+import com.intellij.openapi.roots.ui.configuration.ProjectStructureConfigurable;
+import com.intellij.openapi.roots.ui.configuration.projectRoot.ProjectSdksModel;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.util.PathUtil;
 import defrac.intellij.DefracBundle;
-import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.ui.DefracFacetEditorForm;
+import defrac.intellij.project.DefracProjectUtil;
 import defrac.intellij.sdk.DefracSdkAdditionalData;
+import defrac.intellij.sdk.DefracSdkUtil;
 import defrac.intellij.sdk.DefracVersion;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -52,13 +56,61 @@ public final class DefracFacetEditorTab extends FacetEditorTab {
   @NotNull
   private final DefracFacetEditorForm form;
 
+  @NotNull
+  private final ProjectSdksModel sdkModel;
+
+  @NotNull
+  private final SdkModel.Listener listener;
+
   public DefracFacetEditorTab(@NotNull final FacetEditorContext context,
                               @NotNull final DefracFacetConfiguration configuration) {
     this.context = context;
     this.configuration = configuration;
-    this.form = DefracFacetEditorForm.create(context, (DefracFacet) context.getFacet());
+    this.sdkModel = ProjectStructureConfigurable.getInstance(context.getProject()).getProjectJdksModel();
+    this.form = new DefracFacetEditorForm(context, (DefracFacet) context.getFacet(), sdkModel);
 
-    form.addPlatforms(DefracPlatform.values());
+    this.listener = new SdkModel.Listener() {
+      @Override
+      public void sdkAdded(final Sdk sdk) {
+        if(DefracSdkUtil.isDefracSdk(sdk)) {
+          form.addDefracSdk(sdk);
+        }
+      }
+
+      @Override
+      public void beforeSdkRemove(final Sdk sdk) {
+        if(DefracSdkUtil.isDefracSdk(sdk)) {
+          form.removeDefracSdk(sdk);
+        }
+      }
+
+      @Override
+      public void sdkChanged(final Sdk sdk, final String previousName) {
+        if(DefracSdkUtil.isDefracSdk(sdk)) {
+          form.setDefracSdks(DefracSdkUtil.filterApplicableDefracSdks(sdkModel.getSdks()));
+        }
+      }
+
+      @Override
+      public void sdkHomeSelected(final Sdk sdk, final String s) {
+        // ignore
+      }
+    };
+
+    Sdk currentDefracSdk = getFacet().getDefracSdk();
+
+    if(currentDefracSdk == null) {
+      // fallback to project sdk
+      final Sdk projectSdk =  DefracProjectUtil.getProjectSdk(context.getProject());
+
+      if(DefracSdkUtil.isDefracSdk(projectSdk)) {
+        currentDefracSdk = projectSdk;
+      }
+    }
+
+    form.init(DefracSdkUtil.filterApplicableDefracSdks(sdkModel.getSdks()), currentDefracSdk);
+
+    sdkModel.addListener(listener);
   }
 
   @NotNull
@@ -90,6 +142,7 @@ public final class DefracFacetEditorTab extends FacetEditorTab {
 
   @Override
   public void disposeUIResources() {
+    sdkModel.removeListener(listener);
   }
 
   @Nls

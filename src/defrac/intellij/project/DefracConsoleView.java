@@ -23,7 +23,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.search.GlobalSearchScope;
-import defrac.intellij.ipc.DefracIpc;
+import defrac.intellij.ipc.DefracCommandLineParser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,14 +32,15 @@ import org.jetbrains.annotations.Nullable;
  */
 public final class DefracConsoleView extends DefracProjectComponent {
   @NotNull
-  private static final String ERROR_PREFIX = "["+DefracIpc.LEVEL_ERROR+"] ";
+  private static final String ERROR_PREFIX = DefracCommandLineParser.ERROR_PATTERN;
 
   @NotNull
-  private static final String WARN_PREFIX = "["+DefracIpc.LEVEL_WARN+"] ";
+  private static final String WARN_PREFIX = DefracCommandLineParser.WARN_PATTERN;
 
   @Nullable
   public static ConsoleView getInstance(@NotNull final Project project) {
-    return project.getComponent(DefracConsoleView.class).console;
+    final DefracConsoleView view = project.getComponent(DefracConsoleView.class);
+    return view != null ? view.console : null;
   }
 
   @Nullable
@@ -106,11 +107,12 @@ public final class DefracConsoleView extends DefracProjectComponent {
         return null;
       }
     });
+
     console = consoleBuilder.getConsole();
 
     final ProcessHandler processHandler = DefracProcess.getInstance(project).getProcessHandler();
 
-    if(processHandler != null) {
+    if(processHandler != null && console != null) {
       console.attachToProcess(processHandler);
     }
   }

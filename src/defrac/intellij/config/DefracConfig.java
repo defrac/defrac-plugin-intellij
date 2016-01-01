@@ -20,7 +20,6 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.io.Closeables;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
@@ -31,7 +30,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
-import java.util.Collections;
 
 /**
  *
@@ -52,13 +50,14 @@ public final class DefracConfig extends DefracConfigBase {
     return new DefracConfig(ConfigCache.getInstance().get(url));
   }
 
-  public void commit(@NotNull final Project project) throws IOException {
+  @NotNull
+  public File commit(@NotNull final Project project) throws IOException {
     final File baseDir = VfsUtilCore.virtualToIoFile(project.getBaseDir());
     final File settingsFile = new File(baseDir, "default.settings");
 
     write(Suppliers.<OutputStream>ofInstance(new FileOutputStream(settingsFile)));
 
-    LocalFileSystem.getInstance().refreshIoFiles(Collections.singletonList(settingsFile));
+    return settingsFile;
   }
 
   public void write(@NotNull final Supplier<OutputStream> supplier) throws IOException {
@@ -76,23 +75,29 @@ public final class DefracConfig extends DefracConfigBase {
     super();
   }
 
-  public DefracConfig(@NotNull final JSON json) {
+  public DefracConfig(@NotNull final JSONObject json) {
     super(json);
+  }
+
+  @NotNull
+  @Override
+  public DefracConfig copy() {
+    return new DefracConfig(json.copy());
   }
 
   @Nullable
   public DefracConfigBase getOrCreatePlatform(final DefracPlatform platform) {
-    if(platform.isGeneric() || !(json instanceof JSONObject)) {
+    if(platform.isGeneric()) {
       return null;
     }
 
-    final JSONObject obj = (JSONObject)json;
+    final JSONObject obj = json;
 
     if(obj.contains(platform.name)) {
       final JSON platformObject = obj.get(platform.name);
 
       if(platformObject.isObject()) {
-        return new DefracConfigBase(platformObject);
+        return new DefracConfigBase((JSONObject) platformObject);
       }
 
       return null;

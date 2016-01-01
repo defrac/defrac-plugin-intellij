@@ -50,12 +50,6 @@
           <text value="&amp;defrac SDK:"/>
         </properties>
       </component>
-      <component id="d287a" class="com.intellij.openapi.roots.ui.configuration.JdkComboBox" binding="defracSdkComboBox" custom-create="true">
-        <constraints>
-          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties/>
-      </component>
       <component id="83add" class="javax.swing.JCheckBox" binding="macroLibraryCheckBox" default-binding="true">
         <constraints>
           <grid row="3" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
@@ -71,6 +65,12 @@
         <properties>
           <text value="&amp;New ..."/>
         </properties>
+      </component>
+      <component id="d14f9" class="javax.swing.JComboBox" binding="defracSdkComboBox">
+        <constraints>
+          <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
       </component>
     </children>
   </grid>

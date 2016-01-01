@@ -16,19 +16,21 @@
 
 package defrac.intellij.ipc;
 
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
 /**
- *
  */
-public final class DefracCommands {
-  @NotNull @NonNls public static final String LOAD = "load";
-  @NotNull @NonNls public static final String COMPILE = "compile";
-  @NotNull @NonNls public static final String RUN = "run";
-  @NotNull @NonNls public static final String DEBUG = "debug";
-  @NotNull @NonNls public static final String CLOSE = "close";
-  @NotNull @NonNls public static final String PACKAGE = "package";
+public final class CommandExecutionException extends Exception {
+  public enum Reason {
+    CANCELLED, TERMINATED, ERROR
+  }
 
-  private DefracCommands() {}
+  @NotNull
+  public final Reason reason;
+
+  public CommandExecutionException(@NotNull final Reason reason,
+                                   @NotNull final String message) {
+    super(message);
+    this.reason = reason;
+  }
 }

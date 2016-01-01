@@ -19,13 +19,18 @@ package defrac.intellij.run;
 import com.intellij.debugger.engine.RemoteDebugProcessHandler;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.CommandLineState;
+import com.intellij.execution.process.ProcessAdapter;
+import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
+import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.xdebugger.DefaultDebugProcessHandler;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
+import defrac.intellij.ipc.DefracCommandLineParser;
 import defrac.intellij.ipc.DefracIpc;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,16 +39,12 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class WebRunningState extends CommandLineState {
   @NotNull
-  private final ExecutionEnvironment environment;
-
-  @NotNull
   private final DefracRunConfiguration configuration;
 
 
   public WebRunningState(@NotNull final ExecutionEnvironment environment,
                          @NotNull final DefracRunConfiguration configuration) {
     super(environment);
-    this.environment = environment;
     this.configuration = configuration;
   }
 
@@ -63,39 +64,95 @@ public final class WebRunningState extends CommandLineState {
       throw new ExecutionException(DefracBundle.message("ipc.error.ipcMissing"));
     }
 
-    final DefracRunContext context = new DefracRunContext(module.getProject());
+    final Project project = module.getProject();
+    final ProcessHandler process;
 
-    try {
-      final boolean running = ipc.open(context, DefracPlatform.WEB);
-
-      if(!running) {
-        throw new ExecutionException("Could not start web app");
-      }
-    } catch(Throwable e) {
-      throw new ExecutionException(e);
-    }
+    final DefracIpc.Executor executor;
 
     if(configuration.DEBUG) {
-      return new RemoteDebugProcessHandler(environment.getProject());
+      executor = ipc.debug(DefracPlatform.WEB, 5005);
+      process = new RemoteDebugProcessHandler(project);
+    } else {
+      executor = ipc.run(DefracPlatform.WEB);
+      process = new DefaultDebugProcessHandler();
     }
 
-    return new DefaultDebugProcessHandler() {
+    executor.addListener(new DefracIpc.ExecutorListener() {
       @Override
-      protected void destroyProcessImpl() {
-        try {
-          ipc.close(context, DefracPlatform.WEB);
-        } catch(Throwable e) {
-          notifyProcessTerminated(-1);
-          return;
+      public void onMessage(@NotNull final DefracCommandLineParser.Message message) {
+        if(message.isError()) {
+          process.notifyTextAvailable(message.text + "\n", ProcessOutputTypes.STDERR);
+        } else {
+          process.notifyTextAvailable(message.text + "\n", ProcessOutputTypes.STDOUT);
         }
 
-        notifyProcessTerminated(0);
+        if(message.text.equals("Connection to Chrome lost")) {
+          // cancel executor since we cannot listen to chrome anymore
+          executor.cancel();
+        }
       }
 
       @Override
-      protected void detachProcessImpl() {
-        notifyProcessDetached();
+      public void onError(@NotNull final Exception exception) {
+        process.notifyTextAvailable(exception.getMessage() + "\n", ProcessOutputTypes.STDERR);
+
+        executor.dispose();
+
+        process.destroyProcess();
       }
-    };
+
+      @Override
+      public void onComplete(final int exitCode) {
+        // we do not dispose the executor since we want to fetch incoming messages
+      }
+
+      @Override
+      public void onCancel() {
+        process.notifyTextAvailable("\nProcess finished with exit code 1\n", ProcessOutputTypes.SYSTEM);
+
+        executor.dispose();
+
+        process.destroyProcess();
+      }
+    });
+
+    process.addProcessListener(new ProcessAdapter() {
+      @Override
+      public void processTerminated(final ProcessEvent event) {
+        if(executor.listening()) {
+          // case when the process is destroyed from within the IDE
+          // we will close the current tab and stop listening to the defrac process
+          executor.cancel();
+
+          final DefracIpc.Executor abort = ipc.close(DefracPlatform.WEB);
+
+          abort.addListener(new DefracIpc.ExecutorAdapter() {
+            @Override
+            public void onCancel() {
+              abort.dispose();
+            }
+
+            @Override
+            public void onComplete(final int exitCode) {
+              abort.dispose();
+            }
+
+            @Override
+            public void onError(@NotNull final Exception exception) {
+              abort.dispose();
+            }
+          });
+
+          ipc.submit(abort);
+        }
+
+        super.processTerminated(event);
+      }
+    });
+
+    // submit the executor to ipc
+    ipc.submit(executor);
+
+    return process;
   }
 }

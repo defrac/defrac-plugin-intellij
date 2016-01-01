@@ -39,6 +39,7 @@ import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.pom.java.LanguageLevel;
@@ -55,6 +56,7 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -302,7 +304,6 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
     try {
       createProjectStructure(project);
       createDefaultSettings(project);
-      createIntelliProject(project);
     } catch(final IOException exception) {
       LOG.error(exception);
     }
@@ -311,6 +312,7 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
       @Override
       public void run() {
         try {
+          createIntelliProject(project);
           createTemplate(project);
 
           // have to reload here since intellij caches the project
@@ -462,7 +464,10 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
     }
 
     config.setTargets(targets());
-    config.commit(project);
+
+    final File settingsFile = config.commit(project);
+
+    LocalFileSystem.getInstance().refreshIoFiles(Collections.singletonList(settingsFile));
   }
 
   @NotNull

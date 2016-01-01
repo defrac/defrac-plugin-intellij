@@ -43,7 +43,6 @@ import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static defrac.intellij.sdk.JdkUtil.isApplicableJdk;
 
 /**
  *
@@ -158,6 +157,7 @@ public final class DefracSdkType extends JavaDependentSdkType implements JavaSdk
   }
 
   @Override
+  @NotNull
   public Collection<String> suggestHomePaths() {
     final ArrayList<String> homePaths = Lists.newArrayListWithCapacity(2);
     final String defracHome = System.getenv("DEFRAC_HOME");
@@ -193,15 +193,10 @@ public final class DefracSdkType extends JavaDependentSdkType implements JavaSdk
   @SuppressWarnings("Contract")
   @Override
   public boolean setupSdkPaths(@NotNull final Sdk sdk, @NotNull final SdkModel sdkModel) {
-    final List<String> javaSdks = new ArrayList<String>();
     final Sdk[] sdks = sdkModel.getSdks();
 
-    // (1) search for applicable jdk
-    for(final Sdk jdk : sdks) {
-      if(isApplicableJdk(jdk)) {
-        javaSdks.add(jdk.getName());
-      }
-    }
+    // (1) filter applicable jdks
+    final List<Sdk> javaSdks = DefracSdkUtil.filterApplicableJdks(sdks);
 
     if(javaSdks.isEmpty()){
       Messages.showErrorDialog(
@@ -210,7 +205,7 @@ public final class DefracSdkType extends JavaDependentSdkType implements JavaSdk
       return false;
     }
 
-    // (2) search fro valid defrac sdk
+    // (2) search for valid defrac sdk
     final DefracSdkData sdkData = DefracSdkData.getSdkData(sdk);
 
     if(sdkData == null) {
@@ -220,31 +215,22 @@ public final class DefracSdkType extends JavaDependentSdkType implements JavaSdk
       return false;
     }
 
-    final DefracVersion[] versions = sdkData.getVersions();
+    final List<DefracVersion> versions = sdkData.getVersions();
 
-    if(versions.length == 0) {
+    if(versions.isEmpty()) {
       Messages.showErrorDialog("No defrac version found. Please run \"defrac --force-update\" first.", "Defrac Not Installed");
       //TODO(joa): allow user to run from idea
       return false;
     }
 
     // (3) convert defrac versions to names, find <current>
-    final ArrayList<String> versionNames = Lists.newArrayListWithCapacity(versions.length);
-    DefracVersion currentVersion = null;
-
-    for(final DefracVersion version : versions) {
-      if(version.isCurrent()) {
-        currentVersion = version;
-      }
-
-      versionNames.add(version.getName());
-    }
+    final DefracVersion currentVersion = DefracSdkUtil.findCurrentVersion(versions);
 
     // (4) let user select jdk and defrac version
     final NewDefracSdkDialog dialog = new NewDefracSdkDialog(
         null, javaSdks, javaSdks.get(0),
-        versionNames,
-        currentVersion == null ? versionNames.get(0) : currentVersion.getName());
+        versions,
+        currentVersion == null ? versions.get(0) : currentVersion);
 
     dialog.show();
 
@@ -253,9 +239,8 @@ public final class DefracSdkType extends JavaDependentSdkType implements JavaSdk
     }
 
     // (5) feed sdk
-    final String name = javaSdks.get(dialog.getSelectedJavaSdkIndex());
-    final Sdk jdk = sdkModel.findSdk(name);
-    final DefracVersion version = versions[dialog.getSelectedDefracVersionIndex()];
+    final Sdk jdk = dialog.getSelectedJdk();
+    final DefracVersion version = dialog.getSelectedDefracVersion();
     final String sdkName = DefracSdkUtil.chooseNameForNewLibrary(version);
 
     DefracSdkUtil.setupSdk(sdk, sdkName, sdks, version, jdk, /*addRoots=*/true);

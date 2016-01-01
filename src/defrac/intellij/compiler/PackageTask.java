@@ -16,19 +16,20 @@
 
 package defrac.intellij.compiler;
 
+import com.intellij.openapi.compiler.CompileContext;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.ipc.DefracIpc;
 import defrac.intellij.run.DefracRunConfiguration;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.concurrent.Callable;
-
 /**
  *
  */
 public final class PackageTask extends BooleanBasedCompilerTask {
-  @NotNull @NonNls private static final String NAME = "package";
+  @NotNull
+  @NonNls
+  private static final String NAME = "package";
 
   @NotNull
   public static final PackageTask INSTANCE = new PackageTask();
@@ -47,17 +48,8 @@ public final class PackageTask extends BooleanBasedCompilerTask {
     return NAME;
   }
 
-
   @Override
-  protected Callable<Boolean> createCallable(@NotNull final DefracCompileContext context,
-                                             @NotNull final DefracRunConfiguration configuration,
-                                             @NotNull final DefracFacet facet,
-                                             @NotNull final DefracIpc ipc) {
-    return new Callable<Boolean>() {
-      @Override
-      public Boolean call() throws Exception {
-        return ipc.pack(context, facet.getPlatform());
-      }
-    };
+  protected DefracIpc.Executor doCompile(@NotNull final CompileContext context, @NotNull final DefracRunConfiguration configuration, @NotNull final DefracFacet facet, @NotNull final DefracIpc ipc) {
+    return ipc.pack(facet.getPlatform());
   }
 }

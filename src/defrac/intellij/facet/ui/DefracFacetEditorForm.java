@@ -17,23 +17,27 @@
 package defrac.intellij.facet.ui;
 
 import com.intellij.facet.ui.FacetEditorContext;
+import com.intellij.ide.DataManager;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.roots.ui.configuration.JdkComboBox;
-import com.intellij.openapi.roots.ui.configuration.ProjectStructureConfigurable;
+import com.intellij.openapi.projectRoots.SdkTypeId;
+import com.intellij.openapi.roots.ui.configuration.projectRoot.JdkListConfigurable;
 import com.intellij.openapi.roots.ui.configuration.projectRoot.ProjectSdksModel;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
+import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.Consumer;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.facet.DefracRootUtil;
-import defrac.intellij.sdk.DefracSdkUtil;
+import defrac.intellij.sdk.DefracSdkType;
 import defrac.intellij.ui.DefracPlatformRenderer;
+import defrac.intellij.ui.SdkRenderer;
 import defrac.intellij.util.Names;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -41,6 +45,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.jgoodies.common.base.Strings.isEmpty;
@@ -49,24 +54,6 @@ import static com.jgoodies.common.base.Strings.isEmpty;
  *
  */
 public final class DefracFacetEditorForm {
-  // Note: I have tried different things of how to inject the project into the createUIComponents() method
-  //       of DefracFacetEditorForm but couldn't find a way since the method is executed before any
-  //       instance variables are set in the constructor.
-  //
-  //       If you have a lot of time or know the answer -- please go ahead and fix this mess.
-  @NotNull
-  private static final ThreadLocal<Project> PROJECT_REFERENCE = new ThreadLocal<Project>();
-
-  @NotNull
-  public static DefracFacetEditorForm create(@NotNull final FacetEditorContext context,
-                                             @NotNull final DefracFacet facet) {
-    try {
-      PROJECT_REFERENCE.set(context.getProject());
-      return new DefracFacetEditorForm(context, facet);
-    } finally {
-      PROJECT_REFERENCE.set(null);
-    }
-  }
 
   @NotNull
   private final FacetEditorContext context;
@@ -77,17 +64,25 @@ public final class DefracFacetEditorForm {
   private JLabel platformLabel;
   private JLabel settingsLabel;
   private JLabel defracSdkLabel;
-  private JdkComboBox defracSdkComboBox;
   private JCheckBox macroLibraryCheckBox;
-  private JCheckBox skipJavacCheckBox;
   private JButton newSdkButton;
-  private ProjectSdksModel projectSdksModel;
+  private JComboBox defracSdkComboBox;
 
+  @NotNull
+  private final DefaultComboBoxModel defracSDKModel = new DefaultComboBoxModel();
   @NotNull
   private final DefaultComboBoxModel platformModel = new DefaultComboBoxModel();
 
-  private DefracFacetEditorForm(@NotNull final FacetEditorContext context,
-                                @NotNull final DefracFacet facet) {
+  private final Condition<SdkTypeId> sdkCreationFilter = new Condition<SdkTypeId>() {
+    @Override
+    public boolean value(final SdkTypeId sdkTypeId) {
+      return sdkTypeId == DefracSdkType.getInstance();
+    }
+  };
+
+  public DefracFacetEditorForm(@NotNull final FacetEditorContext context,
+                               @NotNull final DefracFacet facet,
+                               @NotNull final ProjectSdksModel sdkModel) {
     this.context = context;
 
     platformLabel.setLabelFor(platformComboBox);
@@ -106,8 +101,91 @@ public final class DefracFacetEditorForm {
                 DefracRootUtil.getBaseDir(facet),
                 DefaultSettingsFilter.INSTANCE));
 
-    defracSdkComboBox.setSetupButton(
-        newSdkButton, null, projectSdksModel, new JdkComboBox.NoneJdkComboBoxItem(), null, false);
+    defracSdkComboBox.setRenderer(new SdkRenderer());
+    defracSdkComboBox.setModel(defracSDKModel);
+
+    newSdkButton.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(final ActionEvent e) {
+        final DefaultActionGroup group = new DefaultActionGroup();
+
+        sdkModel.createAddActions(group, defracSdkComboBox, new Consumer<Sdk>() {
+          @Override
+          public void consume(final Sdk sdk) {
+            final JdkListConfigurable configurable = JdkListConfigurable.getInstance(context.getProject());
+            configurable.addJdkNode(sdk, false);
+
+            addDefracSdk(sdk);
+            setSelectedSdk(sdk);
+          }
+        }, sdkCreationFilter);
+
+        final DataContext dataContext = DataManager.getInstance().getDataContext(defracSdkComboBox);
+
+        if(group.getChildrenCount() > 1) {
+          JBPopupFactory.getInstance().createActionGroupPopup("Create New defrac SDK", group, dataContext, JBPopupFactory.ActionSelectionAid.MNEMONICS, false).showUnderneathOf(newSdkButton);
+        } else {
+          final AnActionEvent event = new AnActionEvent(null, dataContext, "unknown", new Presentation(""), ActionManager.getInstance(), 0);
+          group.getChildren(event)[0].actionPerformed(event);
+        }
+      }
+    });
+  }
+
+  public void init(@NotNull final List<Sdk> defracSdks, @Nullable final Sdk currentDefracSdk) {
+    addPlatforms(DefracPlatform.values());
+    setDefracSdks(defracSdks);
+    setSelectedSdk(currentDefracSdk);
+  }
+
+  public void addDefracSdk(@NotNull final Sdk sdk) {
+    if(!containsDefracSdk(sdk)) {
+      defracSDKModel.addElement(sdk);
+    }
+  }
+
+  public void removeDefracSdk(@NotNull final Sdk sdk) {
+    final int index = defracSdkIndex(sdk);
+
+    if(index != -1) {
+      defracSdkComboBox.removeItemAt(index);
+    }
+  }
+
+  private int defracSdkIndex(@NotNull final Sdk sdk) {
+    for(int i = 0; i < defracSDKModel.getSize(); ++i) {
+      if(sdk.getName().equals(((Sdk)defracSDKModel.getElementAt(i)).getName())) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  public boolean containsDefracSdk(@NotNull final Sdk sdk) {
+    return defracSdkIndex(sdk) != -1;
+  }
+
+  public void setDefracSdks(@NotNull final List<Sdk> sdks) {
+    defracSDKModel.removeAllElements();
+
+    for(final Sdk sdk : sdks) {
+      defracSDKModel.addElement(sdk);
+    }
+  }
+
+  public void setSelectedSdk(@Nullable final Sdk sdk) {
+    if(sdk != null) {
+      final int index = defracSdkIndex(sdk);
+
+      if(index != -1) {
+        defracSdkComboBox.setSelectedIndex(index);
+      }
+    }
+  }
+
+  @Nullable
+  public Sdk getSelectedSdk() {
+    return (Sdk) defracSdkComboBox.getSelectedItem();
   }
 
   public void addPlatform(@NotNull final DefracPlatform platform) {
@@ -115,7 +193,7 @@ public final class DefracFacetEditorForm {
   }
 
   public DefracPlatform getSelectedPlatform() {
-    return (DefracPlatform)platformComboBox.getSelectedItem();
+    return (DefracPlatform) platformComboBox.getSelectedItem();
   }
 
   public void setSelectedPlatform(@NotNull final DefracPlatform platform) {
@@ -128,23 +206,6 @@ public final class DefracFacetEditorForm {
 
   public boolean isMacroLibrary() {
     return macroLibraryCheckBox.isSelected();
-  }
-
-  public void setSkipJavac(final boolean value) {
-    skipJavacCheckBox.setSelected(value);
-  }
-
-  public boolean getSkipJavac() {
-    return skipJavacCheckBox.isSelected();
-  }
-
-  public void setSelectedSdk(@Nullable final Sdk sdk) {
-    defracSdkComboBox.setSelectedJdk(sdk);
-  }
-
-  @Nullable
-  public Sdk getSelectedSdk() {
-    return defracSdkComboBox.getSelectedJdk();
   }
 
   public JPanel getComponentPanel() {
@@ -168,15 +229,6 @@ public final class DefracFacetEditorForm {
     for(final DefracPlatform platform : platforms) {
       addPlatform(platform);
     }
-  }
-
-  private void createUIComponents() {
-    assert PROJECT_REFERENCE.get() != null;
-
-    projectSdksModel = ProjectStructureConfigurable.getInstance(PROJECT_REFERENCE.get()).getProjectJdksModel();
-    defracSdkComboBox = new JdkComboBox(
-        projectSdksModel,
-        DefracSdkUtil.IS_DEFRAC_VERSION);
   }
 
   private class FolderFieldListener implements ActionListener {
@@ -225,7 +277,7 @@ public final class DefracFacetEditorForm {
       if(initialFile == null) {
         String p = DefracRootUtil.getBasePath(context);
 
-        if (p != null) {
+        if(p != null) {
           initialFile = LocalFileSystem.getInstance().findFileByPath(p);
         }
       }

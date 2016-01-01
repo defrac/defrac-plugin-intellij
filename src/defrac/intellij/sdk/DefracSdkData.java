@@ -28,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.lang.ref.SoftReference;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -114,18 +115,18 @@ public final class DefracSdkData {
   }
 
   @NotNull
-  public DefracVersion[] getVersions() {
+  public List<DefracVersion> getVersions() {
     final File sdk = new File(location, FILE_SDK);
 
     if(!sdk.isDirectory()) {
-      return DefracVersion.EMPTY_ARRAY;
+      return Collections.emptyList();
     }
 
     final LinkedList<DefracVersion> versions = Lists.newLinkedList();
     final File[] files = sdk.listFiles();
 
     if(files == null) {
-      return DefracVersion.EMPTY_ARRAY;
+      return Collections.emptyList();
     }
 
     for(final File file : files) {
@@ -136,6 +137,6 @@ public final class DefracSdkData {
       versions.add(new DefracVersion(file.getName(), file));
     }
 
-    return versions.toArray(new DefracVersion[versions.size()]);
+    return versions;
   }
 }

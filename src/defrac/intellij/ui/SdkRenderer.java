@@ -16,19 +16,35 @@
 
 package defrac.intellij.ui;
 
+import com.intellij.ide.util.projectWizard.ProjectJdkListRenderer;
 import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.ui.ListCellRendererWrapper;
+import com.intellij.ui.SimpleTextAttributes;
+import defrac.intellij.sdk.DefracSdkAdditionalData;
+import defrac.intellij.sdk.DefracSdkUtil;
+import icons.DefracIcons;
 
 import javax.swing.*;
 
 /**
  *
  */
-public final class SdkRenderer extends ListCellRendererWrapper<Object> {
+public final class SdkRenderer extends ProjectJdkListRenderer {
   @Override
-  public void customize(JList list, Object value, int index, boolean selected, boolean hasFocus) {
+  public void doCustomize(JList list, Object value, int index, boolean selected, boolean hasFocus)  {
     if(value instanceof Sdk) {
-      setText(((Sdk)value).getName());
+      final Sdk sdk = (Sdk)value;
+
+      append(sdk.getName(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
+
+      if(DefracSdkUtil.isDefracSdk(sdk)) {
+        final DefracSdkAdditionalData data = (DefracSdkAdditionalData)sdk.getSdkAdditionalData();
+
+        setIcon(DefracIcons.Defrac16x16);
+
+        if(data != null && data.getJavaSdk() != null) {
+          append(" (" + data.getJavaSdk().getVersionString() + ")", SimpleTextAttributes.GRAYED_ATTRIBUTES);
+        }
+      }
     }
   }
 }

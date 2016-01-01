@@ -40,13 +40,14 @@ import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
 import com.intellij.xdebugger.impl.XDebugSessionImpl;
-import com.sun.javafx.beans.annotations.NonNull;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  *
@@ -71,7 +72,7 @@ public final class DefracRunner extends DefaultProgramRunner {
   public void execute(@NotNull final ExecutionEnvironment environment, @Nullable final Callback callback) throws ExecutionException {
     // we need to pass the run profile info to the compiler so
     // we can decide if this is a debug or release build
-    final DefracRunConfiguration configuration = (DefracRunConfiguration) environment.getRunnerAndConfigurationSettings().getConfiguration();
+    final DefracRunConfiguration configuration = (DefracRunConfiguration) checkNotNull(environment.getRunnerAndConfigurationSettings()).getConfiguration();
     configuration.DEBUG = DefaultDebugExecutor.EXECUTOR_ID.equals(environment.getExecutor().getId());
     super.execute(environment, callback);
   }
@@ -104,7 +105,7 @@ public final class DefracRunner extends DefaultProgramRunner {
       final DefracFacet facet = DefracFacet.getInstance(module);
       assert facet != null : DefracBundle.message("facet.error.facetMissing", module.getName());
 
-      return !facet.getPlatform().isAvailableOnHostOS()
+      return facet.getPlatform().isAvailableOnHostOS()
           && (!DefaultDebugExecutor.EXECUTOR_ID.equals(executorId) || supportsDebug(facet.getPlatform()));
 
     }
@@ -112,7 +113,7 @@ public final class DefracRunner extends DefaultProgramRunner {
     return false;
   }
 
-  private boolean supportsDebug(@NonNull final DefracPlatform platform) {
+  private boolean supportsDebug(@NotNull final DefracPlatform platform) {
     return platform == DefracPlatform.JVM || platform == DefracPlatform.WEB;
   }
 

@@ -101,6 +101,14 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
       throw new ExecutionException("Module not found");
     }
 
+    if(isNullOrEmpty(MAIN_CLASS_NAME)) {
+      throw new ExecutionException(DefracBundle.message("facet.error.noMain"));
+    }
+
+    if(!RunConfigurationUtil.isEntryPoint(module, MAIN_CLASS_NAME)) {
+      throw new ExecutionException(DefracBundle.message("run.error.illegalMainClass"));
+    }
+
     final DefracFacet facet = DefracFacet.getInstance(module);
 
     assert facet != null : DefracBundle.message("facet.error.facetMissing", module.getName());
@@ -115,13 +123,11 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
       throw new ExecutionException(DefracBundle.message("facet.error.noSettings"));
     }
 
-    MAIN_CLASS_NAME = config.getMain();
-
     final boolean isDebug = DefaultDebugExecutor.EXECUTOR_ID.equals(executor.getId());
 
     switch(facet.getPlatform()) {
       case JVM: return new JvmRunningState(environment, this, facet);
-      //case WEB: return new WebRunningState(environment, this);
+      case WEB: return new WebRunningState(environment, this);
       default:  return new DefracRunningState(environment, facet, isDebug);
     }
   }
@@ -134,7 +140,15 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
     final Module module = configurationModule.getModule();
 
     if(module == null) {
-      return;
+      throw new RuntimeConfigurationError("Module not found");
+    }
+
+    if(isNullOrEmpty(MAIN_CLASS_NAME)) {
+      throw new RuntimeConfigurationError(DefracBundle.message("facet.error.noMain"));
+    }
+
+    if(!RunConfigurationUtil.isEntryPoint(module, MAIN_CLASS_NAME)) {
+      throw new RuntimeConfigurationError(DefracBundle.message("run.error.illegalMainClass"));
     }
 
     final DefracFacet facet = DefracFacet.getInstance(module);
@@ -163,10 +177,6 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
 
     if(config == null) {
       throw new RuntimeConfigurationError(DefracBundle.message("facet.error.noSettings"));
-    }
-
-    if(isNullOrEmpty(config.getMain())) {
-      throw new RuntimeConfigurationError(DefracBundle.message("facet.error.noMain"));
     }
   }
 
@@ -250,6 +260,10 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
   @Override
   public String getRunClass() {
     return MAIN_CLASS_NAME;
+  }
+
+  public void setRunClass(final String value) {
+    MAIN_CLASS_NAME = value;
   }
 
   @Nullable
