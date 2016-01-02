@@ -83,13 +83,14 @@ public final class DefracRunner extends DefaultProgramRunner {
     if(DefaultDebugExecutor.EXECUTOR_ID.equals(environment.getExecutor().getId())) {
       final RemoteConnection connection = new RemoteConnection(true, "127.0.0.1", "5005", true);
       return attachVirtualMachine(state, environment, connection, false);
-    } else {
-      ExecutionResult executionResult = state.execute(environment.getExecutor(), this);
-      if (executionResult == null) {
-        return null;
-      }
-      return new RunContentBuilder(executionResult, environment).showRunContent(environment.getContentToReuse());
     }
+
+    final ExecutionResult executionResult = state.execute(environment.getExecutor(), this);
+
+    if(executionResult == null) {
+      return null;
+    }
+    return new RunContentBuilder(executionResult, environment).showRunContent(environment.getContentToReuse());
   }
 
   @Override
@@ -103,18 +104,18 @@ public final class DefracRunner extends DefaultProgramRunner {
       }
 
       final DefracFacet facet = DefracFacet.getInstance(module);
+
       assert facet != null : DefracBundle.message("facet.error.facetMissing", module.getName());
 
+      final DefracPlatform platform = facet.getPlatform();
+
+      // TODO: add platform when debug is available
       return facet.getPlatform().isAvailableOnHostOS()
-          && (!DefaultDebugExecutor.EXECUTOR_ID.equals(executorId) || supportsDebug(facet.getPlatform()));
+          && (!DefaultDebugExecutor.EXECUTOR_ID.equals(executorId) || platform == DefracPlatform.JVM || platform == DefracPlatform.WEB);
 
     }
 
     return false;
-  }
-
-  private boolean supportsDebug(@NotNull final DefracPlatform platform) {
-    return platform == DefracPlatform.JVM || platform == DefracPlatform.WEB;
   }
 
   @Nullable

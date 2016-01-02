@@ -123,12 +123,17 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
       throw new ExecutionException(DefracBundle.message("facet.error.noSettings"));
     }
 
-    final boolean isDebug = DefaultDebugExecutor.EXECUTOR_ID.equals(executor.getId());
+    DEBUG = DefaultDebugExecutor.EXECUTOR_ID.equals(environment.getExecutor().getId());
 
     switch(facet.getPlatform()) {
-      case JVM: return new JvmRunningState(environment, this, facet);
-      case WEB: return new WebRunningState(environment, this);
-      default:  return new DefracRunningState(environment, facet, isDebug);
+      case JVM:
+        return new JvmRunningState(environment, this, facet);
+      case WEB:
+        return new WebRunningState(environment, this, facet);
+      case ANDROID:
+      case IOS:
+      default:
+        return new DefracRunningState(environment, facet);
     }
   }
 
@@ -223,7 +228,7 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
       return super.suggestedName();
     }
 
-    return name+" ("+facet.getConfiguration().getPlatform().displayName+')';
+    return name + " (" + facet.getConfiguration().getPlatform().displayName + ')';
   }
 
   @Override

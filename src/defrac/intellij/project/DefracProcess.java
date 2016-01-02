@@ -192,7 +192,7 @@ public final class DefracProcess extends DefracProjectComponent {
       processHandler = KillableColoredProcessHandler.create(cmdLine);
       processHandler.setShouldDestroyProcessRecursively(true);
       processHandler.setHasPty(true);
-      ipc = DefracIpc.getInstance(processHandler);
+      ipc = DefracIpc.create(processHandler);
       processHandler.startNotify();
     } catch(final ExecutionException executionException) {
       processHandler = null;

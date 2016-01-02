@@ -45,7 +45,7 @@ import java.util.regex.Pattern;
  */
 public final class DefracIpc extends ProcessAdapter {
   @NotNull
-  private static final Pattern RESULT_PATTERN = Pattern.compile("Command completed with exit code (\\d)");
+  private static final Pattern RESULT_PATTERN = Pattern.compile("Command finished with exit code (\\d)");
 
   public interface ExecutorListener {
     void onMessage(@NotNull final DefracCommandLineParser.Message message);
@@ -166,7 +166,7 @@ public final class DefracIpc extends ProcessAdapter {
   }
 
   @NotNull
-  public static DefracIpc getInstance(@NotNull final ProcessHandler process) {
+  public static DefracIpc create(@NotNull final ProcessHandler process) {
     return new DefracIpc(process);
   }
 
@@ -214,6 +214,11 @@ public final class DefracIpc extends ProcessAdapter {
   @NotNull
   public Executor debug(@NotNull final DefracPlatform platform, final int port) {
     return new Executor(platform, DefracCommands.DEBUG, String.valueOf(port));
+  }
+
+  @NotNull
+  public Executor test(@NotNull final DefracPlatform platform, @NotNull final String pattern) {
+    return new Executor(platform, DefracCommands.TEST, pattern);
   }
 
   @NotNull

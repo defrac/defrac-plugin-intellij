@@ -24,7 +24,6 @@ import com.intellij.execution.application.BaseJavaApplicationCommandLineState;
 import com.intellij.execution.configurations.JavaParameters;
 import com.intellij.execution.configurations.JavaRunConfigurationModule;
 import com.intellij.execution.configurations.ParametersList;
-import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.util.JavaParametersUtil;
 import com.intellij.openapi.util.SystemInfo;
@@ -78,9 +77,7 @@ public final class JvmRunningState extends BaseJavaApplicationCommandLineState<D
       throw new ExecutionException(DefracBundle.message("facet.error.noSettings"));
     }
 
-    final boolean isDebug =
-           DefaultDebugExecutor.EXECUTOR_ID.equals(getEnvironment().getExecutor().getId())
-        || config.isDebug();
+    final boolean isDebug = getConfiguration().DEBUG;
 
     final String nativeLibs;
 

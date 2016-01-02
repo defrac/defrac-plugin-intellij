@@ -24,7 +24,6 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.runners.ExecutionEnvironment;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.xdebugger.DefaultDebugProcessHandler;
 import defrac.intellij.DefracBundle;
@@ -39,32 +38,29 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class WebRunningState extends CommandLineState {
   @NotNull
+  private final DefracFacet facet;
+  @NotNull
   private final DefracRunConfiguration configuration;
 
-
   public WebRunningState(@NotNull final ExecutionEnvironment environment,
-                         @NotNull final DefracRunConfiguration configuration) {
+                         @NotNull final DefracRunConfiguration configuration,
+                         @NotNull final DefracFacet facet) {
     super(environment);
     this.configuration = configuration;
+    this.facet = facet;
   }
 
   @NotNull
   @Override
   protected ProcessHandler startProcess() throws ExecutionException {
-    final Module module = configuration.getConfigurationModule().getModule();
-    final DefracFacet facet = DefracFacet.getInstance(module);
+    final Project project = facet.getModule().getProject();
 
-    if(facet == null) {
-      throw new ExecutionException(DefracBundle.message("facet.error.facetMissing", module));
-    }
-
-    final DefracIpc ipc = DefracIpc.getInstance(module.getProject());
+    final DefracIpc ipc = DefracIpc.getInstance(project);
 
     if(ipc == null) {
       throw new ExecutionException(DefracBundle.message("ipc.error.ipcMissing"));
     }
 
-    final Project project = module.getProject();
     final ProcessHandler process;
 
     final DefracIpc.Executor executor;
@@ -81,10 +77,16 @@ public final class WebRunningState extends CommandLineState {
       @Override
       public void onMessage(@NotNull final DefracCommandLineParser.Message message) {
         if(message.isError()) {
-          process.notifyTextAvailable(message.text + "\n", ProcessOutputTypes.STDERR);
-        } else {
-          process.notifyTextAvailable(message.text + "\n", ProcessOutputTypes.STDOUT);
+          if(message.text.startsWith("Uncaught")) {
+            // end of error message
+            onError(new RuntimeException(message.text));
+          } else {
+            process.notifyTextAvailable(message.text + "\n", ProcessOutputTypes.STDERR);
+          }
+          return;
         }
+
+        process.notifyTextAvailable(message.text + "\n", ProcessOutputTypes.STDOUT);
 
         if(message.text.equals("Connection to Chrome lost")) {
           // cancel executor since we cannot listen to chrome anymore
@@ -95,6 +97,8 @@ public final class WebRunningState extends CommandLineState {
       @Override
       public void onError(@NotNull final Exception exception) {
         process.notifyTextAvailable(exception.getMessage() + "\n", ProcessOutputTypes.STDERR);
+
+        process.notifyTextAvailable("\nProcess finished with exit code 1\n", ProcessOutputTypes.SYSTEM);
 
         executor.dispose();
 
@@ -108,7 +112,7 @@ public final class WebRunningState extends CommandLineState {
 
       @Override
       public void onCancel() {
-        process.notifyTextAvailable("\nProcess finished with exit code 1\n", ProcessOutputTypes.SYSTEM);
+        process.notifyTextAvailable("\nProcess finished with exit code 0\n", ProcessOutputTypes.SYSTEM);
 
         executor.dispose();
 

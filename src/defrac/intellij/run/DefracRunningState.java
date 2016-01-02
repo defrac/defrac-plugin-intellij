@@ -36,15 +36,11 @@ public final class DefracRunningState extends CommandLineState {
   @NotNull
   private final DefracFacet facet;
 
-  private final boolean isDebug;
-
   public DefracRunningState(@NotNull final ExecutionEnvironment environment,
-                            @NotNull final DefracFacet facet,
-                            final boolean isDebug) {
+                            @NotNull final DefracFacet facet) {
     super(environment);
 
     this.facet = facet;
-    this.isDebug = isDebug;
   }
 
   @NotNull
