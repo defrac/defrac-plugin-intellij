@@ -272,6 +272,12 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
     return dot == -1 ? mainScreenName : mainScreenName.substring(dot + 1);
   }
 
+  @NotNull
+  public String getJavaMainName() {
+    final String packageName = getJavaPackageName();
+    return packageName.isEmpty() ? "Main" : packageName + ".Main";
+  }
+
   @Override
   public boolean isSuitableSdkType(final SdkTypeId sdkType) {
     return sdkType == DefracSdkType.getInstance();
@@ -461,7 +467,7 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
             setVersion(isNullOrEmpty(version) ? "1.0" : version);
 
     if(!mainScreenName.isEmpty()) {
-      config.setMain(mainScreenName);
+      config.setMain(getJavaMainName());
     }
 
     config.setTargets(targets());
