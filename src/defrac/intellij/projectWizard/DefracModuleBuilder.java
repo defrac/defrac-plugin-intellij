@@ -84,9 +84,10 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
     }
 
     @Override
-    public void createTemplate(@NotNull final Project project, @NotNull final File baseDir,
+    public void createTemplate(@NotNull final Project project,
+                               @NotNull final File baseDir,
                                @NotNull final String packageName,
-                               @NotNull final String className,
+                               @NotNull final String mainScreenName,
                                final boolean isLambdaSupported) throws IOException {
       final String packagePath = packageName.replace('.', File.separatorChar);
 
@@ -94,21 +95,21 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
       final File genericPackageDir = new File(genericSrcDir, packagePath);
 
       write(project,
-          new File(genericPackageDir, className + ".java"),
+          new File(genericPackageDir, mainScreenName + ".java"),
           isLambdaSupported
               ? DefracFileTemplateProvider.MAIN_SCREEN_8
               : DefracFileTemplateProvider.MAIN_SCREEN
-          , packageName, className, getApplicationName());
+          , packageName, mainScreenName, getApplicationName());
 
       write(project,
           new File(genericPackageDir, "DisplayListController.java"),
           isLambdaSupported
               ? DefracFileTemplateProvider.DISPLAY_LIST_CONTROLLER_8
               : DefracFileTemplateProvider.DISPLAY_LIST_CONTROLLER
-          , packageName, className, getApplicationName());
+          , packageName, mainScreenName, getApplicationName());
 
-      createMain(androidSupported, project, baseDir, packagePath, packageName, className, DefracPlatform.ANDROID, DefracFileTemplateProvider.MAIN_ANDROID);
-      createMain(iosSupported, project, baseDir, packagePath, packageName, className, DefracPlatform.IOS, DefracFileTemplateProvider.MAIN_IOS);
+      createMain(androidSupported, project, baseDir, packagePath, packageName, mainScreenName, DefracPlatform.ANDROID, DefracFileTemplateProvider.MAIN_ANDROID);
+      createMain(iosSupported, project, baseDir, packagePath, packageName, mainScreenName, DefracPlatform.IOS, DefracFileTemplateProvider.MAIN_IOS);
 
       if(jvmSupported) {
         final File jvmSrcDir = new File(baseDir, "src" + File.separator + "java." + DefracPlatform.JVM.name);
@@ -119,10 +120,10 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
             isLambdaSupported
                 ? DefracFileTemplateProvider.MAIN_JVM_8
                 : DefracFileTemplateProvider.MAIN_JVM,
-            packageName, className, getApplicationName());
+            packageName, mainScreenName, getApplicationName());
       }
 
-      createMain(webSupported, project, baseDir, packagePath, packageName, className, DefracPlatform.WEB, DefracFileTemplateProvider.MAIN_WEB);
+      createMain(webSupported, project, baseDir, packagePath, packageName, mainScreenName, DefracPlatform.WEB, DefracFileTemplateProvider.MAIN_WEB);
     }
 
     private void createMain(final boolean supported,
@@ -130,7 +131,7 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
                             @NotNull final File baseDir,
                             @NotNull final String packagePath,
                             @NotNull final String packageName,
-                            @NotNull final String className,
+                            @NotNull final String mainScreenName,
                             @NotNull final DefracPlatform platform,
                             @NotNull final String template) throws IOException {
       if(supported) {
@@ -138,7 +139,7 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
         final File packageDir = new File(srcDir, packagePath);
 
         write(project,
-            new File(packageDir, "Main.java"), template, packageName, className, getApplicationName());
+            new File(packageDir, "Main.java"), template, packageName, mainScreenName, getApplicationName());
       }
     }
   }
@@ -161,14 +162,14 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
     public void createTemplate(@NotNull final Project project,
                                @NotNull final File baseDir,
                                @NotNull final String packageName,
-                               @NotNull final String className,
+                               @NotNull final String mainScreenName,
                                final boolean isLambdaSupported) throws IOException {
       final File sourceDir = new File(baseDir, "src" + File.separator + "java.ios");
       final File packageDir = new File(sourceDir, packageName.replace('.', File.separatorChar));
 
-      write(project, new File(packageDir, className + ".java"), DefracFileTemplateProvider.IOS_APP, packageName, className, getApplicationName());
-      write(project, new File(packageDir, className + "Controller.java"), DefracFileTemplateProvider.IOS_APP_CONTROLLER, packageName, className, getApplicationName());
-      write(project, new File(packageDir, className + "Delegate.java"), DefracFileTemplateProvider.IOS_APP_DELEGATE, packageName, className, getApplicationName());
+      write(project, new File(packageDir, mainScreenName + ".java"), DefracFileTemplateProvider.IOS_APP, packageName, mainScreenName, getApplicationName());
+      write(project, new File(packageDir, mainScreenName + "Controller.java"), DefracFileTemplateProvider.IOS_APP_CONTROLLER, packageName, mainScreenName, getApplicationName());
+      write(project, new File(packageDir, mainScreenName + "Delegate.java"), DefracFileTemplateProvider.IOS_APP_DELEGATE, packageName, mainScreenName, getApplicationName());
     }
   }
 
@@ -189,7 +190,7 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
     public void createTemplate(@NotNull final Project project,
                                @NotNull final File baseDir,
                                @NotNull final String packageName,
-                               @NotNull final String className,
+                               @NotNull final String mainScreenName,
                                final boolean isLambdaSupported) throws IOException {
       // no template
     }
@@ -200,7 +201,7 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
   @NotNull
   private String packageName = "";
   @NotNull
-  private String mainClassName = "";
+  private String mainScreenName = "";
   @NotNull
   private String version = "1.0";
   @Nullable
@@ -235,8 +236,8 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
     packageName = value;
   }
 
-  public void setMainClassName(@NotNull final String value) {
-    mainClassName = value;
+  public void setMainScreenName(@NotNull final String value) {
+    mainScreenName = value;
   }
 
   public void setWebSupported(final boolean value) {
@@ -261,14 +262,14 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
 
   @NotNull
   public String getJavaPackageName() {
-    final int dot = mainClassName.lastIndexOf('.');
-    return dot == -1 ? "" : mainClassName.substring(0, dot);
+    final int dot = mainScreenName.lastIndexOf('.');
+    return dot == -1 ? "" : mainScreenName.substring(0, dot);
   }
 
   @NotNull
-  public String getJavaClassName() {
-    final int dot = mainClassName.lastIndexOf('.');
-    return dot == -1 ? mainClassName : mainClassName.substring(dot + 1);
+  public String getJavaMainScreenName() {
+    final int dot = mainScreenName.lastIndexOf('.');
+    return dot == -1 ? mainScreenName : mainScreenName.substring(dot + 1);
   }
 
   @Override
@@ -374,7 +375,7 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
     final LanguageLevel languageLevel =
         LanguageLevelProjectExtension.getInstance(project).getLanguageLevel();
 
-    createTemplate(project, baseDir, getJavaPackageName(), getJavaClassName(), languageLevel.isAtLeast(LanguageLevel.JDK_1_8));
+    createTemplate(project, baseDir, getJavaPackageName(), getJavaMainScreenName(), languageLevel.isAtLeast(LanguageLevel.JDK_1_8));
   }
 
   public abstract void createTemplate(@NotNull final Project project,
@@ -459,8 +460,8 @@ public abstract class DefracModuleBuilder extends ModuleBuilder {
             setPackage(packageName).
             setVersion(isNullOrEmpty(version) ? "1.0" : version);
 
-    if(!mainClassName.isEmpty()) {
-      config.setMain(mainClassName);
+    if(!mainScreenName.isEmpty()) {
+      config.setMain(mainScreenName);
     }
 
     config.setTargets(targets());

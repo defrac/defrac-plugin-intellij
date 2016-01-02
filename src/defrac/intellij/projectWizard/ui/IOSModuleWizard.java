@@ -29,18 +29,18 @@ import javax.swing.*;
 public final class IOSModuleWizard {
   private JPanel panel;
   private JTextField applicationNameTextField;
-  private JTextField mainClassNameTextField;
+  private JTextField mainScreenNameTextField;
   private JTextField packageNameTextField;
   private JLabel errorLabel;
 
   public IOSModuleWizard(@Nullable final String name) {
     DefracWizardUtil.initializeApplicationSettingsInput(applicationNameTextField, packageNameTextField, name);
-    DefracWizardUtil.handleApplicationSettingsInput(applicationNameTextField, packageNameTextField, mainClassNameTextField, errorLabel, "Main");
-    DefracWizardUtil.handleMainClassSettingsInput(mainClassNameTextField, errorLabel);
+    DefracWizardUtil.handleApplicationSettingsInput(applicationNameTextField, packageNameTextField, mainScreenNameTextField, errorLabel, "MainScreen");
+    DefracWizardUtil.handleMainScreenSettingsInput(mainScreenNameTextField, errorLabel);
 
     errorLabel.setForeground(JBColor.RED);
 
-    mainClassNameTextField.setText(DefracWizardUtil.DEFAULT_MAIN_CLASS_NAME);
+    mainScreenNameTextField.setText(DefracWizardUtil.DEFAULT_MAIN_CLASS_NAME);
   }
 
   @NotNull
@@ -54,8 +54,8 @@ public final class IOSModuleWizard {
   }
 
   @NotNull
-  public String getMainClassName() {
-    return mainClassNameTextField.getText().trim();
+  public String getMainScreenName() {
+    return mainScreenNameTextField.getText().trim();
   }
 
   @NotNull
@@ -75,7 +75,7 @@ public final class IOSModuleWizard {
       throw new ConfigurationException(message);
     }
 
-    message = DefracWizardUtil.validateMainClassName(getMainClassName());
+    message = DefracWizardUtil.validateMainScreenName(getMainScreenName());
 
     if(!message.isEmpty()) {
       throw new ConfigurationException(message);

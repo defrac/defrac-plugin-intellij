@@ -56,7 +56,7 @@ public final class IOSModuleWizardStep extends ModuleWizardStep {
   public void updateDataModel() {
     moduleBuilder.setApplicationName(wizard.getApplicationName());
     moduleBuilder.setPackageName(wizard.getPackageName());
-    moduleBuilder.setMainClassName(wizard.getMainClassName());
+    moduleBuilder.setMainScreenName(wizard.getMainScreenName());
 
     moduleBuilder.setIOSSupported(true);
   }

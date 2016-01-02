@@ -34,18 +34,18 @@ public final class GenericDefracModuleWizard {
   private JCheckBox iosCheckBox;
   private JCheckBox androidCheckBox;
   private JCheckBox jvmCheckBox;
-  private JTextField mainClassNameTextField;
+  private JTextField mainScreenNameTextField;
   private JLabel errorLabel;
 
   public GenericDefracModuleWizard(@Nullable final String name) {
     DefracWizardUtil.initializeApplicationSettingsInput(applicationNameTextField, packageNameTextField, name);
-    DefracWizardUtil.handleApplicationSettingsInput(applicationNameTextField, packageNameTextField, mainClassNameTextField, errorLabel, "Main");
+    DefracWizardUtil.handleApplicationSettingsInput(applicationNameTextField, packageNameTextField, mainScreenNameTextField, errorLabel, "MainScreen");
     DefracWizardUtil.handlePlatformsSettingsInput(webCheckBox, iosCheckBox, androidCheckBox, jvmCheckBox, errorLabel);
-    DefracWizardUtil.handleMainClassSettingsInput(mainClassNameTextField, errorLabel);
+    DefracWizardUtil.handleMainScreenSettingsInput(mainScreenNameTextField, errorLabel);
 
     errorLabel.setForeground(JBColor.RED);
 
-    mainClassNameTextField.setText(DefracWizardUtil.DEFAULT_MAIN_SCREEN_CLASS_NAME);
+    mainScreenNameTextField.setText(DefracWizardUtil.DEFAULT_MAIN_SCREEN_CLASS_NAME);
   }
 
   @NotNull
@@ -75,8 +75,8 @@ public final class GenericDefracModuleWizard {
   }
 
   @NotNull
-  public String getMainClassName() {
-    return mainClassNameTextField.getText().trim();
+  public String getMainScreenName() {
+    return mainScreenNameTextField.getText().trim();
   }
 
   @NotNull
@@ -96,7 +96,7 @@ public final class GenericDefracModuleWizard {
       throw new ConfigurationException(message);
     }
 
-    message = DefracWizardUtil.validateMainClassName(getMainClassName());
+    message = DefracWizardUtil.validateMainScreenName(getMainScreenName());
 
     if(!message.isEmpty()) {
       throw new ConfigurationException(message);
