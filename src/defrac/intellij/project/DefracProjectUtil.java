@@ -31,6 +31,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -84,6 +86,22 @@ public final class DefracProjectUtil {
     }
 
     return platformModules.toArray(new Module[platformModules.size()]);
+  }
+
+  @NotNull
+  public static List<Module> getModules(final Project project) {
+    final List<Module> result = new ArrayList<Module>();
+    final Module[] modules = ModuleManager.getInstance(project).getModules();
+
+    for(final Module module : modules) {
+      final DefracFacet facet = DefracFacet.getInstance(module);
+
+      if(facet != null && !facet.getPlatform().isGeneric()) {
+        result.add(module);
+      }
+    }
+
+    return result;
   }
 
   private DefracProjectUtil() {}

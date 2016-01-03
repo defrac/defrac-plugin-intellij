@@ -34,9 +34,9 @@ public final class DefracConfigurationType extends ConfigurationTypeBase {
   @NonNls
   public static final String ID = "DEFRAC";
   @NotNull
-  public static final String DISPLAY_NAME = DefracBundle.message("config.name");
+  public static final String DISPLAY_NAME = DefracBundle.message("config.run.name");
   @NotNull
-  public static final String DESCRIPTION = DefracBundle.message("config.description");
+  public static final String DESCRIPTION = DefracBundle.message("config.run.description");
 
   public static DefracConfigurationType getInstance() {
     return ConfigurationTypeUtil.findConfigurationType(DefracConfigurationType.class);

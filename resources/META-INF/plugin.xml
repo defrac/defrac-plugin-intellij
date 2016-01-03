@@ -48,6 +48,7 @@
   <idea-version since-build="141.177"/>
 
   <depends>com.intellij.modules.java</depends>
+  <depends>com.intellij.modules.json</depends>
   <depends>com.intellij.modules.xdebugger</depends>
 
   <resource-bundle>defrac.intellij.DefracBundle</resource-bundle>

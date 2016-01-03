@@ -40,7 +40,21 @@ public final class RunConfigurationUtil {
   private static final String ANDROID_ACTIVITY = "android.app.Activity";
   private static final String IOS_DELEGATE = "defrac.ios.uikit.UIApplicationDelegate";
 
-  public static boolean isEntryPoint(@NotNull final Module module, @NotNull final String className) {
+  public static boolean isValidMainClass(@NotNull final Module module, @NotNull final PsiElement element) {
+    final DefracFacet facet = DefracFacet.getInstance(module);
+
+    if(facet == null || facet.getModule() != module) {
+      return false;
+    }
+
+    if(facet.getPlatform().isAndroid()) {
+      return findActivityClass(module, element) != null;
+    }
+
+    return findMainClass(element) != null;
+  }
+
+  public static boolean isValidMainClass(@NotNull final Module module, @NotNull final String className) {
     final DefracFacet facet = DefracFacet.getInstance(module);
 
     if(facet == null) {

@@ -26,7 +26,6 @@ import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAction;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.DefaultJDOMExternalizer;
 import com.intellij.openapi.util.InvalidDataException;
@@ -34,14 +33,13 @@ import com.intellij.openapi.util.WriteExternalException;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.config.DefracConfigOracle;
 import defrac.intellij.facet.DefracFacet;
+import defrac.intellij.project.DefracProjectUtil;
 import defrac.intellij.run.ui.DefracRunConfigurationEditor;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -71,18 +69,7 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
 
   @Override
   public Collection<Module> getValidModules() {
-    final List<Module> result = new ArrayList<Module>();
-    final Module[] modules = ModuleManager.getInstance(getProject()).getModules();
-
-    for(final Module module : modules) {
-      final DefracFacet facet = DefracFacet.getInstance(module);
-
-      if(facet != null && !facet.getPlatform().isGeneric()) {
-        result.add(module);
-      }
-    }
-
-    return result;
+    return DefracProjectUtil.getModules(getProject());
   }
 
   @NotNull
@@ -98,15 +85,15 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
     final Module module = getConfigurationModule().getModule();
 
     if(module == null) {
-      throw new ExecutionException("Module not found");
+      throw new ExecutionException(DefracBundle.message("config.run.error.noModule"));
     }
 
     if(isNullOrEmpty(MAIN_CLASS_NAME)) {
-      throw new ExecutionException(DefracBundle.message("facet.error.noMain"));
+      throw new ExecutionException(DefracBundle.message("config.run.error.noMain"));
     }
 
-    if(!RunConfigurationUtil.isEntryPoint(module, MAIN_CLASS_NAME)) {
-      throw new ExecutionException(DefracBundle.message("run.error.illegalMainClass"));
+    if(!RunConfigurationUtil.isValidMainClass(module, MAIN_CLASS_NAME)) {
+      throw new ExecutionException(DefracBundle.message("config.run.error.illegalMain"));
     }
 
     final DefracFacet facet = DefracFacet.getInstance(module);
@@ -145,15 +132,15 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
     final Module module = configurationModule.getModule();
 
     if(module == null) {
-      throw new RuntimeConfigurationError("Module not found");
+      throw new RuntimeConfigurationError(DefracBundle.message("config.run.error.noModule"));
     }
 
     if(isNullOrEmpty(MAIN_CLASS_NAME)) {
-      throw new RuntimeConfigurationError(DefracBundle.message("facet.error.noMain"));
+      throw new RuntimeConfigurationError(DefracBundle.message("config.run.error.noMain"));
     }
 
-    if(!RunConfigurationUtil.isEntryPoint(module, MAIN_CLASS_NAME)) {
-      throw new RuntimeConfigurationError(DefracBundle.message("run.error.illegalMainClass"));
+    if(!RunConfigurationUtil.isValidMainClass(module, MAIN_CLASS_NAME)) {
+      throw new RuntimeConfigurationError(DefracBundle.message("config.run.error.illegalMain"));
     }
 
     final DefracFacet facet = DefracFacet.getInstance(module);
