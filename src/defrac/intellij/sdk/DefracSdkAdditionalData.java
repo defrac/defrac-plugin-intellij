@@ -21,6 +21,7 @@ import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.SdkModel;
 import com.intellij.openapi.projectRoots.ValidatableSdkAdditionalData;
+import defrac.intellij.DefracBundle;
 import org.jdom.Element;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -71,7 +72,7 @@ public final class DefracSdkAdditionalData implements ValidatableSdkAdditionalDa
   @Override
   public void checkValid(@Nullable final SdkModel sdkModel) throws ConfigurationException {
     if(getJavaSdk() == null) {
-      throw new ConfigurationException("TODO");//TODO(joa): message
+      throw new ConfigurationException(DefracBundle.message("sdk.error.jdkNotFound.configure"));
     }
   }
 
