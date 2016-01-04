@@ -38,8 +38,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -80,9 +78,7 @@ public final class DefracProcess extends DefracProjectComponent {
         processHandler = null;
         ipc = null;
 
-        final CyclicBarrier barrier = new CyclicBarrier(2);
-
-        UIUtil.invokeLaterIfNeeded(new Runnable() {
+        UIUtil.invokeAndWaitIfNeeded(new Runnable() {
           @Override
           public void run() {
             final ConsoleView console =
@@ -101,24 +97,8 @@ public final class DefracProcess extends DefracProjectComponent {
             if(console != null && processHandler != null) {
               console.attachToProcess(processHandler);
             }
-
-            try {
-              barrier.await();
-            } catch(final InterruptedException interrupt) {
-              Thread.currentThread().interrupt();
-            } catch(final BrokenBarrierException brokenBarrier) {
-              throw new IllegalStateException(brokenBarrier);
-            }
           }
         });
-
-        try {
-          barrier.await();
-        } catch(final InterruptedException interrupt) {
-          Thread.currentThread().interrupt();
-        } catch(final BrokenBarrierException brokenBarrier) {
-          throw new IllegalStateException(brokenBarrier);
-        }
       }
 
       return;

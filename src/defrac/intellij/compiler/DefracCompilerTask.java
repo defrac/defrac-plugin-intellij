@@ -31,11 +31,6 @@ import defrac.intellij.run.DefracRunConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 /**
  *
  */
@@ -80,9 +75,7 @@ public abstract class DefracCompilerTask implements CompileTask {
       context.getProgressIndicator().pushState();
       setProgressIndicatorText(context, facet);
 
-      final CyclicBarrier barrier = new CyclicBarrier(2);
-
-      UIUtil.invokeLaterIfNeeded(new Runnable() {
+      UIUtil.invokeAndWaitIfNeeded(new Runnable() {
         @Override
         public void run() {
           final ConsoleView console =
@@ -91,31 +84,8 @@ public abstract class DefracCompilerTask implements CompileTask {
           if(console != null) {
             console.clear();
           }
-
-          awaitBarrier();
-        }
-
-        private void awaitBarrier() {
-          try {
-            barrier.await();
-          } catch(final InterruptedException interrupt) {
-            Thread.currentThread().interrupt();
-          } catch(final BrokenBarrierException brokenBarrier) {
-            // ignore broken barrier state due to timeout
-          }
         }
       });
-
-      try {
-        barrier.await(256, TimeUnit.MILLISECONDS);
-      } catch(final InterruptedException interrupt) {
-        Thread.currentThread().interrupt();
-      } catch(final BrokenBarrierException brokenBarrier) {
-        throw new IllegalStateException(brokenBarrier);
-      } catch(final TimeoutException timeout) {
-        // simply continue with compilation if ui-thread wasn't
-        // able to show and clear console view in time
-      }
 
       return doCompile(context, defracRunConfiguration, facet);
     } finally {

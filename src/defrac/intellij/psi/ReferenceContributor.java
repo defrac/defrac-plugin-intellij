@@ -19,10 +19,7 @@ package defrac.intellij.psi;
 import com.intellij.json.JsonLanguage;
 import com.intellij.json.psi.JsonProperty;
 import com.intellij.lang.java.JavaLanguage;
-import com.intellij.psi.PsiAnnotation;
-import com.intellij.psi.PsiLiteralExpression;
-import com.intellij.psi.PsiReferenceContributor;
-import com.intellij.psi.PsiReferenceRegistrar;
+import com.intellij.psi.*;
 import org.jetbrains.annotations.NotNull;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
@@ -35,7 +32,6 @@ public final class ReferenceContributor extends PsiReferenceContributor {
 
   @Override
   public void registerReferenceProviders(@NotNull final PsiReferenceRegistrar registrar) {
-    // TODO(joa): withReference of a multi-platform / macro class
     registrar.registerReferenceProvider(
         psiElement(PsiLiteralExpression.class).
             withSuperParent(3, psiElement(PsiAnnotation.class)),
