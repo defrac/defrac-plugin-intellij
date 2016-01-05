@@ -17,10 +17,7 @@
 package defrac.intellij.run;
 
 import com.google.common.collect.Maps;
-import com.intellij.execution.CommonJavaRunConfigurationParameters;
-import com.intellij.execution.ExecutionException;
-import com.intellij.execution.Executor;
-import com.intellij.execution.ExternalizablePath;
+import com.intellij.execution.*;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.runners.ExecutionEnvironment;
@@ -30,6 +27,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.DefaultJDOMExternalizer;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
+import com.intellij.psi.PsiClass;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.config.DefracConfigOracle;
 import defrac.intellij.facet.DefracFacet;
@@ -42,6 +40,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collection;
 import java.util.Map;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
@@ -51,6 +50,8 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
     implements CommonJavaRunConfigurationParameters, RunConfigurationWithSuppressedDefaultDebugAction, RunConfigurationWithSuppressedDefaultRunAction {
   public String MAIN_CLASS_NAME;
   public boolean DEBUG;
+  public boolean TEST;
+  public String PATTERN;
   public String VM_PARAMETERS;
   public String PROGRAM_PARAMETERS;
   public String WORKING_DIRECTORY;
@@ -198,24 +199,14 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
         getConfigurationModule();
 
     final Module module = configurationModule.getModule();
+    final StringBuilder builder = new StringBuilder();
+    builder.append(checkNotNull(JavaExecutionUtil.getShortClassName(getCompileTimeQualifiedRunClass())));
 
-    if(module == null) {
-      return super.suggestedName();
+    if(module != null) {
+      builder.append(" (").append(module.getName()).append(')');
     }
 
-    final DefracFacet facet = DefracFacet.getInstance(module);
-
-    if(facet == null) {
-      return super.suggestedName();
-    }
-
-    final String name = module.getName();
-
-    if(isNullOrEmpty(name)) {
-      return super.suggestedName();
-    }
-
-    return name + " (" + facet.getConfiguration().getPlatform().displayName + ')';
+    return builder.toString();
   }
 
   @Override
@@ -254,8 +245,13 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
     return MAIN_CLASS_NAME;
   }
 
-  public void setRunClass(final String value) {
-    MAIN_CLASS_NAME = value;
+  public void setRunClass(@Nullable final PsiClass aClass) {
+    MAIN_CLASS_NAME = aClass != null ? JavaExecutionUtil.getRuntimeQualifiedName(aClass) : null;
+  }
+
+  @Nullable
+  public String getCompileTimeQualifiedRunClass() {
+    return MAIN_CLASS_NAME != null ? MAIN_CLASS_NAME.replaceAll("\\$", "\\.") : null;
   }
 
   @Nullable

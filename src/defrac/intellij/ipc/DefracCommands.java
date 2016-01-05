@@ -27,7 +27,6 @@ public final class DefracCommands {
   @NotNull @NonNls public static final String COMPILE = "compile";
   @NotNull @NonNls public static final String RUN = "run";
   @NotNull @NonNls public static final String DEBUG = "debug";
-  @NotNull @NonNls public static final String TEST = "test";
   @NotNull @NonNls public static final String CLOSE = "close";
   @NotNull @NonNls public static final String PACKAGE = "package";
 

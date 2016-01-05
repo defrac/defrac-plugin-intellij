@@ -34,6 +34,7 @@ import com.intellij.execution.runners.DefaultProgramRunner;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.RunContentBuilder;
 import com.intellij.execution.ui.RunContentDescriptor;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugProcessStarter;
@@ -46,8 +47,6 @@ import defrac.intellij.facet.DefracFacet;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  *
@@ -63,23 +62,11 @@ public final class DefracRunner extends DefaultProgramRunner {
     return RUNNER_ID;
   }
 
-  @Override
-  public void execute(@NotNull final ExecutionEnvironment environment) throws ExecutionException {
-    super.execute(environment);
-  }
-
-  @Override
-  public void execute(@NotNull final ExecutionEnvironment environment, @Nullable final Callback callback) throws ExecutionException {
-    // we need to pass the run profile info to the compiler so
-    // we can decide if this is a debug or release build
-    final DefracRunConfiguration configuration = (DefracRunConfiguration) checkNotNull(environment.getRunnerAndConfigurationSettings()).getConfiguration();
-    configuration.DEBUG = DefaultDebugExecutor.EXECUTOR_ID.equals(environment.getExecutor().getId());
-    super.execute(environment, callback);
-  }
-
   @Nullable
   @Override
   protected RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment environment) throws ExecutionException {
+    FileDocumentManager.getInstance().saveAllDocuments();
+
     if(DefaultDebugExecutor.EXECUTOR_ID.equals(environment.getExecutor().getId())) {
       final RemoteConnection connection = new RemoteConnection(true, "127.0.0.1", "5005", true);
       return attachVirtualMachine(state, environment, connection, false);
@@ -131,13 +118,15 @@ public final class DefracRunner extends DefaultProgramRunner {
     }
 
     final DebugProcessImpl debugProcess = debuggerSession.getProcess();
+
     if(debugProcess.isDetached() || debugProcess.isDetaching()) {
       debuggerSession.dispose();
       return null;
     }
-    // optimization: that way BatchEvaluator will not try to lookup the class file in remote VM
-    // which is an expensive operation when executed first time
-    debugProcess.putUserData(BatchEvaluator.REMOTE_SESSION_KEY, Boolean.TRUE);
+
+    if(environment.isRemote()) {
+      debugProcess.putUserData(BatchEvaluator.REMOTE_SESSION_KEY, Boolean.TRUE);
+    }
 
     return XDebuggerManager.getInstance(env.getProject()).startSession(env, new XDebugProcessStarter() {
       @Override

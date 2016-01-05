@@ -195,9 +195,22 @@ public final class DefracIpc extends ProcessAdapter {
   }
 
   @NotNull
-  public Executor compile(@NotNull final DefracPlatform platform, final boolean debug) {
-    final String[] args = debug ? new String[]{"debug"} : new String[0];
+  public Executor compileForDebug(@NotNull final DefracPlatform platform) {
+    return compile(platform, "debug");
+  }
 
+  @NotNull
+  public Executor compileForTest(@NotNull final DefracPlatform platform, @NotNull final String pattern) {
+    return compile(platform, "test", pattern);
+  }
+
+  @NotNull
+  public Executor compileForRun(@NotNull final DefracPlatform platform) {
+    return compile(platform);
+  }
+
+  @NotNull
+  private Executor compile(@NotNull final DefracPlatform platform, @NotNull final String... args) {
     return new Executor(platform, DefracCommands.COMPILE, args);
   }
 
@@ -214,11 +227,6 @@ public final class DefracIpc extends ProcessAdapter {
   @NotNull
   public Executor debug(@NotNull final DefracPlatform platform, final int port) {
     return new Executor(platform, DefracCommands.DEBUG, String.valueOf(port));
-  }
-
-  @NotNull
-  public Executor test(@NotNull final DefracPlatform platform, @NotNull final String pattern) {
-    return new Executor(platform, DefracCommands.TEST, pattern);
   }
 
   @NotNull

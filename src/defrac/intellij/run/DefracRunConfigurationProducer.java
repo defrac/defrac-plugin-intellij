@@ -17,20 +17,19 @@
 package defrac.intellij.run;
 
 import com.intellij.execution.JavaExecutionUtil;
-import com.intellij.execution.Location;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.junit.JavaRunConfigurationProducerBase;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.Ref;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import defrac.intellij.psi.DefracPsiUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
  */
-public final class DefracRunConfigurationProducer extends JavaRunConfigurationProducerBase<DefracRunConfiguration> {
+public final class DefracRunConfigurationProducer extends JavaRunConfigurationProducerBase<DefracRunConfiguration> implements Cloneable {
 
   public DefracRunConfigurationProducer() {
     super(DefracConfigurationType.getInstance());
@@ -40,44 +39,44 @@ public final class DefracRunConfigurationProducer extends JavaRunConfigurationPr
   protected boolean setupConfigurationFromContext(final DefracRunConfiguration config,
                                                   final ConfigurationContext context,
                                                   final Ref<PsiElement> sourceElement) {
-    final PsiClass cls = findEntryPoint(context);
+    final PsiElement entryPoint = findEntryPoint(context);
 
-    if(cls == null) {
+    if(entryPoint == null) {
       return false;
     }
 
-    sourceElement.set(cls);
-
-    setupConfigurationModule(context, config);
-    config.setGeneratedName();
+    sourceElement.set(entryPoint);
+    setupConfiguration(config, DefracPsiUtil.enclosingClass(entryPoint), context);
 
     return true;
+  }
+
+  private void setupConfiguration(final DefracRunConfiguration configuration,
+                                  final PsiClass mainClass,
+                                  final ConfigurationContext context) {
+    configuration.setRunClass(mainClass);
+    configuration.setModule(context.getModule());
+    configuration.setGeneratedName();
+    setupConfigurationModule(context, configuration);
   }
 
   @Override
   public boolean isConfigurationFromContext(final DefracRunConfiguration config,
                                             final ConfigurationContext context) {
-    final PsiClass cls = findEntryPoint(context);
+    final PsiClass mainClass = findMainClass(context);
 
-    return cls != null
-        && Comparing.equal(JavaExecutionUtil.getRuntimeQualifiedName(cls), config.MAIN_CLASS_NAME)
+    return mainClass != null
+        && Comparing.equal(JavaExecutionUtil.getRuntimeQualifiedName(mainClass), config.MAIN_CLASS_NAME)
         && Comparing.equal(context.getModule(), config.getConfigurationModule().getModule());
   }
 
   @Nullable
-  private static PsiClass findEntryPoint(@NotNull final ConfigurationContext context) {
-    final Location location = context.getLocation();
+  private static PsiClass findMainClass(@NotNull final ConfigurationContext context) {
+    return DefracPsiUtil.enclosingClass(RunConfigurationUtil.findEntryPoint(context.getLocation(), context.getModule()));
+  }
 
-    if(location == null) {
-      return null;
-    }
-
-    final Module module = context.getModule();
-
-    if(module == null) {
-      return null;
-    }
-
-    return RunConfigurationUtil.findEntryPoint(location, module);
+  @Nullable
+  private static PsiElement findEntryPoint(@NotNull final ConfigurationContext context) {
+    return RunConfigurationUtil.findEntryPoint(context.getLocation(), context.getModule());
   }
 }

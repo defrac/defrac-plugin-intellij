@@ -40,10 +40,18 @@ public final class RunConfigurationUtil {
   private static final String ANDROID_ACTIVITY = "android.app.Activity";
   private static final String IOS_DELEGATE = "defrac.ios.uikit.UIApplicationDelegate";
 
-  public static boolean isValidMainClass(@NotNull final Module module, @NotNull final PsiElement element) {
+  public static boolean isValidMainClass(@Nullable final Module module, @Nullable final PsiElement element) {
+    if(module == null || element == null) {
+      return false;
+    }
+
     final DefracFacet facet = DefracFacet.getInstance(module);
 
     if(facet == null || facet.getModule() != module) {
+      return false;
+    }
+
+    if(facet.getPlatform().isGeneric() || facet.isMacroLibrary()) {
       return false;
     }
 
@@ -54,7 +62,11 @@ public final class RunConfigurationUtil {
     return findMainClass(element) != null;
   }
 
-  public static boolean isValidMainClass(@NotNull final Module module, @NotNull final String className) {
+  public static boolean isValidMainClass(@Nullable final Module module, @Nullable final String className) {
+    if(module == null || className == null) {
+      return false;
+    }
+
     final DefracFacet facet = DefracFacet.getInstance(module);
 
     if(facet == null) {
@@ -65,14 +77,16 @@ public final class RunConfigurationUtil {
       final PsiClass psiClass = JavaPsiFacade.getInstance(module.getProject()).findClass(className, module.getModuleScope());
 
       return psiClass != null && findActivityClass(module, psiClass) != null;
-
     }
 
     return JavaExecutionUtil.findMainClass(module.getProject(), className, module.getModuleScope()) != null;
   }
 
   @Nullable
-  public static PsiClass findEntryPoint(@NotNull final Location location, @NotNull final Module module) {
+  public static PsiElement findEntryPoint(@Nullable final Location location, @Nullable final Module module) {
+    if(location == null || module == null) {
+      return null;
+    }
 
     final Location classLocation = JavaExecutionUtil.stepIntoSingleClass(location);
 
@@ -101,7 +115,13 @@ public final class RunConfigurationUtil {
       return findActivityClass(module, element);
     }
 
-    return findMainClass(element);
+    final PsiElement method = findMainMethod(element);
+
+    if(method != null) {
+      return method;
+    }
+
+    return ApplicationConfigurationType.getMainClass(element);
   }
 
   @Nullable
@@ -150,7 +170,7 @@ public final class RunConfigurationUtil {
 
   @Nullable
   public static PsiClass findMainClass(@NotNull final PsiElement element) {
-    PsiMethod method = findMain(element);
+    PsiMethod method = findMainMethod(element);
 
     while(method != null) {
       final PsiClass cls = method.getContainingClass();
@@ -159,14 +179,14 @@ public final class RunConfigurationUtil {
         return cls;
       }
 
-      method = findMain(method.getParent());
+      method = findMainMethod(method.getParent());
     }
 
     return ApplicationConfigurationType.getMainClass(element);
   }
 
   @Nullable
-  public static PsiMethod findMain(@Nullable PsiElement element) {
+  public static PsiMethod findMainMethod(@Nullable PsiElement element) {
     PsiMethod method;
     while((method = PsiTreeUtil.getParentOfType(element, PsiMethod.class)) != null) {
       if(PsiMethodUtil.isMainMethod(method)) {

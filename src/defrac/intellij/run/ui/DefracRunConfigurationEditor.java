@@ -16,7 +16,6 @@
 
 package defrac.intellij.run.ui;
 
-import com.google.common.base.Strings;
 import com.intellij.application.options.ModulesComboBox;
 import com.intellij.execution.ui.ClassBrowser;
 import com.intellij.execution.ui.ConfigurationModuleSelector;
@@ -114,10 +113,7 @@ public final class DefracRunConfigurationEditor extends SettingsEditor<DefracRun
   }
 
   private boolean isValidMainClass(@Nullable final PsiClass cls) {
-    final DefracFacet facet = DefracFacet.getInstance(cls);
-
-    return !(facet == null || facet.getPlatform().isGeneric() || facet.getModule() != moduleSelector.getModule())
-        && RunConfigurationUtil.isValidMainClass(moduleSelector.getModule(), cls);
+    return RunConfigurationUtil.isValidMainClass(moduleSelector.getModule(), cls);
 
   }
 
@@ -144,13 +140,13 @@ public final class DefracRunConfigurationEditor extends SettingsEditor<DefracRun
   @Override
   protected void resetEditorFrom(final DefracRunConfiguration configuration) {
     moduleSelector.reset(configuration);
-    editorTextFieldWithBrowseButton.setText(Strings.nullToEmpty(configuration.getRunClass()));
+    editorTextFieldWithBrowseButton.setText(configuration.getCompileTimeQualifiedRunClass());
   }
 
   @Override
   protected void applyEditorTo(final DefracRunConfiguration configuration) throws ConfigurationException {
     moduleSelector.applyTo(configuration);
-    configuration.setRunClass(editorTextFieldWithBrowseButton.getText());
+    configuration.setRunClass(moduleSelector.findClass(editorTextFieldWithBrowseButton.getText()));
   }
 
   @NotNull
