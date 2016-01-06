@@ -43,15 +43,21 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  *
  */
-public final class JvmRunningState extends BaseJavaApplicationCommandLineState<DefracRunConfiguration> {
+public final class DefracJvmRunningState extends BaseJavaApplicationCommandLineState<DefracRunConfiguration> {
   @NotNull
   private final DefracFacet facet;
 
-  public JvmRunningState(@NotNull final ExecutionEnvironment environment,
-                         @NotNull final DefracRunConfiguration configuration,
-                         @NotNull final DefracFacet facet) {
+  public DefracJvmRunningState(@NotNull final ExecutionEnvironment environment,
+                               @NotNull final DefracRunConfiguration configuration,
+                               @NotNull final DefracFacet facet) {
     super(environment, configuration);
     this.facet = facet;
+  }
+
+  @NotNull
+  @Override
+  public DefracRunConfiguration getConfiguration() {
+    return myConfiguration;
   }
 
   @Override
@@ -76,8 +82,6 @@ public final class JvmRunningState extends BaseJavaApplicationCommandLineState<D
     if(config == null) {
       throw new ExecutionException(DefracBundle.message("facet.error.noSettings"));
     }
-
-    final boolean isDebug = getConfiguration().DEBUG;
 
     final String nativeLibs;
 
@@ -148,7 +152,7 @@ public final class JvmRunningState extends BaseJavaApplicationCommandLineState<D
 
     final ParametersList vmParametersList = params.getVMParametersList();
 
-    if(isDebug) {
+    if(getConfiguration().isDebug()) {
       // enable assertions if the user wants to debug the app
       // because it is the same behaviour of jvm:run
       vmParametersList.add("-ea");

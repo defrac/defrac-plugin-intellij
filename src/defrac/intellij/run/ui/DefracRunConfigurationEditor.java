@@ -31,7 +31,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.ui.EditorTextFieldWithBrowseButton;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.run.DefracRunConfiguration;
-import defrac.intellij.run.RunConfigurationUtil;
+import defrac.intellij.run.DefracRunUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -113,7 +113,7 @@ public final class DefracRunConfigurationEditor extends SettingsEditor<DefracRun
   }
 
   private boolean isValidMainClass(@Nullable final PsiClass cls) {
-    return RunConfigurationUtil.isValidMainClass(moduleSelector.getModule(), cls);
+    return DefracRunUtil.isValidMainClass(moduleSelector.getModule(), cls);
 
   }
 

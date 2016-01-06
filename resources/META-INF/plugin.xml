@@ -64,8 +64,14 @@
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.IncompatibleReadWriteAnnotator"/>
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.IntrinsicAnnotator"/>
     <configurationType implementation="defrac.intellij.run.DefracConfigurationType"/>
+    <programRunner implementation="defrac.intellij.run.DefracWebRunner" order="last"/>
+    <programRunner implementation="defrac.intellij.run.DefracWebDebugRunner" order="last"/>
     <programRunner implementation="defrac.intellij.run.DefracJvmRunner" order="last"/>
-    <programRunner implementation="defrac.intellij.run.DefracRunner" order="last"/>
+    <programRunner implementation="defrac.intellij.run.DefracJvmDebugRunner" order="last"/>
+    <programRunner implementation="defrac.intellij.run.DefracAndroidRunner" order="last"/>
+    <programRunner implementation="defrac.intellij.run.DefracAndroidDebugRunner" order="last"/>
+    <programRunner implementation="defrac.intellij.run.DefracIOSRunner" order="last"/>
+    <programRunner implementation="defrac.intellij.run.DefracIOSDebugRunner" order="last"/>
     <facetType implementation="defrac.intellij.facet.DefracFacetType"/>
     <framework.detector implementation="defrac.intellij.facet.DefracFrameworkDetector"/>
     <fileTypeFactory implementation="defrac.intellij.fileType.DefracFileTypeFactory"/>

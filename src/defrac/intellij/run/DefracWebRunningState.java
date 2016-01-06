@@ -36,18 +36,23 @@ import org.jetbrains.annotations.NotNull;
 /**
  *
  */
-public final class WebRunningState extends CommandLineState {
+public final class DefracWebRunningState extends CommandLineState {
   @NotNull
   private final DefracFacet facet;
   @NotNull
   private final DefracRunConfiguration configuration;
 
-  public WebRunningState(@NotNull final ExecutionEnvironment environment,
-                         @NotNull final DefracRunConfiguration configuration,
-                         @NotNull final DefracFacet facet) {
+  public DefracWebRunningState(@NotNull final ExecutionEnvironment environment,
+                               @NotNull final DefracRunConfiguration configuration,
+                               @NotNull final DefracFacet facet) {
     super(environment);
     this.configuration = configuration;
     this.facet = facet;
+  }
+
+  @NotNull
+  public DefracRunConfiguration getConfiguration() {
+    return configuration;
   }
 
   @NotNull
@@ -65,7 +70,7 @@ public final class WebRunningState extends CommandLineState {
 
     final DefracIpc.Executor executor;
 
-    if(configuration.DEBUG) {
+    if(configuration.isDebug()) {
       executor = ipc.debug(DefracPlatform.WEB, 5005);
       process = new RemoteDebugProcessHandler(project);
     } else {

@@ -16,23 +16,22 @@
 
 package defrac.intellij.run;
 
+import com.intellij.debugger.impl.GenericDebuggerRunner;
 import com.intellij.execution.configurations.RunProfile;
-import com.intellij.execution.impl.DefaultJavaProgramRunner;
 import defrac.intellij.DefracPlatform;
 import org.jetbrains.annotations.NotNull;
 
 /**
- *
  */
-public final class DefracJvmRunner extends DefaultJavaProgramRunner {
+public final class DefracJvmDebugRunner extends GenericDebuggerRunner {
   @NotNull
   @Override
   public String getRunnerId() {
-    return "defrac.jvm.run";
+    return "defrac.jvm.debug";
   }
 
   @Override
   public boolean canRun(@NotNull final String executorId, @NotNull final RunProfile profile) {
-    return DefracRunUtil.canRun(executorId, profile, DefracPlatform.JVM, false);
+    return DefracRunUtil.canRun(executorId, profile, DefracPlatform.JVM, true);
   }
 }

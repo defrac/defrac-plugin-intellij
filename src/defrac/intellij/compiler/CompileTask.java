@@ -47,9 +47,9 @@ public final class CompileTask extends BooleanBasedCompilerTask {
 
   @Override
   protected DefracIpc.Executor doCompile(@NotNull final CompileContext context, @NotNull final DefracRunConfiguration configuration, @NotNull final DefracFacet facet, @NotNull final DefracIpc ipc) {
-    if(configuration.DEBUG) {
+    if(configuration.isDebug()) {
       return ipc.compileForDebug(facet.getPlatform());
-    } else if(configuration.TEST) {
+    } else if(configuration.isTest()) {
       return ipc.compileForTest(facet.getPlatform(), configuration.PATTERN);
     } else {
       return ipc.compileForRun(facet.getPlatform());

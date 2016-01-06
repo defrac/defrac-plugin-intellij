@@ -17,22 +17,21 @@
 package defrac.intellij.run;
 
 import com.intellij.execution.configurations.RunProfile;
-import com.intellij.execution.impl.DefaultJavaProgramRunner;
 import defrac.intellij.DefracPlatform;
+import org.jetbrains.android.run.AndroidDebugRunner;
 import org.jetbrains.annotations.NotNull;
 
 /**
- *
  */
-public final class DefracJvmRunner extends DefaultJavaProgramRunner {
+public final class DefracAndroidDebugRunner extends AndroidDebugRunner {
   @NotNull
   @Override
   public String getRunnerId() {
-    return "defrac.jvm.run";
+    return "defrac.android.run";
   }
 
   @Override
   public boolean canRun(@NotNull final String executorId, @NotNull final RunProfile profile) {
-    return DefracRunUtil.canRun(executorId, profile, DefracPlatform.JVM, false);
+    return DefracRunUtil.canRun(executorId, profile, DefracPlatform.ANDROID, true);
   }
 }

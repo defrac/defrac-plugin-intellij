@@ -20,6 +20,8 @@ import com.intellij.execution.JavaExecutionUtil;
 import com.intellij.execution.Location;
 import com.intellij.execution.application.ApplicationConfigurationType;
 import com.intellij.execution.configurations.ConfigurationUtil;
+import com.intellij.execution.configurations.RunProfile;
+import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
@@ -28,6 +30,7 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiMethodUtil;
 import com.intellij.psi.util.PsiTreeUtil;
+import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,10 +38,35 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author Tim Richter
  */
-public final class RunConfigurationUtil {
+public final class DefracRunUtil {
 
   private static final String ANDROID_ACTIVITY = "android.app.Activity";
   private static final String IOS_DELEGATE = "defrac.ios.uikit.UIApplicationDelegate";
+
+
+  public static boolean canRun(@NotNull final String executorId,
+                               @NotNull final RunProfile profile,
+                               @NotNull final DefracPlatform platform,
+                               final boolean debug) {
+    if(profile instanceof DefracRunConfiguration) {
+      final DefracRunConfiguration configuration = (DefracRunConfiguration) profile;
+      final Module module = configuration.getConfigurationModule().getModule();
+
+      if(module == null) {
+        return false;
+      }
+
+      final DefracFacet facet = DefracFacet.getInstance(module);
+      final boolean isDebug = DefaultDebugExecutor.EXECUTOR_ID.equals(executorId);
+
+      return facet != null
+          && isDebug == debug
+          && facet.getPlatform() == platform;
+
+    }
+
+    return false;
+  }
 
   public static boolean isValidMainClass(@Nullable final Module module, @Nullable final PsiElement element) {
     if(module == null || element == null) {

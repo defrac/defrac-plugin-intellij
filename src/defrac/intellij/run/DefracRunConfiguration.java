@@ -93,7 +93,7 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
       throw new ExecutionException(DefracBundle.message("config.run.error.noMain"));
     }
 
-    if(!RunConfigurationUtil.isValidMainClass(module, MAIN_CLASS_NAME)) {
+    if(!DefracRunUtil.isValidMainClass(module, MAIN_CLASS_NAME)) {
       throw new ExecutionException(DefracBundle.message("config.run.error.illegalMain"));
     }
 
@@ -115,9 +115,9 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
 
     switch(facet.getPlatform()) {
       case JVM:
-        return new JvmRunningState(environment, this, facet);
+        return new DefracJvmRunningState(environment, this, facet);
       case WEB:
-        return new WebRunningState(environment, this, facet);
+        return new DefracWebRunningState(environment, this, facet);
       case ANDROID:
       case IOS:
       default:
@@ -140,7 +140,7 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
       throw new RuntimeConfigurationError(DefracBundle.message("config.run.error.noMain"));
     }
 
-    if(!RunConfigurationUtil.isValidMainClass(module, MAIN_CLASS_NAME)) {
+    if(!DefracRunUtil.isValidMainClass(module, MAIN_CLASS_NAME)) {
       throw new RuntimeConfigurationError(DefracBundle.message("config.run.error.illegalMain"));
     }
 
@@ -302,5 +302,13 @@ public final class DefracRunConfiguration extends ModuleBasedConfiguration<JavaR
   @Override
   public boolean isPassParentEnvs() {
     return PASS_PARENT_ENVS;
+  }
+
+  public boolean isDebug() {
+    return DEBUG;
+  }
+
+  public boolean isTest() {
+    return TEST;
   }
 }

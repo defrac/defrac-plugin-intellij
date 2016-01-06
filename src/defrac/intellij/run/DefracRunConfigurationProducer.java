@@ -72,11 +72,11 @@ public final class DefracRunConfigurationProducer extends JavaRunConfigurationPr
 
   @Nullable
   private static PsiClass findMainClass(@NotNull final ConfigurationContext context) {
-    return DefracPsiUtil.enclosingClass(RunConfigurationUtil.findEntryPoint(context.getLocation(), context.getModule()));
+    return DefracPsiUtil.enclosingClass(DefracRunUtil.findEntryPoint(context.getLocation(), context.getModule()));
   }
 
   @Nullable
   private static PsiElement findEntryPoint(@NotNull final ConfigurationContext context) {
-    return RunConfigurationUtil.findEntryPoint(context.getLocation(), context.getModule());
+    return DefracRunUtil.findEntryPoint(context.getLocation(), context.getModule());
   }
 }
