@@ -16,27 +16,70 @@
 
 package defrac.intellij.run;
 
+import com.intellij.debugger.engine.RemoteDebugProcessHandler;
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.CommandLineState;
+import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
-import org.jetbrains.android.facet.AndroidFacet;
-import org.jetbrains.android.run.AndroidApplicationLauncher;
-import org.jetbrains.android.run.AndroidRunConfigurationBase;
-import org.jetbrains.android.run.AndroidRunningState;
-import org.jetbrains.android.run.TargetChooser;
+import com.intellij.openapi.project.Project;
+import com.intellij.xdebugger.DefaultDebugProcessHandler;
+import defrac.intellij.DefracBundle;
+import defrac.intellij.DefracPlatform;
+import defrac.intellij.facet.DefracFacet;
+import defrac.intellij.ipc.DefracIpc;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  */
-public final class DefracAndroidRunningState extends AndroidRunningState {
+public final class DefracAndroidRunningState extends CommandLineState {
+  @NotNull
+  private final DefracFacet facet;
+  @NotNull
+  private final DefracRunConfigurationBase configuration;
+
   public DefracAndroidRunningState(@NotNull final ExecutionEnvironment environment,
-                                   @NotNull final AndroidFacet facet,
-                                   @Nullable final TargetChooser targetChooser,
-                                   @NotNull final String commandLine,
-                                   final AndroidApplicationLauncher applicationLauncher,
-                                   final boolean supportMultipleDevices,
-                                   final boolean clearLogcatBeforeStart,
-                                   @NotNull final AndroidRunConfigurationBase configuration,
-                                   final boolean nonDebuggableOnDevice) {
-    super(environment, facet, targetChooser, commandLine, applicationLauncher, supportMultipleDevices, clearLogcatBeforeStart, configuration, nonDebuggableOnDevice);
+                                   @NotNull final DefracRunConfigurationBase configuration,
+                                   @NotNull final DefracFacet facet) {
+    super(environment);
+    this.configuration = configuration;
+    this.facet = facet;
+  }
+
+  @NotNull
+  public DefracRunConfigurationBase getConfiguration() {
+    return configuration;
+  }
+
+  @NotNull
+  @Override
+  protected ProcessHandler startProcess() throws ExecutionException {
+    final Project project = facet.getModule().getProject();
+
+    final DefracIpc ipc = DefracIpc.getInstance(project);
+
+    if(ipc == null) {
+      throw new ExecutionException(DefracBundle.message("ipc.error.ipcMissing"));
+    }
+
+    final ProcessHandler process;
+
+    final DefracIpc.Executor executor;
+
+    if(configuration.isDebug()) {
+      executor = ipc.debug(DefracPlatform.ANDROID, 5005);
+      process = new RemoteDebugProcessHandler(project);
+    } else {
+      executor = ipc.run(DefracPlatform.ANDROID);
+      process = new DefaultDebugProcessHandler();
+    }
+
+    executor.addListener(new DefracRunExecutorListener(process, executor));
+
+    process.addProcessListener(new DefracRunProcessListener(ipc, executor));
+
+    // submit the executor to ipc
+    ipc.submit(executor);
+
+    return process;
   }
 }

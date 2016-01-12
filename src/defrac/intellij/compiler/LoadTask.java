@@ -16,22 +16,22 @@
 
 package defrac.intellij.compiler;
 
-import com.google.common.base.Strings;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.util.ThrowableComputable;
-import com.intellij.openapi.util.text.StringUtil;
 import defrac.intellij.config.DefracConfig;
 import defrac.intellij.config.DefracConfigBase;
 import defrac.intellij.facet.DefracFacet;
+import defrac.intellij.ipc.DefracCommands;
 import defrac.intellij.ipc.DefracIpc;
-import defrac.intellij.run.DefracRunConfiguration;
+import defrac.intellij.run.DefracRunConfigurationBase;
+import defrac.json.JSONObject;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * @author Tim Richter
  */
 public final class LoadTask extends BooleanBasedCompilerTask {
   @NotNull
@@ -43,7 +43,7 @@ public final class LoadTask extends BooleanBasedCompilerTask {
   @NotNull
   @Override
   protected String getDefracCommandName() {
-    return "load";
+    return DefracCommands.LOAD;
   }
 
   protected boolean shouldRunForFacet(@NotNull final DefracFacet facet) {
@@ -51,42 +51,40 @@ public final class LoadTask extends BooleanBasedCompilerTask {
   }
 
   @Override
-  protected DefracIpc.Executor doCompile(@NotNull final CompileContext context, @NotNull final DefracRunConfiguration configuration, @NotNull final DefracFacet facet, @NotNull final DefracIpc ipc) {
+  protected DefracIpc.Executor doCompile(@NotNull final CompileContext context,
+                                         @NotNull final DefracRunConfigurationBase configuration,
+                                         @NotNull final DefracFacet facet,
+                                         @NotNull final DefracIpc ipc) {
 
-    final DefracConfig config;
-    try {
-      config = ApplicationManager.getApplication().runReadAction(new ThrowableComputable<DefracConfig, Throwable>() {
-        @Override
-        public DefracConfig compute() throws Throwable {
-          return facet.getConfig();
-        }
-      });
-    } catch(Throwable throwable) {
-      reportError(context, "Can't load defrac settings");
-      return null;
-    }
+    final DefracConfig config = loadConfig(facet);
 
     if(config == null) {
       reportError(context, "Can't load defrac settings");
       return null;
     }
 
-    final String runClass = Strings.nullToEmpty(configuration.getRunClass());
-
-    final DefracConfigBase platformConfig = checkNotNull(config.getOrCreatePlatform(facet.getPlatform()));
-
-    if(StringUtil.equals(platformConfig.getMain(), runClass)) {
-      return null;
-    }
-
-    if(platformConfig.getMain() == null && StringUtil.equals(config.getMain(), runClass)) {
-      return null;
-    }
-
     // configure settings
-    final DefracConfigBase settings = platformConfig.copy();
-    settings.setMain(runClass);
+    final JSONObject originalSettings = checkNotNull(config.getOrCreatePlatform(facet.getPlatform())).toJSON();
+    final JSONObject additionalSettings = configuration.getAdditionalSettings().toJSON();
 
-    return ipc.load(facet.getPlatform(), settings);
+    for(final String key : additionalSettings.keySet()) {
+      originalSettings.put(key, additionalSettings.get(key));
+    }
+
+    return ipc.load(facet.getPlatform(), additionalSettings);
+  }
+
+  @Nullable
+  private DefracConfig loadConfig(@NotNull final DefracFacet facet) {
+    try {
+      return ApplicationManager.getApplication().runReadAction(new ThrowableComputable<DefracConfig, Throwable>() {
+        @Override
+        public DefracConfig compute() throws Throwable {
+          return facet.getConfig();
+        }
+      });
+    } catch(Throwable throwable) {
+      return null;
+    }
   }
 }

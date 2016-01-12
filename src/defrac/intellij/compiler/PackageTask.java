@@ -18,9 +18,9 @@ package defrac.intellij.compiler;
 
 import com.intellij.openapi.compiler.CompileContext;
 import defrac.intellij.facet.DefracFacet;
+import defrac.intellij.ipc.DefracCommands;
 import defrac.intellij.ipc.DefracIpc;
-import defrac.intellij.run.DefracRunConfiguration;
-import org.jetbrains.annotations.NonNls;
+import defrac.intellij.run.DefracRunConfigurationBase;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -28,13 +28,15 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class PackageTask extends BooleanBasedCompilerTask {
   @NotNull
-  @NonNls
-  private static final String NAME = "package";
-
-  @NotNull
   public static final PackageTask INSTANCE = new PackageTask();
 
   private PackageTask() {
+  }
+
+  @NotNull
+  @Override
+  protected String getDefracCommandName() {
+    return DefracCommands.PACKAGE;
   }
 
   @Override
@@ -42,14 +44,11 @@ public final class PackageTask extends BooleanBasedCompilerTask {
     return !facet.getPlatform().isGeneric();
   }
 
-  @NotNull
   @Override
-  protected String getDefracCommandName() {
-    return NAME;
-  }
-
-  @Override
-  protected DefracIpc.Executor doCompile(@NotNull final CompileContext context, @NotNull final DefracRunConfiguration configuration, @NotNull final DefracFacet facet, @NotNull final DefracIpc ipc) {
+  protected DefracIpc.Executor doCompile(@NotNull final CompileContext context,
+                                         @NotNull final DefracRunConfigurationBase configuration,
+                                         @NotNull final DefracFacet facet,
+                                         @NotNull final DefracIpc ipc) {
     return ipc.pack(facet.getPlatform());
   }
 }

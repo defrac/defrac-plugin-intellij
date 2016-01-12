@@ -19,8 +19,6 @@ package defrac.intellij.run;
 import com.intellij.debugger.engine.RemoteDebugProcessHandler;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.CommandLineState;
-import com.intellij.execution.process.ProcessAdapter;
-import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.runners.ExecutionEnvironment;
@@ -40,10 +38,10 @@ public final class DefracWebRunningState extends CommandLineState {
   @NotNull
   private final DefracFacet facet;
   @NotNull
-  private final DefracRunConfiguration configuration;
+  private final DefracRunConfigurationBase configuration;
 
   public DefracWebRunningState(@NotNull final ExecutionEnvironment environment,
-                               @NotNull final DefracRunConfiguration configuration,
+                               @NotNull final DefracRunConfigurationBase configuration,
                                @NotNull final DefracFacet facet) {
     super(environment);
     this.configuration = configuration;
@@ -51,7 +49,7 @@ public final class DefracWebRunningState extends CommandLineState {
   }
 
   @NotNull
-  public DefracRunConfiguration getConfiguration() {
+  public DefracRunConfigurationBase getConfiguration() {
     return configuration;
   }
 
@@ -78,7 +76,7 @@ public final class DefracWebRunningState extends CommandLineState {
       process = new DefaultDebugProcessHandler();
     }
 
-    executor.addListener(new DefracIpc.ExecutorListener() {
+    executor.addListener(new DefracRunExecutorListener(process, executor) {
       @Override
       public void onMessage(@NotNull final DefracCommandLineParser.Message message) {
         if(message.isError()) {
@@ -98,66 +96,9 @@ public final class DefracWebRunningState extends CommandLineState {
           executor.cancel();
         }
       }
-
-      @Override
-      public void onError(@NotNull final Exception exception) {
-        process.notifyTextAvailable(exception.getMessage() + "\n", ProcessOutputTypes.STDERR);
-
-        process.notifyTextAvailable("\nProcess finished with exit code 1\n", ProcessOutputTypes.SYSTEM);
-
-        executor.dispose();
-
-        process.destroyProcess();
-      }
-
-      @Override
-      public void onComplete(final int exitCode) {
-        // we do not dispose the executor since we want to fetch incoming messages
-      }
-
-      @Override
-      public void onCancel() {
-        process.notifyTextAvailable("\nProcess finished with exit code 0\n", ProcessOutputTypes.SYSTEM);
-
-        executor.dispose();
-
-        process.destroyProcess();
-      }
     });
 
-    process.addProcessListener(new ProcessAdapter() {
-      @Override
-      public void processTerminated(final ProcessEvent event) {
-        if(executor.listening()) {
-          // case when the process is destroyed from within the IDE
-          // we will close the current tab and stop listening to the defrac process
-          executor.cancel();
-
-          final DefracIpc.Executor abort = ipc.close(DefracPlatform.WEB);
-
-          abort.addListener(new DefracIpc.ExecutorAdapter() {
-            @Override
-            public void onCancel() {
-              abort.dispose();
-            }
-
-            @Override
-            public void onComplete(final int exitCode) {
-              abort.dispose();
-            }
-
-            @Override
-            public void onError(@NotNull final Exception exception) {
-              abort.dispose();
-            }
-          });
-
-          ipc.submit(abort);
-        }
-
-        super.processTerminated(event);
-      }
-    });
+    process.addProcessListener(new DefracRunProcessListener(ipc, executor));
 
     // submit the executor to ipc
     ipc.submit(executor);

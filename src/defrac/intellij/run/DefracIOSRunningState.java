@@ -30,14 +30,13 @@ import defrac.intellij.util.DefracCommandLineBuilder;
 import org.jetbrains.annotations.NotNull;
 
 /**
- *
  */
-public final class DefracRunningState extends CommandLineState {
+public final class DefracIOSRunningState extends CommandLineState {
   @NotNull
   private final DefracFacet facet;
 
-  public DefracRunningState(@NotNull final ExecutionEnvironment environment,
-                            @NotNull final DefracFacet facet) {
+  public DefracIOSRunningState(@NotNull final ExecutionEnvironment environment,
+                               @NotNull final DefracFacet facet) {
     super(environment);
 
     this.facet = facet;

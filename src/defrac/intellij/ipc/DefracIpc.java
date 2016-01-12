@@ -27,8 +27,8 @@ import defrac.concurrent.Future;
 import defrac.concurrent.Promise;
 import defrac.concurrent.Promises;
 import defrac.intellij.DefracPlatform;
-import defrac.intellij.config.DefracConfigBase;
 import defrac.intellij.project.DefracProcess;
+import defrac.json.JSONObject;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.ide.PooledThreadExecutor;
@@ -190,7 +190,7 @@ public final class DefracIpc extends ProcessAdapter {
 
   @NotNull
   public Executor load(@NotNull final DefracPlatform platform,
-                       @NotNull final DefracConfigBase settings) {
+                       @NotNull final JSONObject settings) {
     return new Executor(platform, DefracCommands.LOAD, settings.toString());
   }
 

@@ -17,20 +17,19 @@
 package defrac.intellij.run.ui;
 
 import com.intellij.application.options.ModulesComboBox;
+import com.intellij.execution.configurations.ModuleBasedConfiguration;
 import com.intellij.execution.ui.ClassBrowser;
 import com.intellij.execution.ui.ConfigurationModuleSelector;
-import com.intellij.ide.util.ClassFilter;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaCodeFragment;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.ui.EditorTextFieldWithBrowseButton;
-import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.run.DefracRunConfiguration;
+import com.intellij.uiDesigner.core.GridConstraints;
+import defrac.intellij.DefracPlatform;
+import defrac.intellij.run.DefracRunConfigurationBase;
 import defrac.intellij.run.DefracRunUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -42,7 +41,7 @@ import java.awt.event.ItemListener;
 /**
  *
  */
-public final class DefracRunConfigurationEditor extends SettingsEditor<DefracRunConfiguration> {
+public class DefracRunConfigurationEditor<T extends ModuleBasedConfiguration & DefracRunConfigurationBase> extends SettingsEditor<T> {
   @NotNull
   private final Project project;
   @NotNull
@@ -50,27 +49,14 @@ public final class DefracRunConfigurationEditor extends SettingsEditor<DefracRun
 
   private JPanel componentPanel;
   private ModulesComboBox moduleComboBox;
-  private EditorTextFieldWithBrowseButton editorTextFieldWithBrowseButton;
+  private EditorTextFieldWithBrowseButton mainClassTextField;
   private JLabel moduleLabel;
+  private SettingsEditor<T> customSettingsEditor;
 
   @SuppressWarnings("unchecked")
-  public DefracRunConfigurationEditor(@NotNull final Project project) {
+  public DefracRunConfigurationEditor(@NotNull final Project project, @NotNull final DefracPlatform platform) {
     this.project = project;
-
-    this.moduleSelector = new ConfigurationModuleSelector(project, moduleComboBox) {
-      @Override
-      public boolean isModuleAccepted(final Module module) {
-        if(module == null || !super.isModuleAccepted(module)) {
-          return false;
-        }
-
-        final DefracFacet facet = DefracFacet.getInstance(module);
-
-        return facet != null
-            && !facet.getPlatform().isGeneric()
-            && !facet.isMacroLibrary();
-      }
-    };
+    this.moduleSelector = new DefracConfigurationModuleSelector(project, moduleComboBox, platform);
 
     moduleLabel.setLabelFor(moduleComboBox);
 
@@ -78,43 +64,27 @@ public final class DefracRunConfigurationEditor extends SettingsEditor<DefracRun
       @Override
       public void itemStateChanged(final ItemEvent e) {
         // we need a module to select the main class
-        editorTextFieldWithBrowseButton.setEnabled(e.getStateChange() == ItemEvent.SELECTED);
+        mainClassTextField.setEnabled(e.getStateChange() == ItemEvent.SELECTED);
       }
     });
 
     // disabled per default. Will be enabled when module is selected
-    editorTextFieldWithBrowseButton.setEnabled(false);
+    mainClassTextField.setEnabled(false);
 
-    final ClassBrowser classBrowser = new ClassBrowser(project, "Select main class") {
-      final ClassFilter.ClassFilterWithScope classFilterWithScope = new ClassFilter.ClassFilterWithScope() {
-        @Override
-        public GlobalSearchScope getScope() {
-          return GlobalSearchScope.moduleScope(moduleSelector.getModule());
-        }
-
-        @Override
-        public boolean isAccepted(final PsiClass psiClass) {
-          return isValidMainClass(psiClass);
-        }
-      };
-
-      @Override
-      protected ClassFilter.ClassFilterWithScope getFilter() throws NoFilterException {
-        return classFilterWithScope;
-      }
-
-      @Override
-      protected PsiClass findClass(final String s) {
-        return moduleSelector.findClass(s);
-      }
-    };
-
-    classBrowser.setField(editorTextFieldWithBrowseButton);
+    final ClassBrowser classBrowser = new DefracMainClassBrowser(project, moduleSelector);
+    classBrowser.setField(mainClassTextField);
   }
 
-  private boolean isValidMainClass(@Nullable final PsiClass cls) {
-    return DefracRunUtil.isValidMainClass(moduleSelector.getModule(), cls);
+  public void addCustomSettingsEditor(@NotNull final SettingsEditor<T> editor) {
+    customSettingsEditor = editor;
 
+    final GridConstraints constraints = new GridConstraints();
+    constraints.setRow(2);
+    constraints.setColumn(2);
+    constraints.setFill(GridConstraints.FILL_BOTH);
+
+    componentPanel.add(editor.getComponent(), constraints);
+    componentPanel.invalidate();
   }
 
   private void $$$setupUI$$$() {
@@ -122,7 +92,7 @@ public final class DefracRunConfigurationEditor extends SettingsEditor<DefracRun
   }
 
   private void createUIComponents() {
-    editorTextFieldWithBrowseButton = new EditorTextFieldWithBrowseButton(project, true, new JavaCodeFragment.VisibilityChecker() {
+    mainClassTextField = new EditorTextFieldWithBrowseButton(project, true, new JavaCodeFragment.VisibilityChecker() {
       public Visibility isDeclarationVisible(PsiElement declaration, PsiElement place) {
         if(declaration instanceof PsiClass) {
           final PsiClass aClass = (PsiClass) declaration;
@@ -134,19 +104,31 @@ public final class DefracRunConfigurationEditor extends SettingsEditor<DefracRun
 
         return Visibility.NOT_VISIBLE;
       }
+
+      private boolean isValidMainClass(@Nullable final PsiClass cls) {
+        return DefracRunUtil.isValidMainClass(moduleSelector.getModule(), cls);
+      }
     });
   }
 
   @Override
-  protected void resetEditorFrom(final DefracRunConfiguration configuration) {
+  protected void resetEditorFrom(final T configuration) {
     moduleSelector.reset(configuration);
-    editorTextFieldWithBrowseButton.setText(configuration.getCompileTimeQualifiedRunClass());
+    mainClassTextField.setText(DefracRunUtil.getCompileTimeQualifiedName(configuration.getMain()));
+
+    if(customSettingsEditor != null) {
+      customSettingsEditor.resetFrom(configuration);
+    }
   }
 
   @Override
-  protected void applyEditorTo(final DefracRunConfiguration configuration) throws ConfigurationException {
+  protected void applyEditorTo(final T configuration) throws ConfigurationException {
     moduleSelector.applyTo(configuration);
-    configuration.setRunClass(moduleSelector.findClass(editorTextFieldWithBrowseButton.getText()));
+    configuration.setMain(DefracRunUtil.getRuntimeQualifiedName(moduleSelector.findClass(mainClassTextField.getText())));
+
+    if(customSettingsEditor != null) {
+      customSettingsEditor.applyTo(configuration);
+    }
   }
 
   @NotNull

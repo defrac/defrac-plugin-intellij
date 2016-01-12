@@ -19,11 +19,12 @@ package defrac.intellij.run;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.runners.DefaultProgramRunner;
 import defrac.intellij.DefracPlatform;
+import org.jetbrains.android.run.AndroidDebugRunner;
 import org.jetbrains.annotations.NotNull;
 
 /**
  */
-public final class DefracAndroidRunner extends DefaultProgramRunner {
+public final class DefracAndroidRunner extends AndroidDebugRunner {
   @NotNull
   @Override
   public String getRunnerId() {

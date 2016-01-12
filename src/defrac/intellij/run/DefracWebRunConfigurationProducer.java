@@ -16,23 +16,12 @@
 
 package defrac.intellij.run;
 
-import com.intellij.execution.configurations.RunProfile;
-import com.intellij.execution.runners.DefaultProgramRunner;
 import defrac.intellij.DefracPlatform;
-import org.jetbrains.annotations.NotNull;
 
 /**
- * TODO: implement debugging bridge
  */
-public final class DefracIOSDebugRunner extends DefaultProgramRunner {
-  @NotNull
-  @Override
-  public String getRunnerId() {
-    return "defrac.ios.debug";
-  }
-
-  @Override
-  public boolean canRun(@NotNull final String executorId, @NotNull final RunProfile profile) {
-    return DefracRunUtil.canRun(executorId, profile, DefracPlatform.IOS, true);
+public final class DefracWebRunConfigurationProducer extends DefracRunConfigurationProducer {
+  public DefracWebRunConfigurationProducer() {
+    super(DefracConfigurationType.getInstance().webFactory, DefracPlatform.WEB);
   }
 }

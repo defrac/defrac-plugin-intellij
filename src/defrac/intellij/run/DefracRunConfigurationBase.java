@@ -16,23 +16,36 @@
 
 package defrac.intellij.run;
 
-import com.intellij.execution.configurations.RunProfile;
-import com.intellij.execution.runners.DefaultProgramRunner;
+import com.intellij.execution.configurations.ModuleRunConfiguration;
+import com.intellij.openapi.module.Module;
 import defrac.intellij.DefracPlatform;
+import defrac.intellij.config.DefracConfigBase;
+import defrac.json.JSONObject;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
- * TODO: implement debugging bridge
  */
-public final class DefracIOSDebugRunner extends DefaultProgramRunner {
-  @NotNull
-  @Override
-  public String getRunnerId() {
-    return "defrac.ios.debug";
-  }
+public interface DefracRunConfigurationBase extends ModuleRunConfiguration, Cloneable {
+  @Nullable
+  String getMain();
 
-  @Override
-  public boolean canRun(@NotNull final String executorId, @NotNull final RunProfile profile) {
-    return DefracRunUtil.canRun(executorId, profile, DefracPlatform.IOS, true);
-  }
+  void setMain(final String qualifiedName);
+
+  @Nullable
+  Module getModule();
+
+  void setModule(final Module module);
+
+  @NotNull
+  DefracPlatform getPlatform();
+
+  boolean isDebug();
+
+  void setDebug(final boolean value);
+
+  void setGeneratedName();
+
+  @NotNull
+  DefracConfigBase getAdditionalSettings();
 }

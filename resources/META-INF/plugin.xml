@@ -64,14 +64,18 @@
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.IncompatibleReadWriteAnnotator"/>
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.IntrinsicAnnotator"/>
     <configurationType implementation="defrac.intellij.run.DefracConfigurationType"/>
-    <programRunner implementation="defrac.intellij.run.DefracWebRunner" order="last"/>
-    <programRunner implementation="defrac.intellij.run.DefracWebDebugRunner" order="last"/>
-    <programRunner implementation="defrac.intellij.run.DefracJvmRunner" order="last"/>
-    <programRunner implementation="defrac.intellij.run.DefracJvmDebugRunner" order="last"/>
-    <programRunner implementation="defrac.intellij.run.DefracAndroidRunner" order="last"/>
-    <programRunner implementation="defrac.intellij.run.DefracAndroidDebugRunner" order="last"/>
-    <programRunner implementation="defrac.intellij.run.DefracIOSRunner" order="last"/>
-    <programRunner implementation="defrac.intellij.run.DefracIOSDebugRunner" order="last"/>
+    <programRunner implementation="defrac.intellij.run.DefracWebRunner" order="first"/>
+    <programRunner implementation="defrac.intellij.run.DefracWebDebugRunner"  order="first"/>
+    <programRunner implementation="defrac.intellij.run.DefracJvmRunner" order="first"/>
+    <programRunner implementation="defrac.intellij.run.DefracJvmDebugRunner" order="first"/>
+    <programRunner implementation="defrac.intellij.run.DefracAndroidRunner" order="first"/>
+    <programRunner implementation="defrac.intellij.run.DefracAndroidDebugRunner" order="first"/>
+    <programRunner implementation="defrac.intellij.run.DefracIOSRunner" order="first"/>
+    <programRunner implementation="defrac.intellij.run.DefracIOSDebugRunner" order="first"/>
+    <runConfigurationProducer implementation="defrac.intellij.run.DefracWebRunConfigurationProducer" order="first"/>
+    <runConfigurationProducer implementation="defrac.intellij.run.DefracJvmRunConfigurationProducer" order="first"/>
+    <runConfigurationProducer implementation="defrac.intellij.run.DefracAndroidRunConfigurationProducer" order="first"/>
+    <runConfigurationProducer implementation="defrac.intellij.run.DefracIOSRunConfigurationProducer" order="first"/>
     <facetType implementation="defrac.intellij.facet.DefracFacetType"/>
     <framework.detector implementation="defrac.intellij.facet.DefracFrameworkDetector"/>
     <fileTypeFactory implementation="defrac.intellij.fileType.DefracFileTypeFactory"/>
@@ -95,7 +99,6 @@
                 factoryClass="defrac.intellij.toolWindow.DefracToolWindowFactory"/>
     <fileTemplateGroup implementation="defrac.intellij.fileTemplate.DefracFileTemplateProvider"/>
     <projectTemplatesFactory implementation="defrac.intellij.projectWizard.DefracProjectTemplatesFactory"/>
-    <runConfigurationProducer implementation="defrac.intellij.run.DefracRunConfigurationProducer" order="first"/>
     <cachesInvalidator implementation="defrac.intellij.config.ConfigCacheInvalidator"/>
     <completion.contributor implementationClass="defrac.intellij.completion.ios.IOSCompletionContributor" order="first" language="JAVA"/>
   </extensions>

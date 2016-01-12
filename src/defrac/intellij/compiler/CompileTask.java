@@ -18,17 +18,15 @@ package defrac.intellij.compiler;
 
 import com.intellij.openapi.compiler.CompileContext;
 import defrac.intellij.facet.DefracFacet;
+import defrac.intellij.ipc.DefracCommands;
 import defrac.intellij.ipc.DefracIpc;
-import defrac.intellij.run.DefracRunConfiguration;
-import org.jetbrains.annotations.NonNls;
+import defrac.intellij.run.DefracRunConfigurationBase;
 import org.jetbrains.annotations.NotNull;
 
 /**
  *
  */
 public final class CompileTask extends BooleanBasedCompilerTask {
-  @NotNull @NonNls private static final String NAME = "compile";
-
   @NotNull
   public static final CompileTask INSTANCE = new CompileTask();
 
@@ -38,7 +36,7 @@ public final class CompileTask extends BooleanBasedCompilerTask {
   @NotNull
   @Override
   protected String getDefracCommandName() {
-    return NAME;
+    return DefracCommands.COMPILE;
   }
 
   protected boolean shouldRunForFacet(@NotNull final DefracFacet facet) {
@@ -46,11 +44,14 @@ public final class CompileTask extends BooleanBasedCompilerTask {
   }
 
   @Override
-  protected DefracIpc.Executor doCompile(@NotNull final CompileContext context, @NotNull final DefracRunConfiguration configuration, @NotNull final DefracFacet facet, @NotNull final DefracIpc ipc) {
+  protected DefracIpc.Executor doCompile(@NotNull final CompileContext context,
+                                         @NotNull final DefracRunConfigurationBase configuration,
+                                         @NotNull final DefracFacet facet,
+                                         @NotNull final DefracIpc ipc) {
     if(configuration.isDebug()) {
       return ipc.compileForDebug(facet.getPlatform());
-    } else if(configuration.isTest()) {
-      return ipc.compileForTest(facet.getPlatform(), configuration.PATTERN);
+      //} else if(configuration.isTest()) {
+      //return ipc.compileForTest(facet.getPlatform(), configuration.PATTERN);
     } else {
       return ipc.compileForRun(facet.getPlatform());
     }

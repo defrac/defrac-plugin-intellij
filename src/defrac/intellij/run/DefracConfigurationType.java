@@ -19,7 +19,11 @@ package defrac.intellij.run;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationTypeBase;
 import com.intellij.execution.configurations.ConfigurationTypeUtil;
+import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.facet.ProjectFacetManager;
+import com.intellij.openapi.project.Project;
 import defrac.intellij.DefracBundle;
+import defrac.intellij.facet.DefracFacet;
 import icons.DefracIcons;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -43,7 +47,40 @@ public final class DefracConfigurationType extends ConfigurationTypeBase {
   }
 
   @NotNull
-  private final ConfigurationFactory factory = new DefracConfigurationFactory(this);
+  public final ConfigurationFactory jvmFactory = new DefracConfigurationFactory("jvm") {
+    @NotNull
+    @Override
+    public RunConfiguration createTemplateConfiguration(@NotNull final Project project) {
+      return new DefracJvmRunConfiguration(project, this);
+    }
+  };
+
+  @NotNull
+  public final ConfigurationFactory webFactory = new DefracConfigurationFactory("web") {
+    @NotNull
+    @Override
+    public RunConfiguration createTemplateConfiguration(@NotNull final Project project) {
+      return new DefracWebRunConfiguration(project, this);
+    }
+  };
+
+  @NotNull
+  public final ConfigurationFactory androidFactory = new DefracConfigurationFactory("android") {
+    @NotNull
+    @Override
+    public RunConfiguration createTemplateConfiguration(@NotNull final Project project) {
+      return new DefracAndroidRunConfiguration(project, this);
+    }
+  };
+
+  @NotNull
+  public final ConfigurationFactory iosFactory = new DefracConfigurationFactory("ios") {
+    @NotNull
+    @Override
+    public RunConfiguration createTemplateConfiguration(@NotNull final Project project) {
+      return new DefracIOSRunConfiguration(project, this);
+    }
+  };
 
   public DefracConfigurationType() {
     super(ID, DISPLAY_NAME, DESCRIPTION, DefracIcons.Defrac16x16);
@@ -51,16 +88,46 @@ public final class DefracConfigurationType extends ConfigurationTypeBase {
 
   @Override
   public ConfigurationFactory[] getConfigurationFactories() {
-    return new ConfigurationFactory[]{factory};
-  }
-
-  @NotNull
-  public ConfigurationFactory getConfigurationFactory() {
-    return factory;
+    return new ConfigurationFactory[]{jvmFactory, webFactory, androidFactory, iosFactory};
   }
 
   @Override
   public Icon getIcon() {
     return DefracIcons.Defrac16x16;
+  }
+
+  abstract class DefracConfigurationFactory extends ConfigurationFactory {
+    @NotNull
+    final String name;
+
+    public DefracConfigurationFactory(@NotNull final String name) {
+      super(DefracConfigurationType.this);
+      this.name = name;
+    }
+
+    @Override
+    public Icon getIcon() {
+      return DefracIcons.Defrac16x16;
+    }
+
+    @Override
+    public boolean isConfigurationSingletonByDefault() {
+      return true;
+    }
+
+    @Override
+    public boolean canConfigurationBeSingleton() {
+      return true;
+    }
+
+    @Override
+    public boolean isApplicable(@NotNull final Project project) {
+      return ProjectFacetManager.getInstance(project).hasFacets(DefracFacet.ID);
+    }
+
+    @Override
+    public String getName() {
+      return name;
+    }
   }
 }

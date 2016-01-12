@@ -20,10 +20,11 @@ import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterators;
 import com.intellij.execution.ExecutionException;
-import com.intellij.execution.application.BaseJavaApplicationCommandLineState;
+import com.intellij.execution.application.ApplicationConfiguration;
 import com.intellij.execution.configurations.JavaParameters;
 import com.intellij.execution.configurations.JavaRunConfigurationModule;
 import com.intellij.execution.configurations.ParametersList;
+import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.util.JavaParametersUtil;
 import com.intellij.openapi.util.SystemInfo;
@@ -43,20 +44,23 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  *
  */
-public final class DefracJvmRunningState extends BaseJavaApplicationCommandLineState<DefracRunConfiguration> {
+public final class DefracJvmRunningState extends ApplicationConfiguration.JavaApplicationCommandLineState<DefracJvmRunConfiguration> {
   @NotNull
   private final DefracFacet facet;
 
   public DefracJvmRunningState(@NotNull final ExecutionEnvironment environment,
-                               @NotNull final DefracRunConfiguration configuration,
+                               @NotNull final DefracJvmRunConfiguration configuration,
                                @NotNull final DefracFacet facet) {
-    super(environment, configuration);
+    super(configuration, environment);
     this.facet = facet;
+
+    setConsoleBuilder(TextConsoleBuilderFactory.getInstance().
+        createBuilder(configuration.getProject(), configuration.getConfigurationModule().getSearchScope()));
   }
 
   @NotNull
   @Override
-  public DefracRunConfiguration getConfiguration() {
+  public DefracJvmRunConfiguration getConfiguration() {
     return myConfiguration;
   }
 

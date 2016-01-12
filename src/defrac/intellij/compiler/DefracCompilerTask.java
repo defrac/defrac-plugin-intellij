@@ -27,7 +27,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.util.ui.UIUtil;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.project.DefracConsoleView;
-import defrac.intellij.run.DefracRunConfiguration;
+import defrac.intellij.run.DefracRunConfigurationBase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,8 +55,8 @@ public abstract class DefracCompilerTask implements CompileTask {
       return true;
     }
 
-    final DefracRunConfiguration defracRunConfiguration =
-        (DefracRunConfiguration)runConfiguration;
+    final DefracRunConfigurationBase defracRunConfiguration =
+        (DefracRunConfigurationBase)runConfiguration;
 
     final Module[] modules = defracRunConfiguration.getModules();
 
@@ -140,11 +140,11 @@ public abstract class DefracCompilerTask implements CompileTask {
   protected abstract String getDefracCommandName();
 
   protected abstract boolean doCompile(@NotNull final CompileContext context,
-                                       @NotNull final DefracRunConfiguration configuration,
+                                       @NotNull final DefracRunConfigurationBase configuration,
                                        @NotNull final DefracFacet facet);
 
   private boolean isDefracRunConfiguration(@Nullable final RunConfiguration runConfiguration) {
-    return runConfiguration instanceof DefracRunConfiguration;
+    return runConfiguration instanceof DefracRunConfigurationBase;
   }
 
   private boolean isErroneous(@NotNull final CompileContext context) {

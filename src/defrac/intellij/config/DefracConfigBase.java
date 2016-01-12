@@ -32,11 +32,11 @@ public class DefracConfigBase {
   @NotNull
   JSONObject json;
 
-  DefracConfigBase() {
+  public DefracConfigBase() {
     this(new JSONObject());
   }
 
-  DefracConfigBase(@NotNull final JSONObject json) {
+  public DefracConfigBase(@NotNull final JSONObject json) {
     this.json = json;
   }
 
@@ -60,9 +60,16 @@ public class DefracConfigBase {
     return putString("main", value);
   }
 
-  @Nullable
-  public String getMain() {
-    return getString("main", null);
+  @NotNull
+  public DefracConfigBase setStrict(final boolean value) {
+    json.put("strictMode", value);
+    return this;
+  }
+
+  @NotNull
+  public DefracConfigBase setMinify(final boolean value) {
+    json.put("minify", value); // TODO: implement
+    return this;
   }
 
   @NotNull
@@ -112,6 +119,11 @@ public class DefracConfigBase {
   @NotNull
   public DefracConfigBase copy() {
     return new DefracConfigBase(json.copy());
+  }
+
+  @NotNull
+  public JSONObject toJSON() {
+    return json.copy();
   }
 
   @NotNull
