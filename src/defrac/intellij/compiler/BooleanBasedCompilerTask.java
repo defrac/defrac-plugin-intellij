@@ -23,7 +23,7 @@ import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.ipc.DefracCommandLineParser;
 import defrac.intellij.ipc.DefracIpc;
 import defrac.intellij.project.DefracProcess;
-import defrac.intellij.run.DefracRunConfigurationBase;
+import defrac.intellij.run.DefracRunConfiguration;
 import defrac.lang.Attempt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 public abstract class BooleanBasedCompilerTask extends DefracCompilerTask {
   @Override
   protected boolean doCompile(@NotNull final CompileContext context,
-                              @NotNull final DefracRunConfigurationBase configuration,
+                              @NotNull final DefracRunConfiguration configuration,
                               @NotNull final DefracFacet facet) {
     final DefracIpc ipc =
         DefracProcess.getInstance(context.getProject()).getIpc();
@@ -108,7 +108,7 @@ public abstract class BooleanBasedCompilerTask extends DefracCompilerTask {
 
   @Nullable
   protected abstract DefracIpc.Executor doCompile(@NotNull final CompileContext context,
-                                                  @NotNull final DefracRunConfigurationBase configuration,
+                                                  @NotNull final DefracRunConfiguration configuration,
                                                   @NotNull final DefracFacet facet,
                                                   @NotNull final DefracIpc ipc);
 }

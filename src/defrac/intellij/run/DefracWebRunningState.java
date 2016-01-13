@@ -16,16 +16,9 @@
 
 package defrac.intellij.run;
 
-import com.intellij.debugger.engine.RemoteDebugProcessHandler;
-import com.intellij.execution.ExecutionException;
-import com.intellij.execution.configurations.CommandLineState;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.execution.runners.ExecutionEnvironment;
-import com.intellij.openapi.project.Project;
-import com.intellij.xdebugger.DefaultDebugProcessHandler;
-import defrac.intellij.DefracBundle;
-import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.ipc.DefracCommandLineParser;
 import defrac.intellij.ipc.DefracIpc;
@@ -34,48 +27,17 @@ import org.jetbrains.annotations.NotNull;
 /**
  *
  */
-public final class DefracWebRunningState extends CommandLineState {
-  @NotNull
-  private final DefracFacet facet;
-  @NotNull
-  private final DefracRunConfigurationBase configuration;
-
+public final class DefracWebRunningState extends DefracRunningState {
   public DefracWebRunningState(@NotNull final ExecutionEnvironment environment,
-                               @NotNull final DefracRunConfigurationBase configuration,
+                               @NotNull final DefracRunConfiguration configuration,
                                @NotNull final DefracFacet facet) {
-    super(environment);
-    this.configuration = configuration;
-    this.facet = facet;
+    super(environment, configuration, facet);
   }
 
-  @NotNull
-  public DefracRunConfigurationBase getConfiguration() {
-    return configuration;
-  }
-
-  @NotNull
   @Override
-  protected ProcessHandler startProcess() throws ExecutionException {
-    final Project project = facet.getModule().getProject();
-
-    final DefracIpc ipc = DefracIpc.getInstance(project);
-
-    if(ipc == null) {
-      throw new ExecutionException(DefracBundle.message("ipc.error.ipcMissing"));
-    }
-
-    final ProcessHandler process;
-
-    final DefracIpc.Executor executor;
-
-    if(configuration.isDebug()) {
-      executor = ipc.debug(DefracPlatform.WEB, 5005);
-      process = new RemoteDebugProcessHandler(project);
-    } else {
-      executor = ipc.run(DefracPlatform.WEB);
-      process = new DefaultDebugProcessHandler();
-    }
-
+  protected void registerListeners(@NotNull final DefracIpc ipc,
+                                   @NotNull final DefracIpc.Executor executor,
+                                   @NotNull final ProcessHandler process) {
     executor.addListener(new DefracRunExecutorListener(process, executor) {
       @Override
       public void onMessage(@NotNull final DefracCommandLineParser.Message message) {
@@ -98,11 +60,6 @@ public final class DefracWebRunningState extends CommandLineState {
       }
     });
 
-    process.addProcessListener(new DefracRunProcessListener(ipc, executor));
-
-    // submit the executor to ipc
-    ipc.submit(executor);
-
-    return process;
+    process.addProcessListener(new DefracRunProcessListener(ipc, executor, facet.getPlatform()));
   }
 }

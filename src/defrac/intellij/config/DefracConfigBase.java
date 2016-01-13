@@ -73,6 +73,22 @@ public class DefracConfigBase {
   }
 
   @NotNull
+  public DefracConfigBase setDeployOnEmulator() {
+    return setDeploy("emulator");
+  }
+
+  @NotNull
+  public DefracConfigBase setDeployOnDevice() {
+    return setDeploy("device");
+  }
+
+  @NotNull
+  public DefracConfigBase setDeploy(@NotNull final String value) {
+    json.put("deploy", value);
+    return this;
+  }
+
+  @NotNull
   public DefracConfigBase setTargets(@NotNull final DefracPlatform[] value) {
     final JSONArray array = new JSONArray();
 

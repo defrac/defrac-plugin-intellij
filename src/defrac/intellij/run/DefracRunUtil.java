@@ -16,15 +16,11 @@
 
 package defrac.intellij.run;
 
-import com.intellij.execution.ExecutionException;
 import com.intellij.execution.JavaExecutionUtil;
 import com.intellij.execution.Location;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.application.ApplicationConfigurationType;
 import com.intellij.execution.configurations.ConfigurationUtil;
-import com.intellij.execution.configurations.RunProfile;
-import com.intellij.execution.configurations.RuntimeConfigurationError;
-import com.intellij.execution.configurations.RuntimeConfigurationException;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.module.Module;
@@ -35,15 +31,10 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiMethodUtil;
 import com.intellij.psi.util.PsiTreeUtil;
-import defrac.intellij.DefracBundle;
-import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.psi.DefracPsiUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
  */
@@ -51,105 +42,6 @@ public final class DefracRunUtil {
 
   private static final String ANDROID_ACTIVITY = "android.app.Activity";
   private static final String IOS_DELEGATE = "defrac.ios.uikit.UIApplicationDelegate";
-
-  public static void checkState(@NotNull final DefracRunConfigurationBase config,
-                                @NotNull final ExecutionEnvironment environment) throws ExecutionException {
-    final Module module = config.getModule();
-
-    if(module == null) {
-      throw new ExecutionException(DefracBundle.message("config.run.error.noModule"));
-    }
-
-    if(isNullOrEmpty(config.getMain())) {
-      throw new ExecutionException(DefracBundle.message("config.run.error.noMain"));
-    }
-
-    if(!isValidMainClass(module, config.getMain())) {
-      throw new ExecutionException(DefracBundle.message("config.run.error.illegalMain"));
-    }
-
-    final DefracFacet facet = DefracFacet.getInstance(module);
-
-    if(facet == null) {
-      throw new ExecutionException(DefracBundle.message("facet.error.facetMissing", module.getName()));
-    }
-
-    if(!facet.getPlatform().isAvailableOnHostOS()) {
-      throw new ExecutionException(DefracBundle.message("facet.error.unavailablePlatform", facet.getPlatform().displayName));
-    }
-
-    if(facet.getConfigOracle() == null) {
-      throw new ExecutionException(DefracBundle.message("facet.error.noSettings"));
-    }
-
-    config.setDebug(isDebug(environment));
-  }
-
-  public static void checkConfiguration(@NotNull final DefracRunConfigurationBase config) throws RuntimeConfigurationException {
-    final Module module = config.getModule();
-
-    if(module == null) {
-      throw new RuntimeConfigurationError(DefracBundle.message("config.run.error.noModule"));
-    }
-
-    if(isNullOrEmpty(config.getMain())) {
-      throw new RuntimeConfigurationError(DefracBundle.message("config.run.error.noMain"));
-    }
-
-    if(!isValidMainClass(module, config.getMain())) {
-      throw new RuntimeConfigurationError(DefracBundle.message("config.run.error.illegalMain"));
-    }
-
-    final DefracFacet facet = DefracFacet.getInstance(module);
-
-    if(facet == null) {
-      throw new RuntimeConfigurationError(DefracBundle.message("facet.error.facetMissing", module.getName()));
-    }
-
-    if(facet.isMacroLibrary()) {
-      throw new RuntimeConfigurationError(DefracBundle.message("facet.error.isMacroLibrary"));
-    }
-
-    if(facet.getDefracVersion() == null) {
-      throw new RuntimeConfigurationError(DefracBundle.message("facet.error.noVersion"));
-    }
-
-    if(!facet.getSettingsFile().canRead()) {
-      throw new RuntimeConfigurationError(DefracBundle.message("facet.error.fileDoesNotExist", facet.getSettingsFile()));
-    }
-
-    if(facet.getPlatform().isGeneric()) {
-      throw new RuntimeConfigurationError(DefracBundle.message("facet.error.genericPlatform", module.getName()));
-    }
-
-    if(facet.getConfigOracle() == null) {
-      throw new RuntimeConfigurationError(DefracBundle.message("facet.error.noSettings"));
-    }
-  }
-
-  public static boolean canRun(@NotNull final String executorId,
-                               @NotNull final RunProfile profile,
-                               @NotNull final DefracPlatform platform,
-                               final boolean debug) {
-    if(profile instanceof DefracRunConfigurationBase) {
-      final DefracRunConfigurationBase configuration = (DefracRunConfigurationBase) profile;
-      final Module module = configuration.getModule();
-
-      if(module == null) {
-        return false;
-      }
-
-      final DefracFacet facet = DefracFacet.getInstance(module);
-      final boolean isDebug = DefaultDebugExecutor.EXECUTOR_ID.equals(executorId);
-
-      return facet != null
-          && isDebug == debug
-          && facet.getPlatform() == platform;
-
-    }
-
-    return false;
-  }
 
   public static boolean isValidMainClass(@Nullable final Module module, @Nullable final PsiElement element) {
     if(module == null || element == null) {
@@ -323,12 +215,6 @@ public final class DefracRunUtil {
   @Nullable
   public static String getCompileTimeQualifiedName(@Nullable final String className) {
     return className != null ? className.replaceAll("\\$", "\\.") : null;
-  }
-
-  @NotNull
-  public static String suggestedName(@NotNull final DefracRunConfigurationBase config) {
-    return checkNotNull(JavaExecutionUtil.getShortClassName(getCompileTimeQualifiedName(config.getMain()))) +
-        '(' + config.getPlatform().displayName + ')';
   }
 
   public static boolean isDebug(@NotNull final ExecutionEnvironment environment) {

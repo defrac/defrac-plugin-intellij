@@ -50,7 +50,6 @@
   <depends>com.intellij.modules.java</depends>
   <depends>com.intellij.modules.json</depends>
   <depends>com.intellij.modules.xdebugger</depends>
-  <depends>org.jetbrains.android</depends>
 
   <resource-bundle>defrac.intellij.DefracBundle</resource-bundle>
 
@@ -63,19 +62,10 @@
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.WriteOnlyAnnotator"/>
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.IncompatibleReadWriteAnnotator"/>
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.IntrinsicAnnotator"/>
-    <configurationType implementation="defrac.intellij.run.DefracConfigurationType"/>
-    <programRunner implementation="defrac.intellij.run.DefracWebRunner" order="first"/>
-    <programRunner implementation="defrac.intellij.run.DefracWebDebugRunner"  order="first"/>
-    <programRunner implementation="defrac.intellij.run.DefracJvmRunner" order="first"/>
-    <programRunner implementation="defrac.intellij.run.DefracJvmDebugRunner" order="first"/>
-    <programRunner implementation="defrac.intellij.run.DefracAndroidRunner" order="first"/>
-    <programRunner implementation="defrac.intellij.run.DefracAndroidDebugRunner" order="first"/>
-    <programRunner implementation="defrac.intellij.run.DefracIOSRunner" order="first"/>
-    <programRunner implementation="defrac.intellij.run.DefracIOSDebugRunner" order="first"/>
-    <runConfigurationProducer implementation="defrac.intellij.run.DefracWebRunConfigurationProducer" order="first"/>
-    <runConfigurationProducer implementation="defrac.intellij.run.DefracJvmRunConfigurationProducer" order="first"/>
-    <runConfigurationProducer implementation="defrac.intellij.run.DefracAndroidRunConfigurationProducer" order="first"/>
-    <runConfigurationProducer implementation="defrac.intellij.run.DefracIOSRunConfigurationProducer" order="first"/>
+    <configurationType implementation="defrac.intellij.run.DefracRunConfigurationType"/>
+    <programRunner implementation="defrac.intellij.run.DefracApplicationRunner" order="first"/>
+    <programRunner implementation="defrac.intellij.run.DefracDebugRunner"  order="first"/>
+    <runConfigurationProducer implementation="defrac.intellij.run.DefracRunConfigurationProducer" order="first"/>
     <facetType implementation="defrac.intellij.facet.DefracFacetType"/>
     <framework.detector implementation="defrac.intellij.facet.DefracFrameworkDetector"/>
     <fileTypeFactory implementation="defrac.intellij.fileType.DefracFileTypeFactory"/>

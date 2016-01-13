@@ -29,21 +29,25 @@ public class DefracRunProcessListener extends ProcessAdapter {
   protected final DefracIpc ipc;
   @NotNull
   protected final DefracIpc.Executor executor;
+  @NotNull
+  private final DefracPlatform platform;
 
   public DefracRunProcessListener(@NotNull final DefracIpc ipc,
-                                  @NotNull final DefracIpc.Executor executor) {
+                                  @NotNull final DefracIpc.Executor executor,
+                                  @NotNull final DefracPlatform platform) {
     this.ipc = ipc;
     this.executor = executor;
+    this.platform = platform;
   }
 
   @Override
   public void processTerminated(final ProcessEvent event) {
     if(executor.listening()) {
       // case when the process is destroyed from within the IDE
-      // we will close the current tab and stop listening to the defrac process
       executor.cancel();
+      executor.dispose();
 
-      final DefracIpc.Executor abort = ipc.close(DefracPlatform.WEB);
+      final DefracIpc.Executor abort = ipc.close(platform);
 
       abort.addListener(new DefracIpc.ExecutorAdapter() {
         @Override
@@ -64,7 +68,5 @@ public class DefracRunProcessListener extends ProcessAdapter {
 
       ipc.submit(abort);
     }
-
-    super.processTerminated(event);
   }
 }

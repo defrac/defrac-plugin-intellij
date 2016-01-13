@@ -18,39 +18,16 @@ package defrac.intellij.run.ui;
 
 import com.intellij.application.options.ModulesComboBox;
 import com.intellij.execution.ui.ConfigurationModuleSelector;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Condition;
-import defrac.intellij.facet.DefracFacet;
 import org.jetbrains.annotations.NotNull;
 
 /**
  */
 public final class DefracModuleComboBox extends ModulesComboBox {
   @NotNull
-  public final Condition<Module> condition;
-  @NotNull
   public final ConfigurationModuleSelector moduleSelector;
 
   public DefracModuleComboBox(@NotNull final Project project) {
-    this.condition = new Condition<Module>() {
-      @Override
-      public boolean value(final Module module) {
-        final DefracFacet facet = DefracFacet.getInstance(module);
-
-        return facet != null
-            && !facet.getPlatform().isGeneric()
-            && !facet.isMacroLibrary();
-      }
-    };
-
-    this.moduleSelector = new ConfigurationModuleSelector(project, this) {
-
-      @Override
-      public boolean isModuleAccepted(final Module module) {
-        return condition.value(module) && super.isModuleAccepted(module);
-      }
-    };
+    this.moduleSelector = new DefracConfigurationModuleSelector(project, this);
   }
-
 }

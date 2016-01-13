@@ -17,14 +17,11 @@
 package defrac.intellij.run.ui;
 
 import com.intellij.application.options.ModulesComboBox;
-import com.intellij.execution.configurations.ModuleBasedConfiguration;
 import com.intellij.execution.ui.ConfigurationModuleSelector;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Condition;
-import defrac.intellij.DefracPlatform;
 import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.project.DefracProjectUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -32,18 +29,10 @@ import org.jetbrains.annotations.NotNull;
 public final class DefracConfigurationModuleSelector extends ConfigurationModuleSelector {
   @NotNull
   private final Condition<Module> condition;
-  @NotNull
-  private final ModulesComboBox modulesComboBox;
-  @NotNull
-  private final DefracPlatform platform;
 
   public DefracConfigurationModuleSelector(@NotNull final Project project,
-                                           @NotNull final ModulesComboBox modulesComboBox,
-                                           @NotNull final DefracPlatform platform) {
+                                           @NotNull final ModulesComboBox modulesComboBox) {
     super(project, modulesComboBox);
-    assert !platform.isGeneric();
-    this.modulesComboBox = modulesComboBox;
-    this.platform = platform;
 
     this.condition = new Condition<Module>() {
       @Override
@@ -55,21 +44,6 @@ public final class DefracConfigurationModuleSelector extends ConfigurationModule
             && !facet.isMacroLibrary();
       }
     };
-  }
-
-  @Override
-  public void reset(final ModuleBasedConfiguration configuration) {
-    super.reset(configuration);
-
-    if(getConfigurationModule().getModule() == null) {
-      // in case we do not have a selection, we simply select the default module
-      final Module[] modules =
-          DefracProjectUtil.findModulesForPlatform(getProject(), platform, condition);
-
-      if(modules.length == 1) {
-        modulesComboBox.setSelectedModule(modules[0]);
-      }
-    }
   }
 
   @Override

@@ -24,8 +24,7 @@ import defrac.intellij.config.DefracConfigBase;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.ipc.DefracCommands;
 import defrac.intellij.ipc.DefracIpc;
-import defrac.intellij.run.DefracRunConfigurationBase;
-import defrac.json.JSONObject;
+import defrac.intellij.run.DefracRunConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,7 +51,7 @@ public final class LoadTask extends BooleanBasedCompilerTask {
 
   @Override
   protected DefracIpc.Executor doCompile(@NotNull final CompileContext context,
-                                         @NotNull final DefracRunConfigurationBase configuration,
+                                         @NotNull final DefracRunConfiguration configuration,
                                          @NotNull final DefracFacet facet,
                                          @NotNull final DefracIpc ipc) {
 
@@ -64,14 +63,17 @@ public final class LoadTask extends BooleanBasedCompilerTask {
     }
 
     // configure settings
-    final JSONObject originalSettings = checkNotNull(config.getOrCreatePlatform(facet.getPlatform())).toJSON();
-    final JSONObject additionalSettings = configuration.getAdditionalSettings().toJSON();
+    final DefracConfigBase settings = checkNotNull(config.getOrCreatePlatform(facet.getPlatform())).copy();
+    settings.setMain(checkNotNull(configuration.getRunClass()));
+    settings.setStrict(configuration.isStrict());
 
-    for(final String key : additionalSettings.keySet()) {
-      originalSettings.put(key, additionalSettings.get(key));
+    if(configuration.launchInEmulator()) {
+      settings.setDeployOnEmulator();
+    } else if(configuration.launchOnDevice()) {
+      settings.setDeployOnDevice();
     }
 
-    return ipc.load(facet.getPlatform(), additionalSettings);
+    return ipc.load(facet.getPlatform(), settings);
   }
 
   @Nullable

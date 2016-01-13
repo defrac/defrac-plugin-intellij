@@ -20,7 +20,7 @@ import com.intellij.openapi.compiler.CompileContext;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.ipc.DefracCommands;
 import defrac.intellij.ipc.DefracIpc;
-import defrac.intellij.run.DefracRunConfigurationBase;
+import defrac.intellij.run.DefracRunConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -45,7 +45,7 @@ public final class CompileTask extends BooleanBasedCompilerTask {
 
   @Override
   protected DefracIpc.Executor doCompile(@NotNull final CompileContext context,
-                                         @NotNull final DefracRunConfigurationBase configuration,
+                                         @NotNull final DefracRunConfiguration configuration,
                                          @NotNull final DefracFacet facet,
                                          @NotNull final DefracIpc ipc) {
     if(configuration.isDebug()) {

@@ -16,75 +16,92 @@
 
 package defrac.intellij.run.ui;
 
-import com.intellij.application.options.ModulesComboBox;
-import com.intellij.execution.configurations.ModuleBasedConfiguration;
-import com.intellij.execution.ui.ClassBrowser;
-import com.intellij.execution.ui.ConfigurationModuleSelector;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.JavaCodeFragment;
+import com.intellij.openapi.ui.InputValidatorEx;
+import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiElement;
-import com.intellij.ui.EditorTextFieldWithBrowseButton;
-import com.intellij.uiDesigner.core.GridConstraints;
-import defrac.intellij.DefracPlatform;
-import defrac.intellij.run.DefracRunConfigurationBase;
-import defrac.intellij.run.DefracRunUtil;
+import com.intellij.ui.AddEditDeleteListPanel;
+import defrac.intellij.facet.DefracFacet;
+import defrac.intellij.run.DefracRunConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.ArrayList;
+
+import static defrac.intellij.run.DefracRunUtil.getCompileTimeQualifiedName;
+import static defrac.intellij.run.DefracRunUtil.getRuntimeQualifiedName;
 
 /**
- *
  */
-public class DefracRunConfigurationEditor<T extends ModuleBasedConfiguration & DefracRunConfigurationBase> extends SettingsEditor<T> {
+public final class DefracRunConfigurationEditor extends SettingsEditor<DefracRunConfiguration> {
   @NotNull
   private final Project project;
-  @NotNull
-  private final ConfigurationModuleSelector moduleSelector;
 
-  private JPanel componentPanel;
-  private ModulesComboBox moduleComboBox;
-  private EditorTextFieldWithBrowseButton mainClassTextField;
-  private JLabel moduleLabel;
-  private SettingsEditor<T> customSettingsEditor;
+  private JPanel panel;
+  private DefracModuleComboBox moduleComboBox;
+  private DefracMainClassTextFieldWithBrowseButton mainClassTextField;
+  private JRadioButton strictModeRadioButton;
+  private JRadioButton minifyRadioButton;
+  private JRadioButton runInEmulatorRadioButton;
+  private JRadioButton runOnDeviceRadioButton;
+  private AddEditDeleteListPanel keepSetPanel;
 
-  @SuppressWarnings("unchecked")
-  public DefracRunConfigurationEditor(@NotNull final Project project, @NotNull final DefracPlatform platform) {
+  public DefracRunConfigurationEditor(@NotNull final Project project) {
     this.project = project;
-    this.moduleSelector = new DefracConfigurationModuleSelector(project, moduleComboBox, platform);
-
-    moduleLabel.setLabelFor(moduleComboBox);
 
     moduleComboBox.addItemListener(new ItemListener() {
       @Override
       public void itemStateChanged(final ItemEvent e) {
-        // we need a module to select the main class
-        mainClassTextField.setEnabled(e.getStateChange() == ItemEvent.SELECTED);
+        validateState();
       }
     });
 
-    // disabled per default. Will be enabled when module is selected
-    mainClassTextField.setEnabled(false);
+    runInEmulatorRadioButton.addItemListener(new ItemListener() {
+      @Override
+      public void itemStateChanged(final ItemEvent e) {
+        runOnDeviceRadioButton.setSelected(!runInEmulatorRadioButton.isSelected());
+      }
+    });
 
-    final ClassBrowser classBrowser = new DefracMainClassBrowser(project, moduleSelector);
+    runOnDeviceRadioButton.addItemListener(new ItemListener() {
+      @Override
+      public void itemStateChanged(final ItemEvent e) {
+        runInEmulatorRadioButton.setSelected(!runOnDeviceRadioButton.isSelected());
+      }
+    });
+
+    final DefracMainClassBrowser classBrowser = new DefracMainClassBrowser(project, moduleComboBox.moduleSelector);
     classBrowser.setField(mainClassTextField);
   }
 
-  public void addCustomSettingsEditor(@NotNull final SettingsEditor<T> editor) {
-    customSettingsEditor = editor;
+  private void validateState() {
+    final Module selectedModule = moduleComboBox.getSelectedModule();
 
-    final GridConstraints constraints = new GridConstraints();
-    constraints.setRow(2);
-    constraints.setColumn(2);
-    constraints.setFill(GridConstraints.FILL_BOTH);
+    mainClassTextField.setEnabled(selectedModule != null);
 
-    componentPanel.add(editor.getComponent(), constraints);
-    componentPanel.invalidate();
+    final DefracFacet facet = DefracFacet.getInstance(selectedModule);
+
+    if(facet != null) {
+      final boolean supportLaunchMode = facet.getPlatform().isAndroid();
+
+      runInEmulatorRadioButton.setEnabled(supportLaunchMode);
+      runOnDeviceRadioButton.setEnabled(supportLaunchMode);
+
+      final boolean supportStrictMode = facet.getPlatform().isWeb();
+
+      strictModeRadioButton.setEnabled(supportStrictMode);
+
+      final boolean supportMinify = facet.getPlatform().isWeb();
+
+      minifyRadioButton.setEnabled(supportMinify);
+    }
   }
 
   private void $$$setupUI$$$() {
@@ -92,48 +109,76 @@ public class DefracRunConfigurationEditor<T extends ModuleBasedConfiguration & D
   }
 
   private void createUIComponents() {
-    mainClassTextField = new EditorTextFieldWithBrowseButton(project, true, new JavaCodeFragment.VisibilityChecker() {
-      public Visibility isDeclarationVisible(PsiElement declaration, PsiElement place) {
-        if(declaration instanceof PsiClass) {
-          final PsiClass aClass = (PsiClass) declaration;
+    moduleComboBox = new DefracModuleComboBox(project);
+    mainClassTextField = new DefracMainClassTextFieldWithBrowseButton(project, moduleComboBox.moduleSelector);
+    keepSetPanel = new AddEditDeleteListPanel<String>(null, new ArrayList<String>()) {
 
-          if(isValidMainClass(aClass) || place.getParent() != null && isValidMainClass(moduleSelector.findClass(aClass.getQualifiedName()))) {
-            return Visibility.VISIBLE;
+      @Nullable
+      @Override
+      protected String editSelectedItem(final String o) {
+        return showEditDialog(o);
+      }
+
+      @Nullable
+      @Override
+      protected String findItemToAdd() {
+        return showEditDialog("");
+      }
+
+      @Nullable
+      private String showEditDialog(String initialValue) {
+        return Messages.showInputDialog(this, null, "Create Keep Pattern", null, initialValue, new InputValidatorEx() {
+          public boolean checkInput(String inputString) {
+            return !StringUtil.isEmpty(inputString);
           }
-        }
 
-        return Visibility.NOT_VISIBLE;
-      }
+          public boolean canClose(String inputString) {
+            return checkInput(inputString);
+          }
 
-      private boolean isValidMainClass(@Nullable final PsiClass cls) {
-        return DefracRunUtil.isValidMainClass(moduleSelector.getModule(), cls);
+          @Nullable
+          public String getErrorText(String inputString) {
+            // TODO: check pattern
+            return !this.checkInput(inputString) ? "Pattern cannot be empty" : null;
+          }
+        });
       }
-    });
+    };
   }
 
   @Override
-  protected void resetEditorFrom(final T configuration) {
-    moduleSelector.reset(configuration);
-    mainClassTextField.setText(DefracRunUtil.getCompileTimeQualifiedName(configuration.getMain()));
+  protected void resetEditorFrom(final DefracRunConfiguration configuration) {
+    moduleComboBox.moduleSelector.reset(configuration);
+    mainClassTextField.setText(getCompileTimeQualifiedName(configuration.getRunClass()));
+    strictModeRadioButton.setSelected(configuration.isStrict());
+    minifyRadioButton.setSelected(configuration.isMinify());
 
-    if(customSettingsEditor != null) {
-      customSettingsEditor.resetFrom(configuration);
-    }
+    runInEmulatorRadioButton.setSelected(configuration.launchInEmulator());
+    runOnDeviceRadioButton.setSelected(configuration.launchOnDevice());
+
+    validateState();
   }
 
   @Override
-  protected void applyEditorTo(final T configuration) throws ConfigurationException {
-    moduleSelector.applyTo(configuration);
-    configuration.setMain(DefracRunUtil.getRuntimeQualifiedName(moduleSelector.findClass(mainClassTextField.getText())));
+  protected void applyEditorTo(final DefracRunConfiguration configuration) throws ConfigurationException {
+    final PsiClass mainClass = moduleComboBox.moduleSelector.findClass(mainClassTextField.getText());
 
-    if(customSettingsEditor != null) {
-      customSettingsEditor.applyTo(configuration);
+    moduleComboBox.moduleSelector.applyTo(configuration);
+    configuration.setMainClassName(getRuntimeQualifiedName(mainClass));
+    configuration.setStrict(strictModeRadioButton.isSelected());
+    configuration.setMinify(minifyRadioButton.isSelected());
+
+    if(runInEmulatorRadioButton.isSelected()) {
+      configuration.setLaunchInEmulator();
+    } else if(runOnDeviceRadioButton.isSelected()) {
+      configuration.setLaunchOnDevice();
     }
   }
 
   @NotNull
   @Override
   protected JComponent createEditor() {
-    return componentPanel;
+    return panel;
   }
+
 }

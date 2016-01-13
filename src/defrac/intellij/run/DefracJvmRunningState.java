@@ -44,24 +44,18 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  *
  */
-public final class DefracJvmRunningState extends ApplicationConfiguration.JavaApplicationCommandLineState<DefracJvmRunConfiguration> {
+public final class DefracJvmRunningState extends ApplicationConfiguration.JavaApplicationCommandLineState<DefracRunConfiguration> {
   @NotNull
   private final DefracFacet facet;
 
   public DefracJvmRunningState(@NotNull final ExecutionEnvironment environment,
-                               @NotNull final DefracJvmRunConfiguration configuration,
+                               @NotNull final DefracRunConfiguration configuration,
                                @NotNull final DefracFacet facet) {
     super(configuration, environment);
     this.facet = facet;
 
     setConsoleBuilder(TextConsoleBuilderFactory.getInstance().
         createBuilder(configuration.getProject(), configuration.getConfigurationModule().getSearchScope()));
-  }
-
-  @NotNull
-  @Override
-  public DefracJvmRunConfiguration getConfiguration() {
-    return myConfiguration;
   }
 
   @Override
