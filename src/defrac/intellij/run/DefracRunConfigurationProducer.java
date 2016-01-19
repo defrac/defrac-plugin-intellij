@@ -17,29 +17,31 @@
 package defrac.intellij.run;
 
 import com.intellij.execution.actions.ConfigurationContext;
-import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.junit.JavaRunConfigurationProducerBase;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.Ref;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import defrac.intellij.psi.DefracPsiUtil;
-import org.jetbrains.annotations.NotNull;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static defrac.intellij.run.DefracRunUtil.findEntryPoint;
+import static defrac.intellij.run.DefracRunUtil.findMainClass;
+import static defrac.intellij.run.DefracRunUtil.getRuntimeQualifiedName;
 
 /**
  */
 public final class DefracRunConfigurationProducer extends JavaRunConfigurationProducerBase<DefracRunConfiguration> {
 
-  public DefracRunConfigurationProducer(@NotNull final ConfigurationFactory factory) {
-    super(factory);
+  public DefracRunConfigurationProducer() {
+    super(DefracRunConfigurationType.getInstance().factory);
   }
 
   @Override
   protected boolean setupConfigurationFromContext(final DefracRunConfiguration config,
                                                   final ConfigurationContext context,
                                                   final Ref<PsiElement> sourceElement) {
-    final PsiElement entryPoint = DefracRunUtil.findEntryPoint(context);
+    final PsiElement entryPoint = findEntryPoint(context);
 
     if(entryPoint == null) {
       return false;
@@ -47,7 +49,9 @@ public final class DefracRunConfigurationProducer extends JavaRunConfigurationPr
 
     sourceElement.set(entryPoint);
 
-    config.setMainClass(checkNotNull(DefracPsiUtil.enclosingClass(entryPoint)));
+    final PsiClass mainClass = checkNotNull(DefracPsiUtil.enclosingClass(entryPoint));
+
+    config.setMainClass(mainClass);
     config.setGeneratedName();
 
     setupConfigurationModule(context, config);
@@ -58,7 +62,7 @@ public final class DefracRunConfigurationProducer extends JavaRunConfigurationPr
   @Override
   public boolean isConfigurationFromContext(final DefracRunConfiguration config,
                                             final ConfigurationContext context) {
-    return Comparing.equal(DefracRunUtil.getRuntimeQualifiedName(DefracRunUtil.findMainClass(context)), config.getRunClass())
+    return Comparing.equal(getRuntimeQualifiedName(findMainClass(context)), config.getRunClass())
         && Comparing.equal(context.getModule(), config.getModule());
   }
 }

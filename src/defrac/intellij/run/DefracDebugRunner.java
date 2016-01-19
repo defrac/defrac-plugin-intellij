@@ -43,13 +43,9 @@ public final class DefracDebugRunner extends GenericDebuggerRunner {
   @Override
   protected RunContentDescriptor createContentDescriptor(@NotNull final RunProfileState state,
                                                          @NotNull final ExecutionEnvironment environment) throws ExecutionException {
-    if(state instanceof DefracJvmRunningState) {
-      return super.createContentDescriptor(state, environment);
-    }
-
-    if(state instanceof DefracRunningState) {
-      final DefracRunningState runningState = (DefracRunningState)state;
-      return attachVirtualMachine(state, environment, runningState.getRemoteConnection(), true);
+    if(state instanceof DefracRemoteState) {
+      final DefracRemoteState remoteState = (DefracRemoteState)state;
+      return attachVirtualMachine(state, environment, remoteState.getRemoteConnection(), true);
     }
 
     return null;

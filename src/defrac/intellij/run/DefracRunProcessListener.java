@@ -44,7 +44,6 @@ public class DefracRunProcessListener extends ProcessAdapter {
   public void processTerminated(final ProcessEvent event) {
     if(executor.listening()) {
       // case when the process is destroyed from within the IDE
-      executor.cancel();
       executor.dispose();
 
       final DefracIpc.Executor abort = ipc.close(platform);

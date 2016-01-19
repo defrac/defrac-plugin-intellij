@@ -19,11 +19,11 @@ package defrac.intellij.run;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterators;
+import com.intellij.debugger.impl.DebuggerManagerImpl;
+import com.intellij.debugger.settings.DebuggerSettings;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.application.ApplicationConfiguration;
-import com.intellij.execution.configurations.JavaParameters;
-import com.intellij.execution.configurations.JavaRunConfigurationModule;
-import com.intellij.execution.configurations.ParametersList;
+import com.intellij.execution.configurations.*;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.util.JavaParametersUtil;
@@ -44,7 +44,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  *
  */
-public final class DefracJvmRunningState extends ApplicationConfiguration.JavaApplicationCommandLineState<DefracRunConfiguration> {
+public final class DefracJvmRunningState extends ApplicationConfiguration.JavaApplicationCommandLineState<DefracRunConfiguration> implements DefracRemoteState {
   @NotNull
   private final DefracFacet facet;
 
@@ -56,6 +56,13 @@ public final class DefracJvmRunningState extends ApplicationConfiguration.JavaAp
 
     setConsoleBuilder(TextConsoleBuilderFactory.getInstance().
         createBuilder(configuration.getProject(), configuration.getConfigurationModule().getSearchScope()));
+  }
+
+  @NotNull
+  @Override
+  public RemoteConnection getRemoteConnection() throws ExecutionException {
+    return DebuggerManagerImpl.createDebugParameters(
+        getJavaParameters(), true, DebuggerSettings.SOCKET_TRANSPORT, myConfiguration.DEBUG_PORT, false);
   }
 
   @Override

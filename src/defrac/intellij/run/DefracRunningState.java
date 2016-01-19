@@ -31,7 +31,7 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  */
-public class DefracRunningState extends CommandLineState {
+public class DefracRunningState extends CommandLineState implements DefracRemoteState {
   @NotNull
   protected final DefracFacet facet;
   @NotNull
@@ -43,6 +43,12 @@ public class DefracRunningState extends CommandLineState {
     super(environment);
     this.configuration = configuration;
     this.facet = facet;
+  }
+
+  @NotNull
+  @Override
+  public RemoteConnection getRemoteConnection() throws ExecutionException {
+    return new RemoteConnection(true, "127.0.0.1", configuration.getDebugPort(), true);
   }
 
   @NotNull
@@ -83,10 +89,5 @@ public class DefracRunningState extends CommandLineState {
     executor.addListener(new DefracRunExecutorListener(process, executor));
 
     process.addProcessListener(new DefracRunProcessListener(ipc, executor, facet.getPlatform()));
-  }
-
-  @NotNull
-  public RemoteConnection getRemoteConnection() throws ExecutionException {
-    return new RemoteConnection(true, "127.0.0.1", configuration.getDebugPort(), true);
   }
 }

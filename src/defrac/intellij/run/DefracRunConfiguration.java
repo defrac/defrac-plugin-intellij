@@ -47,12 +47,14 @@ public final class DefracRunConfiguration extends ApplicationConfiguration {
   public boolean DEBUG;
   public String DEBUG_PORT;
   public boolean STRICT;
-  public boolean MINIFY;
   public int MODE;
+  public boolean OPTIMIZE;
+  public String EMULATOR;
 
   public DefracRunConfiguration(@NotNull final Project project,
                                 @NotNull final DefracRunConfigurationType configurationType) {
-    super("defrac.runConfig", project, configurationType);
+    super("DefracRunConfiguration", project, configurationType);
+    MODE = LAUNCH_IN_EMULATOR;
   }
 
   @Override
@@ -200,14 +202,6 @@ public final class DefracRunConfiguration extends ApplicationConfiguration {
     STRICT = value;
   }
 
-  public boolean isMinify() {
-    return MINIFY;
-  }
-
-  public void setMinify(final boolean value) {
-    MINIFY = value;
-  }
-
   public boolean launchOnDevice() {
     return MODE == LAUNCH_ON_DEVICE;
   }
@@ -226,5 +220,21 @@ public final class DefracRunConfiguration extends ApplicationConfiguration {
 
   public void setLaunchOnDevice() {
     MODE = LAUNCH_ON_DEVICE;
+  }
+
+  public boolean getOptimize() {
+    return OPTIMIZE;
+  }
+
+  public void setOptimize(final boolean value) {
+    OPTIMIZE = value;
+  }
+
+  public String getEmulator() {
+    return EMULATOR;
+  }
+
+  public void setEmulator(final String value) {
+    EMULATOR = value;
   }
 }
