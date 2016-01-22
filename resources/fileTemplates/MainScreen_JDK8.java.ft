@@ -1,10 +1,10 @@
 #if (${PACKAGE_NAME} && ${PACKAGE_NAME} != "")package ${PACKAGE_NAME};#end
 
 import defrac.ui.DisplayList;
-import defrac.ui.Screen;
+import defrac.ui.ContentScreen;
 
 #parse("File Header.java")
-final class ${NAME} extends Screen {
+final class ${NAME} extends ContentScreen {
   DisplayList displayList;
 
   @Override

@@ -3,10 +3,10 @@
 import defrac.display.Stage;
 import defrac.lang.Procedure;
 import defrac.ui.DisplayList;
-import defrac.ui.Screen;
+import defrac.ui.ContentScreen;
 
 #parse("File Header.java")
-final class ${NAME} extends Screen {
+final class ${NAME} extends ContentScreen {
   DisplayList displayList;
 
   @Override
