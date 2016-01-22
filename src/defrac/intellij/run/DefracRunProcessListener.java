@@ -18,7 +18,6 @@ package defrac.intellij.run;
 
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
-import defrac.intellij.DefracPlatform;
 import defrac.intellij.ipc.DefracIpc;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,41 +28,17 @@ public class DefracRunProcessListener extends ProcessAdapter {
   protected final DefracIpc ipc;
   @NotNull
   protected final DefracIpc.Executor executor;
-  @NotNull
-  private final DefracPlatform platform;
 
   public DefracRunProcessListener(@NotNull final DefracIpc ipc,
-                                  @NotNull final DefracIpc.Executor executor,
-                                  @NotNull final DefracPlatform platform) {
+                                  @NotNull final DefracIpc.Executor executor) {
     this.ipc = ipc;
     this.executor = executor;
-    this.platform = platform;
   }
 
   @Override
   public void processTerminated(final ProcessEvent event) {
     if(executor.listening()) {
-      // case when the process is destroyed from within the IDE
-      executor.dispose();
-
-      final DefracIpc.Executor abort = ipc.close(platform);
-
-      abort.addListener(new DefracIpc.ExecutorAdapter() {
-        @Override
-        public void onCancel() {
-          abort.dispose();
-        }
-
-        @Override
-        public void onComplete(final int exitCode) {
-          abort.dispose();
-        }
-
-        @Override
-        public void onError(@NotNull final Exception exception) {
-          abort.dispose();
-        }
-      });
+      final DefracIpc.Executor abort = ipc.close(executor.platform);
 
       ipc.submit(abort);
     }

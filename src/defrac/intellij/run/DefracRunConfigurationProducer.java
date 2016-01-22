@@ -52,7 +52,7 @@ public final class DefracRunConfigurationProducer extends JavaRunConfigurationPr
     final PsiClass mainClass = checkNotNull(DefracPsiUtil.enclosingClass(entryPoint));
 
     config.setMainClass(mainClass);
-    config.setGeneratedName();
+    config.setName(config.suggestedName());
 
     setupConfigurationModule(context, config);
 

@@ -17,6 +17,7 @@
 package defrac.intellij.compiler;
 
 import com.intellij.openapi.compiler.CompileContext;
+import com.intellij.openapi.compiler.CompilerMessageCategory;
 import defrac.concurrent.Future;
 import defrac.concurrent.Futures;
 import defrac.intellij.facet.DefracFacet;
@@ -54,7 +55,7 @@ public abstract class BooleanBasedCompilerTask extends DefracCompilerTask {
       return true;
     }
 
-    executor.addListener(new DefracIpc.ExecutorListener() {
+    executor.addListener(new DefracIpc.ExecutorAdapter() {
       @Override
       public void onMessage(@NotNull final DefracCommandLineParser.Message message) {
         context.addMessage(message.category, message.text, null, -1, -1);
@@ -62,19 +63,12 @@ public abstract class BooleanBasedCompilerTask extends DefracCompilerTask {
 
       @Override
       public void onError(@NotNull final Exception exception) {
-        reportError(context, exception.getMessage());
-
-        executor.dispose();
+        context.addMessage(CompilerMessageCategory.ERROR, exception.getMessage(), null, -1, -1);
       }
 
       @Override
       public void onComplete(final int exitCode) {
-        executor.dispose();
-      }
-
-      @Override
-      public void onCancel() {
-        executor.dispose();
+        executor.cancel();
       }
     });
 
@@ -93,11 +87,7 @@ public abstract class BooleanBasedCompilerTask extends DefracCompilerTask {
             Futures.await(future, PooledThreadExecutor.INSTANCE, 100, TimeUnit.MILLISECONDS);
 
         if(attempt != null) {
-          if(attempt.isSuccess()) {
-            return attempt.get();
-          }
-
-          return false;
+          return attempt.isSuccess() ? attempt.get() : false;
         }
       } catch(final InterruptedException interrupt) {
         Thread.currentThread().interrupt();

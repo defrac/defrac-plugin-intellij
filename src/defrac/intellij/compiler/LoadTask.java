@@ -16,9 +16,7 @@
 
 package defrac.intellij.compiler;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.compiler.CompileContext;
-import com.intellij.openapi.util.ThrowableComputable;
 import defrac.intellij.config.DefracConfig;
 import defrac.intellij.config.DefracConfigBase;
 import defrac.intellij.facet.DefracFacet;
@@ -26,7 +24,6 @@ import defrac.intellij.ipc.DefracCommands;
 import defrac.intellij.ipc.DefracIpc;
 import defrac.intellij.run.DefracRunConfiguration;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -55,7 +52,7 @@ public final class LoadTask extends BooleanBasedCompilerTask {
                                          @NotNull final DefracFacet facet,
                                          @NotNull final DefracIpc ipc) {
 
-    final DefracConfig config = loadConfig(facet);
+    final DefracConfig config = facet.getConfig();
 
     if(config == null) {
       reportError(context, "Can't load defrac settings");
@@ -74,19 +71,5 @@ public final class LoadTask extends BooleanBasedCompilerTask {
     }
 
     return ipc.load(facet.getPlatform(), settings);
-  }
-
-  @Nullable
-  private DefracConfig loadConfig(@NotNull final DefracFacet facet) {
-    try {
-      return ApplicationManager.getApplication().runReadAction(new ThrowableComputable<DefracConfig, Throwable>() {
-        @Override
-        public DefracConfig compute() throws Throwable {
-          return facet.getConfig();
-        }
-      });
-    } catch(Throwable throwable) {
-      return null;
-    }
   }
 }

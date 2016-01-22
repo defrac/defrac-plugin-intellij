@@ -110,7 +110,7 @@ public final class DefracRunConfigurationEditor extends SettingsEditor<DefracRun
   private void createUIComponents() {
     moduleComboBox = new DefracModuleComboBox(project);
     mainClassTextField = new DefracMainClassTextFieldWithBrowseButton(project, moduleComboBox.moduleSelector);
-    emulatorComboBox = new AvdComboBox(project, false, false) {
+    emulatorComboBox = new AvdComboBox(project, true, false) {
       @Nullable
       @Override
       public Module getModule() {
@@ -122,8 +122,6 @@ public final class DefracRunConfigurationEditor extends SettingsEditor<DefracRun
       public void customize(JList list, Object value, int index, boolean selected, boolean hasFocus) {
         if(value instanceof IdDisplay) {
           setText(((IdDisplay) value).getDisplay());
-        } else {
-          setText(String.format("<html><font color='red'>Unknown AVD %1$s</font></html>", value == null ? "" : value.toString()));
         }
       }
     });
@@ -141,16 +139,15 @@ public final class DefracRunConfigurationEditor extends SettingsEditor<DefracRun
     launchInEmulatorRadioButton.setSelected(configuration.launchInEmulator());
 
     final JComboBox combo = emulatorComboBox.getComboBox();
-    final String avd = configuration.getEmulator();
+    final String avdName = configuration.getEmulator();
 
-    if(avd != null) {
-      final Object targetSelectionMode = findAvdWithName(combo, avd);
+    if(avdName != null) {
+      final Object avdDisplay = findAvdWithName(combo, avdName);
 
-      if(targetSelectionMode != null) {
-        combo.setSelectedItem(targetSelectionMode);
-      } else {
-        combo.setSelectedItem(null);
-        incorrectPreferredAvd = avd;
+      combo.setSelectedItem(avdDisplay);
+
+      if(avdDisplay == null) {
+        incorrectPreferredAvd = avdName;
       }
     }
 
@@ -189,11 +186,11 @@ public final class DefracRunConfigurationEditor extends SettingsEditor<DefracRun
   }
 
   @Nullable
-  private static Object findAvdWithName(@NotNull JComboBox avdCombo, @NotNull String avdName) {
-    int i = 0;
+  private static Object findAvdWithName(@NotNull final JComboBox avdCombo,
+                                        @NotNull final String avdName) {
+    for(int i = 0, n = avdCombo.getItemCount(); i < n; ++i) {
+      final Object item = avdCombo.getItemAt(i);
 
-    for(int n = avdCombo.getItemCount(); i < n; ++i) {
-      Object item = avdCombo.getItemAt(i);
       if(item instanceof IdDisplay && avdName.equals(((IdDisplay) item).getId())) {
         return item;
       }

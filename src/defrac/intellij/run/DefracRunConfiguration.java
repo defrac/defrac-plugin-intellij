@@ -16,7 +16,8 @@
 
 package defrac.intellij.run;
 
-import com.intellij.debugger.engine.DebuggerUtils;
+import com.android.sdklib.internal.avd.AvdInfo;
+import com.android.sdklib.internal.avd.AvdManager;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.application.ApplicationConfiguration;
@@ -30,10 +31,15 @@ import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.DefracPlatform;
+import defrac.intellij.config.DefracConfig;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.run.ui.DefracRunConfigurationEditor;
+import org.jetbrains.android.facet.AndroidFacet;
+import org.jetbrains.android.run.AndroidRunConfiguration;
+import org.jetbrains.android.run.TargetSelectionMode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jps.android.model.impl.JpsAndroidModuleProperties;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static defrac.intellij.run.DefracRunUtil.isValidMainClass;
@@ -45,7 +51,6 @@ public final class DefracRunConfiguration extends ApplicationConfiguration {
   public static final int LAUNCH_IN_EMULATOR = 2;
 
   public boolean DEBUG;
-  public String DEBUG_PORT;
   public boolean STRICT;
   public int MODE;
   public boolean OPTIMIZE;
@@ -77,7 +82,7 @@ public final class DefracRunConfiguration extends ApplicationConfiguration {
     final DefracFacet facet = DefracFacet.getInstance(module);
 
     if(facet == null) {
-      throw new RuntimeConfigurationError(DefracBundle.message("facet.error.facetMissing", module.getName()));
+      throw new RuntimeConfigurationError(DefracBundle.message("facet.error.defracFacetMissing", module.getName()));
     }
 
     if(facet.isMacroLibrary()) {
@@ -92,12 +97,32 @@ public final class DefracRunConfiguration extends ApplicationConfiguration {
       throw new RuntimeConfigurationError(DefracBundle.message("facet.error.fileDoesNotExist", facet.getSettingsFile()));
     }
 
+    if(facet.getConfigOracle() == null) {
+      throw new RuntimeConfigurationError(DefracBundle.message("facet.error.noSettings"));
+    }
+
     if(facet.getPlatform().isGeneric()) {
       throw new RuntimeConfigurationError(DefracBundle.message("facet.error.genericPlatform", module.getName()));
     }
 
-    if(facet.getConfigOracle() == null) {
-      throw new RuntimeConfigurationError(DefracBundle.message("facet.error.noSettings"));
+    if(facet.getPlatform().isAndroid()) {
+      final AndroidFacet androidFacet = AndroidFacet.getInstance(module);
+
+      if(androidFacet == null) {
+        throw new RuntimeConfigurationError(DefracBundle.message("facet.error.androidFacetMissing", module.getName()));
+      }
+
+      final AvdManager avdManager = androidFacet.getAvdManagerSilently();
+
+      if(avdManager == null) {
+        throw new RuntimeConfigurationError(DefracBundle.message("facet.error.noAVDManager"));
+      }
+
+      final AvdInfo avdInfo = avdManager.getAvd(getEmulator(), true);
+
+      if(avdInfo == null) {
+        throw new RuntimeConfigurationError(DefracBundle.message("facet.error.noAVD"));
+      }
     }
   }
 
@@ -112,18 +137,12 @@ public final class DefracRunConfiguration extends ApplicationConfiguration {
     final DefracFacet facet = DefracFacet.getInstance(module);
 
     if(facet == null) {
-      throw new ExecutionException(DefracBundle.message("facet.error.facetMissing", module.getName()));
+      throw new ExecutionException(DefracBundle.message("facet.error.defracFacetMissing", module.getName()));
     }
 
     final DefracPlatform platform = facet.getPlatform();
 
     setDebug(DefracRunUtil.isDebug(env));
-
-    if(isDebug()) {
-      setDebugPort(DebuggerUtils.getInstance().findAvailableDebugAddress(true));
-    } else {
-      setDebugPort("");
-    }
 
     switch(platform) {
       case JVM:
@@ -131,10 +150,41 @@ public final class DefracRunConfiguration extends ApplicationConfiguration {
       case WEB:
         return new DefracWebRunningState(env, this, facet);
       case ANDROID:
+        final AndroidFacet androidFacet = AndroidFacet.getInstance(module);
+
+        if(androidFacet == null) {
+          throw new ExecutionException(DefracBundle.message("facet.error.androidFacetMissing", module.getName()));
+        }
+
+        final DefracConfig config = facet.getConfig();
+
+        if(config == null) {
+          throw new ExecutionException(DefracBundle.message("facet.error.noSettings"));
+        }
+
+        final AndroidRunConfiguration androidRunConfiguration = new AndroidRunConfiguration(getProject(), getFactory());
+        androidRunConfiguration.setModule(module);
+        androidRunConfiguration.MODE = AndroidRunConfiguration.LAUNCH_DEFAULT_ACTIVITY;
+        androidRunConfiguration.DEPLOY = true;
+
+        if(launchOnDevice()) {
+          androidRunConfiguration.setTargetSelectionMode(TargetSelectionMode.USB_DEVICE);
+        } else {
+          androidRunConfiguration.setTargetSelectionMode(TargetSelectionMode.EMULATOR);
+          androidRunConfiguration.PREFERRED_AVD = getEmulator();
+        }
+
+        final JpsAndroidModuleProperties properties = androidFacet.getProperties();
+        properties.ENABLE_PRE_DEXING = false;
+        properties.ENABLE_SOURCES_AUTOGENERATION = false;
+        properties.COMPILE_CUSTOM_GENERATED_SOURCES = false;
+        properties.APK_PATH = "/../target/android/" + config.getPackage() + ".apk";
+
+        return androidRunConfiguration.getState(executor, env);
       case IOS:
         return new DefracRunningState(env, this, facet);
       default:
-        throw new ExecutionException("WTF happened here?!");
+        throw new ExecutionException("Can't run application for " + platform.displayName);
     }
   }
 
@@ -186,14 +236,6 @@ public final class DefracRunConfiguration extends ApplicationConfiguration {
     DEBUG = value;
   }
 
-  public String getDebugPort() {
-    return DEBUG_PORT;
-  }
-
-  public void setDebugPort(@NotNull final String value) {
-    DEBUG_PORT = value;
-  }
-
   public boolean isStrict() {
     return STRICT;
   }
@@ -208,10 +250,6 @@ public final class DefracRunConfiguration extends ApplicationConfiguration {
 
   public boolean launchInEmulator() {
     return MODE == LAUNCH_IN_EMULATOR;
-  }
-
-  public void setLaunchMode(final int mode) {
-    MODE = mode;
   }
 
   public void setLaunchInEmulator() {

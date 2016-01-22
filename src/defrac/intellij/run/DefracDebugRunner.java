@@ -18,17 +18,13 @@ package defrac.intellij.run;
 
 import com.intellij.debugger.impl.GenericDebuggerRunner;
 import com.intellij.debugger.impl.GenericDebuggerRunnerSettings;
-import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
+import com.intellij.execution.configurations.ConfigurationInfoProvider;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunProfile;
-import com.intellij.execution.configurations.RunProfileState;
-import com.intellij.execution.runners.ExecutionEnvironment;
-import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.options.SettingsEditor;
 import defrac.intellij.facet.DefracFacet;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  */
@@ -39,28 +35,26 @@ public final class DefracDebugRunner extends GenericDebuggerRunner {
     return "DefracDebugRunner";
   }
 
-  @Nullable
   @Override
-  protected RunContentDescriptor createContentDescriptor(@NotNull final RunProfileState state,
-                                                         @NotNull final ExecutionEnvironment environment) throws ExecutionException {
-    if(state instanceof DefracRemoteState) {
-      final DefracRemoteState remoteState = (DefracRemoteState)state;
-      return attachVirtualMachine(state, environment, remoteState.getRemoteConnection(), true);
-    }
-
+  public GenericDebuggerRunnerSettings createConfigurationData(final ConfigurationInfoProvider settingsProvider) {
+    // no overriding
     return null;
   }
 
   @Override
-  public SettingsEditor<GenericDebuggerRunnerSettings> getSettingsEditor(final Executor executor,
-                                                                         final RunConfiguration configuration) {
-    return super.getSettingsEditor(executor, configuration);
+  public SettingsEditor<GenericDebuggerRunnerSettings> getSettingsEditor(final Executor executor, final RunConfiguration configuration) {
+    // no settings needed
+    return null;
   }
 
   @Override
   public boolean canRun(@NotNull final String executorId, @NotNull final RunProfile profile) {
-    return super.canRun(executorId, profile)
-        && profile instanceof DefracRunConfiguration
-        && DefracFacet.getInstance(((DefracRunConfiguration) profile).getModule()) != null;
+    if(profile instanceof DefracRunConfiguration) {
+      final DefracRunConfiguration configuration = (DefracRunConfiguration)profile;
+      final DefracFacet facet = configuration.getFacet();
+
+      return super.canRun(executorId, profile) && facet != null && !facet.getPlatform().isAndroid();
+    }
+    return false;
   }
 }

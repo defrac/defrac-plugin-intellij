@@ -57,7 +57,7 @@ public final class DefracIpc extends ProcessAdapter {
     void onCancel();
   }
 
-  public static class ExecutorAdapter implements ExecutorListener {
+  public static abstract class ExecutorAdapter implements ExecutorListener {
     @Override
     public void onMessage(@NotNull final DefracCommandLineParser.Message message) {
     }
@@ -109,7 +109,11 @@ public final class DefracIpc extends ProcessAdapter {
     }
 
     public void cancel() {
-      validate();
+      if(!listening()) {
+        return;
+      }
+
+      currentExecutor = null;
 
       if(!promise.future().isCompleted()) {
         promise.failure(new CommandExecutionException(CommandExecutionException.Reason.CANCELLED, command + " command cancelled"));
@@ -120,7 +124,13 @@ public final class DefracIpc extends ProcessAdapter {
       }
     }
 
+    public boolean listening() {
+      return currentExecutor == this;
+    }
+
     void onError(@NotNull final Exception exception) {
+      currentExecutor = null;
+
       if(!promise.future().isCompleted()) {
         promise.failure(exception);
       }
@@ -143,24 +153,6 @@ public final class DefracIpc extends ProcessAdapter {
     void onMessage(@NotNull final DefracCommandLineParser.Message message) {
       for(final ExecutorListener listener : listeners) {
         listener.onMessage(message);
-      }
-    }
-
-    public boolean listening() {
-      return currentExecutor == this;
-    }
-
-    public void dispose() {
-      if(listening()) {
-        currentExecutor = null;
-      }
-
-      listeners.clear();
-    }
-
-    final void validate() {
-      if(!listening()) {
-        throw new IllegalStateException("Executor not running");
       }
     }
   }

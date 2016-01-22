@@ -23,11 +23,13 @@ import com.intellij.facet.FacetTypeRegistry;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.LangDataKeys;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.util.ThrowableComputable;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -58,14 +60,16 @@ import static com.google.common.base.Strings.isNullOrEmpty;
  *
  */
 public final class DefracFacet extends Facet<DefracFacetConfiguration> {
-  @NotNull @NonNls public static final String DEBUG_NAME = "DEFRAC";
+  @NotNull
+  @NonNls
+  public static final String DEBUG_NAME = "DEFRAC";
 
   @NotNull
   public static final FacetTypeId<DefracFacet> ID = new FacetTypeId<DefracFacet>(DEBUG_NAME);
 
   @NotNull
   public static DefracFacetType getFacetType() {
-    return (DefracFacetType)FacetTypeRegistry.getInstance().findFacetType(ID);
+    return (DefracFacetType) FacetTypeRegistry.getInstance().findFacetType(ID);
   }
 
   @Contract("null -> null")
@@ -170,40 +174,19 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
   @Nullable
   public DefracConfig getConfig() {
     try {
-      return readConfig();
-    } catch(final IOException ioException) {
+      return ApplicationManager.getApplication().runReadAction(new ThrowableComputable<DefracConfig, Throwable>() {
+        @Override
+        public DefracConfig compute() throws Throwable {
+          return readConfig();
+        }
+      });
+    } catch(Throwable throwable) {
       return null;
     }
   }
 
   @Nullable
-  public DefracConfigOracle getConfigOracle() {
-    final DefracConfig localConfig = getConfig();
-
-    if(localConfig == null) {
-      return null;
-    }
-
-    final DefracConfig globalConfig = getGlobalConfig();
-
-    if(globalConfig == null) {
-      return null;
-    }
-
-    return DefracConfigOracle.join(getPlatform(), localConfig, globalConfig);
-  }
-
-  @Nullable
-  public DefracConfig getGlobalConfig() {
-    try {
-      return readGlobalConfig();
-    } catch(final IOException ioException) {
-      return null;
-    }
-  }
-
-  @Nullable
-  public DefracConfig readConfig() throws IOException {
+  private DefracConfig readConfig() throws Throwable {
     final VirtualFile settingsFile = getVirtualSettingsFile();
 
     if(settingsFile == null) {
@@ -218,6 +201,46 @@ public final class DefracFacet extends Facet<DefracFacetConfiguration> {
     }
 
     return DefracConfig.fromJson(file);
+  }
+
+  @Nullable
+  public DefracConfigOracle getConfigOracle() {
+    try {
+      return ApplicationManager.getApplication().runReadAction(new ThrowableComputable<DefracConfigOracle, Throwable>() {
+        @Override
+        public DefracConfigOracle compute() throws Throwable {
+          final DefracConfig localConfig = readConfig();
+
+          if(localConfig == null) {
+            return null;
+          }
+
+          final DefracConfig globalConfig = readGlobalConfig();
+
+          if(globalConfig == null) {
+            return null;
+          }
+
+          return DefracConfigOracle.join(getPlatform(), localConfig, globalConfig);
+        }
+      });
+    } catch(final Throwable t) {
+      return null;
+    }
+  }
+
+  @Nullable
+  public DefracConfig getGlobalConfig() {
+    try {
+      return ApplicationManager.getApplication().runReadAction(new ThrowableComputable<DefracConfig, Throwable>() {
+        @Override
+        public DefracConfig compute() throws Throwable {
+          return readConfig();
+        }
+      });
+    } catch(final Throwable t) {
+      return null;
+    }
   }
 
   @Nullable

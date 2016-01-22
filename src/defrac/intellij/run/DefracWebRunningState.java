@@ -38,7 +38,7 @@ public final class DefracWebRunningState extends DefracRunningState {
   protected void registerListeners(@NotNull final DefracIpc ipc,
                                    @NotNull final DefracIpc.Executor executor,
                                    @NotNull final ProcessHandler process) {
-    executor.addListener(new DefracRunExecutorListener(process, executor) {
+    executor.addListener(new DefracRunExecutorListener(process) {
       @Override
       public void onMessage(@NotNull final DefracCommandLineParser.Message message) {
         if(message.isError()) {
@@ -60,6 +60,6 @@ public final class DefracWebRunningState extends DefracRunningState {
       }
     });
 
-    process.addProcessListener(new DefracRunProcessListener(ipc, executor, facet.getPlatform()));
+    process.addProcessListener(new DefracRunProcessListener(ipc, executor));
   }
 }

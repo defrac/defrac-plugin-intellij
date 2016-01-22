@@ -50,6 +50,11 @@ public class DefracConfigBase {
     return putString("package", value);
   }
 
+  @Nullable
+  public String getPackage() {
+    return getString("package", null);
+  }
+
   @NotNull
   public DefracConfigBase setVersion(@NotNull final String value) {
     return putString("version", value);

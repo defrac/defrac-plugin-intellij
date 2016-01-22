@@ -16,18 +16,29 @@
 
 package defrac.intellij.run;
 
+import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.RunProfile;
-import com.intellij.execution.impl.DefaultJavaProgramRunner;
+import com.intellij.execution.configurations.RunProfileState;
+import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.execution.ui.RunContentDescriptor;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import defrac.intellij.facet.DefracFacet;
+import org.jetbrains.android.run.AndroidDebugRunner;
 import org.jetbrains.annotations.NotNull;
 
 /**
  */
-public final class DefracApplicationRunner extends DefaultJavaProgramRunner {
+public final class DefracAndroidDebugRunner extends AndroidDebugRunner {
   @NotNull
   @Override
   public String getRunnerId() {
-    return "DefracApplicationRunner";
+    return "DefracAndroidDebugRunner";
+  }
+
+  @Override
+  protected RunContentDescriptor doExecute(@NotNull final RunProfileState state, @NotNull final ExecutionEnvironment environment) throws ExecutionException {
+    FileDocumentManager.getInstance().saveAllDocuments();
+    return super.doExecute(state, environment);
   }
 
   @Override
@@ -36,7 +47,7 @@ public final class DefracApplicationRunner extends DefaultJavaProgramRunner {
       final DefracRunConfiguration configuration = (DefracRunConfiguration) profile;
       final DefracFacet facet = configuration.getFacet();
 
-      return super.canRun(executorId, profile) && facet != null && !facet.getPlatform().isAndroid();
+      return facet != null && facet.getPlatform().isAndroid();
     }
     return false;
   }

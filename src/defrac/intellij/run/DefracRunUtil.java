@@ -16,6 +16,8 @@
 
 package defrac.intellij.run;
 
+import com.intellij.debugger.engine.DebuggerUtils;
+import com.intellij.execution.ExecutionException;
 import com.intellij.execution.JavaExecutionUtil;
 import com.intellij.execution.Location;
 import com.intellij.execution.actions.ConfigurationContext;
@@ -219,5 +221,14 @@ public final class DefracRunUtil {
 
   public static boolean isDebug(@NotNull final ExecutionEnvironment environment) {
     return DefaultDebugExecutor.EXECUTOR_ID.equals(environment.getExecutor().getId());
+  }
+
+  @NotNull
+  public static String findAvailableDebugAddress() {
+    try {
+      return DebuggerUtils.getInstance().findAvailableDebugAddress(true);
+    } catch(ExecutionException e) {
+      return "";
+    }
   }
 }

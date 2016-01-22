@@ -66,6 +66,7 @@
     <configurationType implementation="defrac.intellij.run.DefracRunConfigurationType"/>
     <programRunner implementation="defrac.intellij.run.DefracApplicationRunner" order="first"/>
     <programRunner implementation="defrac.intellij.run.DefracDebugRunner"  order="first"/>
+    <programRunner implementation="defrac.intellij.run.DefracAndroidDebugRunner"  order="first"/>
     <runConfigurationProducer implementation="defrac.intellij.run.DefracRunConfigurationProducer" order="first"/>
     <facetType implementation="defrac.intellij.facet.DefracFacetType"/>
     <framework.detector implementation="defrac.intellij.facet.DefracFrameworkDetector"/>
