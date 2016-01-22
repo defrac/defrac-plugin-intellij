@@ -16,58 +16,83 @@
 
 package defrac.intellij.run;
 
+import com.intellij.debugger.engine.RemoteDebugProcessHandler;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.CommandLineState;
-import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.KillableColoredProcessHandler;
+import com.intellij.execution.configurations.RemoteConnection;
+import com.intellij.execution.configurations.RemoteState;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
-import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.project.Project;
+import com.intellij.xdebugger.DefaultDebugProcessHandler;
 import defrac.intellij.DefracBundle;
 import defrac.intellij.facet.DefracFacet;
-import defrac.intellij.sdk.DefracVersion;
-import defrac.intellij.util.DefracCommandLineBuilder;
+import defrac.intellij.ipc.DefracIpc;
 import org.jetbrains.annotations.NotNull;
 
-/**
- *
- */
-public final class DefracRunningState extends CommandLineState {
-  @NotNull
-  private final DefracFacet facet;
+import static defrac.intellij.run.DefracRunUtil.findAvailableDebugAddress;
 
-  private final boolean isDebug;
+/**
+ */
+public class DefracRunningState extends CommandLineState implements RemoteState {
+  @NotNull
+  protected final DefracFacet facet;
+  @NotNull
+  protected final DefracRunConfiguration configuration;
+  @NotNull
+  protected final String address;
 
   public DefracRunningState(@NotNull final ExecutionEnvironment environment,
-                            @NotNull final DefracFacet facet,
-                            final boolean isDebug) {
+                            @NotNull final DefracRunConfiguration configuration,
+                            @NotNull final DefracFacet facet) {
     super(environment);
-
+    this.configuration = configuration;
     this.facet = facet;
-    this.isDebug = isDebug;
+    this.address = configuration.isDebug() ? findAvailableDebugAddress() : "";
+  }
+
+  @Override
+  public RemoteConnection getRemoteConnection() {
+    return new RemoteConnection(true, "127.0.0.1", address, true);
   }
 
   @NotNull
   @Override
   protected ProcessHandler startProcess() throws ExecutionException {
-    final Sdk defracSdk = facet.getDefracSdk();
+    final Project project = facet.getModule().getProject();
 
-    if(defracSdk == null) {
-      throw new ExecutionException(DefracBundle.message("facet.error.noSDK"));
+    final DefracIpc ipc = DefracIpc.getInstance(project);
+
+    if(ipc == null) {
+      throw new ExecutionException(DefracBundle.message("ipc.error.ipcMissing"));
     }
 
-    final DefracVersion defracVersion = facet.getDefracVersion();
+    final ProcessHandler process;
 
-    if(defracVersion == null) {
-      throw new ExecutionException(DefracBundle.message("facet.error.noVersion"));
+    final DefracIpc.Executor executor;
+
+    if(configuration.isDebug()) {
+      executor = ipc.debug(facet.getPlatform(), address);
+      process = new RemoteDebugProcessHandler(project);
+    } else {
+      executor = ipc.run(facet.getPlatform());
+      process = new DefaultDebugProcessHandler();
     }
 
-    final GeneralCommandLine cmdLine =
-        DefracCommandLineBuilder.forFacet(facet).
-            debug(isDebug).
-            command("run").
-            build();
+    // register listeners
+    registerListeners(ipc, executor, process);
 
-    return new KillableColoredProcessHandler(cmdLine);
+    // submit the executor to ipc
+    ipc.submit(executor);
+
+    return process;
+  }
+
+  protected void registerListeners(@NotNull final DefracIpc ipc,
+                                   @NotNull final DefracIpc.Executor executor,
+                                   @NotNull final ProcessHandler process) {
+    executor.addListener(new DefracRunExecutorListener(process));
+
+    process.addProcessListener(new DefracRunProcessListener(ipc, executor));
   }
 }

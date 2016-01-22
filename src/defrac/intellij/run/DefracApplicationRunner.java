@@ -16,43 +16,28 @@
 
 package defrac.intellij.run;
 
-import com.intellij.debugger.impl.GenericDebuggerRunner;
 import com.intellij.execution.configurations.RunProfile;
-import com.intellij.openapi.module.Module;
-import defrac.intellij.DefracBundle;
-import defrac.intellij.DefracPlatform;
+import com.intellij.execution.impl.DefaultJavaProgramRunner;
 import defrac.intellij.facet.DefracFacet;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
 /**
- *
  */
-public final class DefracJvmRunner extends GenericDebuggerRunner {
-  @NotNull @NonNls public static final String RUNNER_ID = "DefracJvmRunner";
-
+public final class DefracApplicationRunner extends DefaultJavaProgramRunner {
   @NotNull
   @Override
   public String getRunnerId() {
-    return RUNNER_ID;
+    return "DefracApplicationRunner";
   }
 
   @Override
   public boolean canRun(@NotNull final String executorId, @NotNull final RunProfile profile) {
     if(profile instanceof DefracRunConfiguration) {
-      final DefracRunConfiguration runConfiguration = (DefracRunConfiguration)profile;
-      final Module module = runConfiguration.getConfigurationModule().getModule();
+      final DefracRunConfiguration configuration = (DefracRunConfiguration) profile;
+      final DefracFacet facet = configuration.getFacet();
 
-      if(module == null) {
-        return false;
-      }
-
-      final DefracFacet facet = DefracFacet.getInstance(module);
-      assert facet != null : DefracBundle.message("facet.error.facetMissing", module.getName());
-
-      return facet.getPlatform() == DefracPlatform.JVM;
+      return super.canRun(executorId, profile) && facet != null && !facet.getPlatform().isAndroid();
     }
-
     return false;
   }
 }

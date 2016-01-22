@@ -40,6 +40,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
@@ -59,7 +60,7 @@ public final class DefracProcess extends DefracProjectComponent {
 
   @NotNull
   public static DefracProcess getInstance(@NotNull final Project project) {
-    return project.getComponent(DefracProcess.class);
+    return checkNotNull(project.getComponent(DefracProcess.class));
   }
 
   public DefracProcess(@NotNull final Project project) {
@@ -171,7 +172,7 @@ public final class DefracProcess extends DefracProjectComponent {
       processHandler = KillableColoredProcessHandler.create(cmdLine);
       processHandler.setShouldDestroyProcessRecursively(true);
       processHandler.setHasPty(true);
-      ipc = DefracIpc.getInstance(processHandler);
+      ipc = DefracIpc.create(processHandler);
       processHandler.startNotify();
     } catch(final ExecutionException executionException) {
       processHandler = null;
@@ -213,11 +214,6 @@ public final class DefracProcess extends DefracProjectComponent {
   public ProcessHandler getProcessHandler() {
     tryInitProcess();
     return processHandler;
-  }
-
-
-  public int getWebServerPort() {
-    return webServerPort;
   }
 
   @Override

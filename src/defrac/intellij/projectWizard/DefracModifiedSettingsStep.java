@@ -38,17 +38,14 @@ public final class DefracModifiedSettingsStep extends SdkSettingsStep {
     this.moduleBuilder = moduleBuilder;
 
     if(myJdkComboBox.getSelectedJdk() != null) {
-      OnSdkSelected(myJdkComboBox.getSelectedJdk());
+      onSdkSelected(myJdkComboBox.getSelectedJdk());
     }
   }
 
+  @Override
   protected void onSdkSelected(final Sdk sdk) {
     if(moduleBuilder != null && moduleBuilder.isSuitableSdkType(sdk.getSdkType())) {
       moduleBuilder.setDefracSdk(sdk);
     }
-  }
-
-  protected void OnSdkSelected(final Sdk sdk) {
-    onSdkSelected(sdk);
   }
 }

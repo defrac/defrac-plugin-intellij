@@ -28,6 +28,7 @@ import com.intellij.openapi.vfs.VirtualFileEvent;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.psi.PsiFile;
 import defrac.json.JSON;
+import defrac.json.JSONObject;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -48,13 +49,13 @@ final class ConfigCache {
   }
 
   @NotNull
-  private final LoadingCache<String, JSON> cache =
+  private final LoadingCache<String, JSONObject> cache =
       CacheBuilder.
           newBuilder().
           maximumSize(100).
-          build(new CacheLoader<String, JSON>() {
+          build(new CacheLoader<String, JSONObject>() {
             @Override
-            public JSON load(final String url) throws Exception {
+            public JSONObject load(final String url) throws Exception {
               final VirtualFile file =
                   VirtualFileManager.getInstance().findFileByUrl(url);
 
@@ -63,14 +64,17 @@ final class ConfigCache {
               }
 
               return ApplicationManager.getApplication().runReadAction(
-                  new ThrowableComputable<JSON, Exception>() {
+                  new ThrowableComputable<JSONObject, Exception>() {
                     @Override
-                    public JSON compute() throws Exception {
+                    public JSONObject compute() throws Exception {
                       Reader reader = null;
 
                       try {
                         reader = new InputStreamReader(file.getInputStream());
-                        return JSON.parse(reader);
+
+                        final JSON json =  JSON.parse(reader);
+
+                        return json != null ? json.asObject() : null;
                       } finally {
                         Closeables.closeQuietly(reader);
                       }
@@ -85,15 +89,15 @@ final class ConfigCache {
     cache.cleanUp();
   }
 
-  public JSON get(@NotNull final PsiFile file) throws IOException {
+  public JSONObject get(@NotNull final PsiFile file) throws IOException {
     return get(file.getVirtualFile());
   }
 
-  public JSON get(@NotNull final VirtualFile file) throws IOException {
+  public JSONObject get(@NotNull final VirtualFile file) throws IOException {
     return get(file.getUrl());
   }
 
-  public JSON get(@NotNull final String url) throws IOException {
+  public JSONObject get(@NotNull final String url) throws IOException {
     try {
       return cache.get(url);
     } catch(final ExecutionException executionException) {

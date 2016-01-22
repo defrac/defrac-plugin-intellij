@@ -20,11 +20,11 @@ import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterators;
 import com.intellij.execution.ExecutionException;
-import com.intellij.execution.application.BaseJavaApplicationCommandLineState;
+import com.intellij.execution.application.ApplicationConfiguration;
 import com.intellij.execution.configurations.JavaParameters;
 import com.intellij.execution.configurations.JavaRunConfigurationModule;
 import com.intellij.execution.configurations.ParametersList;
-import com.intellij.execution.executors.DefaultDebugExecutor;
+import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.util.JavaParametersUtil;
 import com.intellij.openapi.util.SystemInfo;
@@ -44,15 +44,18 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  *
  */
-public final class JvmRunningState extends BaseJavaApplicationCommandLineState<DefracRunConfiguration> {
+public final class DefracJvmRunningState extends ApplicationConfiguration.JavaApplicationCommandLineState<DefracRunConfiguration> {
   @NotNull
   private final DefracFacet facet;
 
-  public JvmRunningState(@NotNull final ExecutionEnvironment environment,
-                         @NotNull final DefracRunConfiguration configuration,
-                         @NotNull final DefracFacet facet) {
-    super(environment, configuration);
+  public DefracJvmRunningState(@NotNull final ExecutionEnvironment environment,
+                               @NotNull final DefracRunConfiguration configuration,
+                               @NotNull final DefracFacet facet) {
+    super(configuration, environment);
     this.facet = facet;
+
+    setConsoleBuilder(TextConsoleBuilderFactory.getInstance().
+        createBuilder(configuration.getProject(), configuration.getConfigurationModule().getSearchScope()));
   }
 
   @Override
@@ -77,10 +80,6 @@ public final class JvmRunningState extends BaseJavaApplicationCommandLineState<D
     if(config == null) {
       throw new ExecutionException(DefracBundle.message("facet.error.noSettings"));
     }
-
-    final boolean isDebug =
-           DefaultDebugExecutor.EXECUTOR_ID.equals(getEnvironment().getExecutor().getId())
-        || config.isDebug();
 
     final String nativeLibs;
 
@@ -151,7 +150,7 @@ public final class JvmRunningState extends BaseJavaApplicationCommandLineState<D
 
     final ParametersList vmParametersList = params.getVMParametersList();
 
-    if(isDebug) {
+    if(getConfiguration().isDebug()) {
       // enable assertions if the user wants to debug the app
       // because it is the same behaviour of jvm:run
       vmParametersList.add("-ea");

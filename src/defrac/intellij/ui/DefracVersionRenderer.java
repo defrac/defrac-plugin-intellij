@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package defrac.intellij.ipc;
+package defrac.intellij.ui;
 
-import org.jetbrains.annotations.NonNls;
-import org.jetbrains.annotations.NotNull;
+import com.intellij.ui.ListCellRendererWrapper;
+import defrac.intellij.sdk.DefracVersion;
+
+import javax.swing.*;
 
 /**
- *
+ * @author Tim Richter
  */
-public final class DefracCommands {
-  @NotNull @NonNls public static final String LOAD = "load";
-  @NotNull @NonNls public static final String COMPILE = "compile";
-  @NotNull @NonNls public static final String RUN = "run";
-  @NotNull @NonNls public static final String DEBUG = "debug";
-  @NotNull @NonNls public static final String CLOSE = "close";
-  @NotNull @NonNls public static final String PACKAGE = "package";
-
-  private DefracCommands() {}
+public final class DefracVersionRenderer extends ListCellRendererWrapper<Object> {
+  @Override
+  public void customize(JList list, Object value, int index, boolean selected, boolean hasFocus) {
+    if(value instanceof DefracVersion) {
+      setText(((DefracVersion)value).getName());
+    }
+  }
 }

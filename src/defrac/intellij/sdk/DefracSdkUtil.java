@@ -36,6 +36,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -284,4 +285,38 @@ public final class DefracSdkUtil {
       return isDefracSdk(sdkTypeId);
     }
   };
+
+  @NotNull
+  public static List<Sdk> filterApplicableJdks(@NotNull final Sdk[] sdks) {
+    final List<Sdk> result = new ArrayList<Sdk>();
+
+    for(final Sdk jdk : sdks) {
+      if(JdkUtil.isApplicableJdk(jdk)) {
+        result.add(jdk);
+      }
+    }
+    return result;
+  }
+
+  @NotNull
+  public static List<Sdk> filterApplicableDefracSdks(@NotNull final Sdk[] sdks) {
+    final List<Sdk> result = new ArrayList<Sdk>();
+
+    for(final Sdk jdk : sdks) {
+      if(isDefracSdk(jdk)) {
+        result.add(jdk);
+      }
+    }
+    return result;
+  }
+
+  @Nullable
+  public static DefracVersion findCurrentVersion(@NotNull final List<DefracVersion> versions) {
+    for(final DefracVersion version : versions) {
+      if(version.isCurrent()) {
+        return version;
+      }
+    }
+    return null;
+  }
 }

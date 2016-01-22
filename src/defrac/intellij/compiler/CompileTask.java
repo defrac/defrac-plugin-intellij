@@ -18,19 +18,15 @@ package defrac.intellij.compiler;
 
 import com.intellij.openapi.compiler.CompileContext;
 import defrac.intellij.facet.DefracFacet;
+import defrac.intellij.ipc.DefracCommands;
 import defrac.intellij.ipc.DefracIpc;
 import defrac.intellij.run.DefracRunConfiguration;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.concurrent.Callable;
 
 /**
  *
  */
 public final class CompileTask extends BooleanBasedCompilerTask {
-  @NotNull @NonNls private static final String NAME = "compile";
-
   @NotNull
   public static final CompileTask INSTANCE = new CompileTask();
 
@@ -40,23 +36,24 @@ public final class CompileTask extends BooleanBasedCompilerTask {
   @NotNull
   @Override
   protected String getDefracCommandName() {
-    return NAME;
+    return DefracCommands.COMPILE;
   }
 
   protected boolean shouldRunForFacet(@NotNull final DefracFacet facet) {
-    return facet.getPlatform().isJVM();
+    return !facet.getPlatform().isGeneric();
   }
 
   @Override
-  protected Callable<Boolean> createCallable(@NotNull final CompileContext context,
-                                             @NotNull final DefracRunConfiguration configuration,
-                                             @NotNull final DefracFacet facet,
-                                             @NotNull final DefracIpc ipc) {
-    return new Callable<Boolean>() {
-      @Override
-      public Boolean call() throws Exception {
-        return ipc.compile(context, facet.getPlatform());
-      }
-    };
+  protected DefracIpc.Executor doCompile(@NotNull final CompileContext context,
+                                         @NotNull final DefracRunConfiguration configuration,
+                                         @NotNull final DefracFacet facet,
+                                         @NotNull final DefracIpc ipc) {
+    if(configuration.isDebug()) {
+      return ipc.compileForDebug(facet.getPlatform());
+      //} else if(configuration.isTest()) {
+      //return ipc.compileForTest(facet.getPlatform(), configuration.PATTERN);
+    } else {
+      return ipc.compileForRun(facet.getPlatform());
+    }
   }
 }

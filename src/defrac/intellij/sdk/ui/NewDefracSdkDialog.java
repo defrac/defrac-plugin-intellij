@@ -17,8 +17,12 @@
 package defrac.intellij.sdk.ui;
 
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.CollectionComboBoxModel;
+import defrac.intellij.sdk.DefracVersion;
+import defrac.intellij.ui.DefracVersionRenderer;
+import defrac.intellij.ui.SdkRenderer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,27 +34,30 @@ import java.util.List;
  */
 public final class NewDefracSdkDialog extends DialogWrapper {
   private JPanel contentPanel;
-  private JComboBox internalJdkComboBox;
+  private JComboBox jdkComboBox;
   private JComboBox defracVersionComboBox;
-  private JLabel internalJdkLabel;
-  private JLabel defracSdkLabel;
+  private JLabel jdkLabel;
+  private JLabel defracVersionLabel;
 
   public NewDefracSdkDialog(@Nullable final Project project,
-                            @NotNull final List<String> javaSdkNames,
-                            @NotNull final String selectedJavaSdk,
-                            @NotNull final List<String> defracVersionNames,
-                            @NotNull final String selectedDefracVersion) {
+                            @NotNull final List<Sdk> jdks,
+                            @NotNull final Sdk selectedJdk,
+                            @NotNull final List<DefracVersion> defracVersions,
+                            @NotNull final DefracVersion selectedDefracVersion) {
     super(project);
 
     setTitle("Create New Defrac SDK");
 
-    internalJdkLabel.setLabelFor(internalJdkComboBox);
-    defracSdkLabel.setLabelFor(defracVersionComboBox);
+    jdkLabel.setLabelFor(jdkComboBox);
+    defracVersionLabel.setLabelFor(defracVersionComboBox);
 
     //noinspection unchecked
-    internalJdkComboBox.setModel(new CollectionComboBoxModel(javaSdkNames, selectedJavaSdk));
+    jdkComboBox.setModel(new CollectionComboBoxModel(jdks, selectedJdk));
+    jdkComboBox.setRenderer(new SdkRenderer());
+
     //noinspection unchecked
-    defracVersionComboBox.setModel(new CollectionComboBoxModel(defracVersionNames, selectedDefracVersion));
+    defracVersionComboBox.setModel(new CollectionComboBoxModel(defracVersions, selectedDefracVersion));
+    defracVersionComboBox.setRenderer(new DefracVersionRenderer());
 
     init();
   }
@@ -61,11 +68,13 @@ public final class NewDefracSdkDialog extends DialogWrapper {
     return contentPanel;
   }
 
-  public int getSelectedJavaSdkIndex() {
-    return internalJdkComboBox.getSelectedIndex();
+  @NotNull
+  public Sdk getSelectedJdk() {
+    return (Sdk) jdkComboBox.getSelectedItem();
   }
 
-  public int getSelectedDefracVersionIndex() {
-    return defracVersionComboBox.getSelectedIndex();
+  @NotNull
+  public DefracVersion getSelectedDefracVersion() {
+    return (DefracVersion) defracVersionComboBox.getSelectedItem();
   }
 }

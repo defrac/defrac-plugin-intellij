@@ -56,14 +56,14 @@ public abstract class DefracCompilerTask implements CompileTask {
     final Module[] modules = defracRunConfiguration.getModules();
 
     if(modules.length != 1) {
-      context.addMessage(CompilerMessageCategory.ERROR, "No module found", null, -1, -1);
+      reportError(context, "No module found");
       return false;
     }
 
     final DefracFacet facet = DefracFacet.getInstance(modules[0]);
 
     if(facet == null) {
-      context.addMessage(CompilerMessageCategory.ERROR, "Couldn't find defrac facet", null, -1, -1);
+      reportError(context,"Couldn't find defrac facet");
       return false;
     }
 
@@ -91,6 +91,10 @@ public abstract class DefracCompilerTask implements CompileTask {
     } finally {
       context.getProgressIndicator().popState();
     }
+  }
+
+  protected void reportError(@NotNull final CompileContext context, @NotNull final String message) {
+    context.addMessage(CompilerMessageCategory.ERROR, message, null, -1, -1);
   }
 
   private void setProgressIndicatorText(@NotNull final CompileContext context,

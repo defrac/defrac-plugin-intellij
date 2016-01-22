@@ -45,11 +45,12 @@
     </ul>]]>
   </change-notes>
 
-  <idea-version since-build="141.177" until-build="141.9999"/>
+  <idea-version since-build="141.177"/>
 
   <depends>com.intellij.modules.java</depends>
   <depends>com.intellij.modules.json</depends>
   <depends>com.intellij.modules.xdebugger</depends>
+  <depends>org.jetbrains.android</depends>
 
   <resource-bundle>defrac.intellij.DefracBundle</resource-bundle>
 
@@ -62,9 +63,11 @@
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.WriteOnlyAnnotator"/>
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.IncompatibleReadWriteAnnotator"/>
     <annotator language="JAVA" implementationClass="defrac.intellij.annotator.IntrinsicAnnotator"/>
-    <configurationType implementation="defrac.intellij.run.DefracConfigurationType"/>
-    <programRunner implementation="defrac.intellij.run.DefracJvmRunner" order="last"/>
-    <programRunner implementation="defrac.intellij.run.DefracRunner" order="last"/>
+    <configurationType implementation="defrac.intellij.run.DefracRunConfigurationType"/>
+    <programRunner implementation="defrac.intellij.run.DefracApplicationRunner" order="first"/>
+    <programRunner implementation="defrac.intellij.run.DefracDebugRunner"  order="first"/>
+    <programRunner implementation="defrac.intellij.run.DefracAndroidDebugRunner"  order="first"/>
+    <runConfigurationProducer implementation="defrac.intellij.run.DefracRunConfigurationProducer" order="first"/>
     <facetType implementation="defrac.intellij.facet.DefracFacetType"/>
     <framework.detector implementation="defrac.intellij.facet.DefracFrameworkDetector"/>
     <fileTypeFactory implementation="defrac.intellij.fileType.DefracFileTypeFactory"/>
@@ -88,7 +91,6 @@
                 factoryClass="defrac.intellij.toolWindow.DefracToolWindowFactory"/>
     <fileTemplateGroup implementation="defrac.intellij.fileTemplate.DefracFileTemplateProvider"/>
     <projectTemplatesFactory implementation="defrac.intellij.projectWizard.DefracProjectTemplatesFactory"/>
-    <runConfigurationProducer implementation="defrac.intellij.run.DefracRunConfigurationProducer" order="first"/>
     <cachesInvalidator implementation="defrac.intellij.config.ConfigCacheInvalidator"/>
     <completion.contributor implementationClass="defrac.intellij.completion.ios.IOSCompletionContributor" order="first" language="JAVA"/>
   </extensions>

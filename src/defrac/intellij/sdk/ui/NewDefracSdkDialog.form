@@ -8,7 +8,7 @@
     <properties/>
     <border type="none"/>
     <children>
-      <component id="8ffcc" class="javax.swing.JLabel" binding="internalJdkLabel">
+      <component id="8ffcc" class="javax.swing.JLabel" binding="jdkLabel">
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -17,13 +17,13 @@
           <text value="&amp;Java SDK:"/>
         </properties>
       </component>
-      <component id="b2bd1" class="javax.swing.JComboBox" binding="internalJdkComboBox">
+      <component id="b2bd1" class="javax.swing.JComboBox" binding="jdkComboBox">
         <constraints>
           <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
       </component>
-      <component id="8ffc0" class="javax.swing.JLabel" binding="defracSdkLabel">
+      <component id="8ffc0" class="javax.swing.JLabel" binding="defracVersionLabel">
         <constraints>
           <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>

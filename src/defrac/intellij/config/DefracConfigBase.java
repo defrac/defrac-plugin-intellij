@@ -18,27 +18,25 @@ package defrac.intellij.config;
 
 import com.google.common.base.Function;
 import defrac.intellij.DefracPlatform;
-import defrac.json.JSON;
 import defrac.json.JSONArray;
 import defrac.json.JSONObject;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import static com.google.common.collect.Iterators.forArray;
-import static com.google.common.collect.Iterators.toArray;
-import static com.google.common.collect.Iterators.transform;
+import static com.google.common.collect.Iterators.*;
 
 /**
  *
  */
 public class DefracConfigBase {
   @NotNull
-  JSON json;
+  JSONObject json;
 
-  DefracConfigBase() {
+  public DefracConfigBase() {
     this(new JSONObject());
   }
 
-  DefracConfigBase(@NotNull final JSON json) {
+  public DefracConfigBase(@NotNull final JSONObject json) {
     this.json = json;
   }
 
@@ -52,6 +50,11 @@ public class DefracConfigBase {
     return putString("package", value);
   }
 
+  @Nullable
+  public String getPackage() {
+    return getString("package", null);
+  }
+
   @NotNull
   public DefracConfigBase setVersion(@NotNull final String value) {
     return putString("version", value);
@@ -63,20 +66,46 @@ public class DefracConfigBase {
   }
 
   @NotNull
+  public DefracConfigBase setStrict(final boolean value) {
+    json.put("strictMode", value);
+    return this;
+  }
+
+  @NotNull
+  public DefracConfigBase setMinify(final boolean value) {
+    json.put("minify", value); // TODO: implement
+    return this;
+  }
+
+  @NotNull
+  public DefracConfigBase setDeployOnEmulator() {
+    return setDeploy("emulator");
+  }
+
+  @NotNull
+  public DefracConfigBase setDeployOnDevice() {
+    return setDeploy("device");
+  }
+
+  @NotNull
+  public DefracConfigBase setDeploy(@NotNull final String value) {
+    json.put("deploy", value);
+    return this;
+  }
+
+  @NotNull
   public DefracConfigBase setTargets(@NotNull final DefracPlatform[] value) {
-    if(json instanceof JSONObject) {
-      final JSONArray array = new JSONArray();
+    final JSONArray array = new JSONArray();
 
-      for(final DefracPlatform target : value) {
-        if(target == null || target.isGeneric()) {
-          continue;
-        }
-
-        array.push(target.name);
+    for(final DefracPlatform target : value) {
+      if(target == null || target.isGeneric()) {
+        continue;
       }
 
-      ((JSONObject)json).put("targets", array);
+      array.push(target.name);
     }
+
+    json.put("targets", array);
 
     return this;
   }
@@ -94,19 +123,33 @@ public class DefracConfigBase {
 
   @NotNull
   private DefracConfigBase putString(@NotNull final String key, @NotNull final String value) {
-    if(json instanceof JSONObject) {
-      ((JSONObject)json).put(key, value);
-    }
-
+    json.put(key, value);
     return this;
+  }
+
+  @Nullable
+  private String getString(@NotNull final String key, @Nullable final String value) {
+    return json.optString(key, value);
   }
 
   @NotNull
   public String getName() {
-    if(json instanceof JSONObject) {
-      return ((JSONObject)json).optString("name", "Unknown");
-    }
+    return json.optString("name", "Unknown");
+  }
 
-    return "";
+  @NotNull
+  public DefracConfigBase copy() {
+    return new DefracConfigBase(json.copy());
+  }
+
+  @NotNull
+  public JSONObject toJSON() {
+    return json.copy();
+  }
+
+  @NotNull
+  @Override
+  public String toString() {
+    return json.toString();
   }
 }

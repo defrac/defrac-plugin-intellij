@@ -17,29 +17,31 @@
 package defrac.intellij.compiler;
 
 import com.intellij.openapi.compiler.CompileContext;
+import defrac.intellij.config.DefracConfig;
+import defrac.intellij.config.DefracConfigBase;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.ipc.DefracCommands;
 import defrac.intellij.ipc.DefracIpc;
 import defrac.intellij.run.DefracRunConfiguration;
 import org.jetbrains.annotations.NotNull;
 
-/**
- *
- */
-public final class PackageTask extends BooleanBasedCompilerTask {
-  @NotNull
-  public static final PackageTask INSTANCE = new PackageTask();
+import static com.google.common.base.Preconditions.checkNotNull;
 
-  private PackageTask() {
+/**
+ */
+public final class LoadTask extends BooleanBasedCompilerTask {
+  @NotNull
+  public static final LoadTask INSTANCE = new LoadTask();
+
+  private LoadTask() {
   }
 
   @NotNull
   @Override
   protected String getDefracCommandName() {
-    return DefracCommands.PACKAGE;
+    return DefracCommands.LOAD;
   }
 
-  @Override
   protected boolean shouldRunForFacet(@NotNull final DefracFacet facet) {
     return !facet.getPlatform().isGeneric();
   }
@@ -49,6 +51,25 @@ public final class PackageTask extends BooleanBasedCompilerTask {
                                          @NotNull final DefracRunConfiguration configuration,
                                          @NotNull final DefracFacet facet,
                                          @NotNull final DefracIpc ipc) {
-    return ipc.pack(facet.getPlatform());
+
+    final DefracConfig config = facet.getConfig();
+
+    if(config == null) {
+      reportError(context, "Can't load defrac settings");
+      return null;
+    }
+
+    // configure settings
+    final DefracConfigBase settings = checkNotNull(config.getOrCreatePlatform(facet.getPlatform())).copy();
+    settings.setMain(checkNotNull(configuration.getRunClass()));
+    settings.setStrict(configuration.isStrict());
+
+    if(configuration.launchInEmulator()) {
+      settings.setDeployOnEmulator();
+    } else if(configuration.launchOnDevice()) {
+      settings.setDeployOnDevice();
+    }
+
+    return ipc.load(facet.getPlatform(), settings);
   }
 }

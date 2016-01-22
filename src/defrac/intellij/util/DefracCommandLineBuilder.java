@@ -55,14 +55,7 @@ public final class DefracCommandLineBuilder {
   @NotNull private Sdk sdk;
   @Nullable private DefracVersion version;
   @NotNull private DefracPlatform platform = DefracPlatform.GENERIC;
-  private boolean debug;
   private boolean skipJavac;
-
-  @NotNull
-  public DefracCommandLineBuilder debug(final boolean value) {
-    debug = value;
-    return this;
-  }
 
   @NotNull
   public DefracCommandLineBuilder platform(@NotNull final DefracPlatform value) {
@@ -119,11 +112,6 @@ public final class DefracCommandLineBuilder {
 
     cmd.add(executable.getCanonicalPath());
 
-    if(debug) {
-      cmd.add("-Cdebug");
-      cmd.add("true");
-    }
-
     if(skipJavac) {
       cmd.add("-skip-javac");
     }
@@ -151,7 +139,6 @@ public final class DefracCommandLineBuilder {
     this.home = checkNotNull(sdk.getHomePath());
     this.version = DefracSdkUtil.getDefracVersion(sdk);
     this.skipJavac = false;
-    this.debug = false;
   }
 
   private DefracCommandLineBuilder(@NotNull final DefracFacet facet) {
@@ -168,7 +155,6 @@ public final class DefracCommandLineBuilder {
     this.workingDirectory = facet.getSettingsFile().getParentFile();
     this.version = DefracSdkUtil.getDefracVersion(sdk);
     this.skipJavac = false;
-    this.debug = false;
 
     //TODO(joa): configure android sdk if available!
     //TODO(joa): configure settings when console supports it

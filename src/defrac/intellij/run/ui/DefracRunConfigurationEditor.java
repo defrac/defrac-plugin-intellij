@@ -16,61 +16,186 @@
 
 package defrac.intellij.run.ui;
 
-import com.intellij.execution.ui.ConfigurationModuleSelector;
+import com.android.sdklib.repository.descriptors.IdDisplay;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiClass;
+import com.intellij.ui.ListCellRendererWrapper;
 import defrac.intellij.facet.DefracFacet;
 import defrac.intellij.run.DefracRunConfiguration;
+import org.jetbrains.android.run.AvdComboBox;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+
+import static defrac.intellij.run.DefracRunUtil.getCompileTimeQualifiedName;
+import static defrac.intellij.run.DefracRunUtil.getRuntimeQualifiedName;
 
 /**
- *
  */
 public final class DefracRunConfigurationEditor extends SettingsEditor<DefracRunConfiguration> {
-
   @NotNull
-  private final ConfigurationModuleSelector moduleSelector;
+  private final Project project;
 
-  private JPanel componentPanel;
-  private JLabel moduleLabel;
-  private JComboBox moduleComboBox;
+  private JPanel panel;
+  private DefracModuleComboBox moduleComboBox;
+  private DefracMainClassTextFieldWithBrowseButton mainClassTextField;
+  private JRadioButton launchInEmulatorRadioButton;
+  private JRadioButton launchOnDeviceRadioButton;
+  private AvdComboBox emulatorComboBox;
+  private JCheckBox strictModeCheckBox;
+  private JCheckBox optimizeCheckBox;
+
+  private String incorrectPreferredAvd;
 
   public DefracRunConfigurationEditor(@NotNull final Project project) {
-    this.moduleSelector = new ConfigurationModuleSelector(project, moduleComboBox) {
+    this.project = project;
+
+    moduleComboBox.addItemListener(new ItemListener() {
       @Override
-      public boolean isModuleAccepted(final Module module) {
-        if(module == null || !super.isModuleAccepted(module)) {
-          return false;
-        }
+      public void itemStateChanged(final ItemEvent e) {
+        validateState();
+      }
+    });
 
-        final DefracFacet facet = DefracFacet.getInstance(module);
+    launchOnDeviceRadioButton.addItemListener(new ItemListener() {
+      @Override
+      public void itemStateChanged(final ItemEvent e) {
+        final boolean selected = launchOnDeviceRadioButton.isSelected();
+        launchInEmulatorRadioButton.setSelected(!selected);
+        emulatorComboBox.setEnabled(!selected && launchInEmulatorRadioButton.isEnabled());
+      }
+    });
 
-        return facet != null
-            && !facet.getPlatform().isGeneric()
-            && !facet.isMacroLibrary();
+    launchInEmulatorRadioButton.addItemListener(new ItemListener() {
+      @Override
+      public void itemStateChanged(final ItemEvent e) {
+        final boolean selected = launchInEmulatorRadioButton.isSelected();
+        launchOnDeviceRadioButton.setSelected(!selected);
+        emulatorComboBox.setEnabled(selected && launchInEmulatorRadioButton.isEnabled());
+      }
+    });
+
+    final DefracMainClassBrowser classBrowser = new DefracMainClassBrowser(project, moduleComboBox.moduleSelector);
+    classBrowser.setField(mainClassTextField);
+  }
+
+  private void validateState() {
+    final Module selectedModule = moduleComboBox.getSelectedModule();
+
+    mainClassTextField.setEnabled(selectedModule != null);
+
+    final DefracFacet facet = DefracFacet.getInstance(selectedModule);
+
+    if(facet != null) {
+      final boolean supportLaunchMode = facet.getPlatform().isAndroid();
+
+      launchOnDeviceRadioButton.setEnabled(supportLaunchMode);
+      launchInEmulatorRadioButton.setEnabled(supportLaunchMode);
+      emulatorComboBox.setEnabled(supportLaunchMode);
+    }
+
+    emulatorComboBox.startUpdatingAvds(ModalityState.current());
+  }
+
+  private void $$$setupUI$$$() {
+  }
+
+  private void createUIComponents() {
+    moduleComboBox = new DefracModuleComboBox(project);
+    mainClassTextField = new DefracMainClassTextFieldWithBrowseButton(project, moduleComboBox.moduleSelector);
+    emulatorComboBox = new AvdComboBox(project, true, false) {
+      @Nullable
+      @Override
+      public Module getModule() {
+        return moduleComboBox.moduleSelector.getModule();
       }
     };
-
-    moduleLabel.setLabelFor(moduleComboBox);
+    emulatorComboBox.getComboBox().setRenderer(new ListCellRendererWrapper() {
+      @Override
+      public void customize(JList list, Object value, int index, boolean selected, boolean hasFocus) {
+        if(value instanceof IdDisplay) {
+          setText(((IdDisplay) value).getDisplay());
+        }
+      }
+    });
   }
 
   @Override
   protected void resetEditorFrom(final DefracRunConfiguration configuration) {
-    moduleSelector.reset(configuration);
+    moduleComboBox.moduleSelector.reset(configuration);
+    mainClassTextField.setText(getCompileTimeQualifiedName(configuration.getRunClass()));
+
+    strictModeCheckBox.setSelected(configuration.isStrict());
+    optimizeCheckBox.setSelected(configuration.getOptimize());
+
+    launchOnDeviceRadioButton.setSelected(configuration.launchOnDevice());
+    launchInEmulatorRadioButton.setSelected(configuration.launchInEmulator());
+
+    final JComboBox combo = emulatorComboBox.getComboBox();
+    final String avdName = configuration.getEmulator();
+
+    if(avdName != null) {
+      final Object avdDisplay = findAvdWithName(combo, avdName);
+
+      combo.setSelectedItem(avdDisplay);
+
+      if(avdDisplay == null) {
+        incorrectPreferredAvd = avdName;
+      }
+    }
+
+    validateState();
   }
 
   @Override
   protected void applyEditorTo(final DefracRunConfiguration configuration) throws ConfigurationException {
-    moduleSelector.applyTo(configuration);
+    final PsiClass mainClass = moduleComboBox.moduleSelector.findClass(mainClassTextField.getText());
+
+    moduleComboBox.moduleSelector.applyTo(configuration);
+    configuration.setMainClassName(getRuntimeQualifiedName(mainClass));
+
+    configuration.setStrict(strictModeCheckBox.isSelected());
+    configuration.setOptimize(optimizeCheckBox.isSelected());
+
+    if(launchInEmulatorRadioButton.isSelected()) {
+      configuration.setLaunchInEmulator();
+    } else if(launchOnDeviceRadioButton.isSelected()) {
+      configuration.setLaunchOnDevice();
+    }
+
+    final IdDisplay preferredAvd = (IdDisplay) emulatorComboBox.getComboBox().getSelectedItem();
+
+    if(preferredAvd == null) {
+      configuration.setEmulator(incorrectPreferredAvd != null ? incorrectPreferredAvd : "");
+    } else {
+      configuration.setEmulator(preferredAvd.getId());
+    }
   }
 
   @NotNull
   @Override
   protected JComponent createEditor() {
-    return componentPanel;
+    return panel;
+  }
+
+  @Nullable
+  private static Object findAvdWithName(@NotNull final JComboBox avdCombo,
+                                        @NotNull final String avdName) {
+    for(int i = 0, n = avdCombo.getItemCount(); i < n; ++i) {
+      final Object item = avdCombo.getItemAt(i);
+
+      if(item instanceof IdDisplay && avdName.equals(((IdDisplay) item).getId())) {
+        return item;
+      }
+    }
+
+    return null;
   }
 }

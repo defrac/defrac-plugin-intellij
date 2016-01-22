@@ -16,46 +16,39 @@
 
 package defrac.intellij.run;
 
+import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.RunProfile;
-import com.intellij.execution.executors.DefaultDebugExecutor;
-import com.intellij.execution.runners.DefaultProgramRunner;
-import com.intellij.openapi.module.Module;
-import defrac.intellij.DefracBundle;
-import defrac.intellij.DefracPlatform;
+import com.intellij.execution.configurations.RunProfileState;
+import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.execution.ui.RunContentDescriptor;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import defrac.intellij.facet.DefracFacet;
-import org.jetbrains.annotations.NonNls;
+import org.jetbrains.android.run.AndroidDebugRunner;
 import org.jetbrains.annotations.NotNull;
 
 /**
- *
  */
-public final class DefracRunner extends DefaultProgramRunner {
-  @NotNull @NonNls public static final String RUNNER_ID = "DefracRunner";
-
+public final class DefracAndroidDebugRunner extends AndroidDebugRunner {
   @NotNull
   @Override
   public String getRunnerId() {
-    return RUNNER_ID;
+    return "DefracAndroidDebugRunner";
+  }
+
+  @Override
+  protected RunContentDescriptor doExecute(@NotNull final RunProfileState state, @NotNull final ExecutionEnvironment environment) throws ExecutionException {
+    FileDocumentManager.getInstance().saveAllDocuments();
+    return super.doExecute(state, environment);
   }
 
   @Override
   public boolean canRun(@NotNull final String executorId, @NotNull final RunProfile profile) {
     if(profile instanceof DefracRunConfiguration) {
-      final DefracRunConfiguration runConfiguration = (DefracRunConfiguration) profile;
-      final Module module = runConfiguration.getConfigurationModule().getModule();
+      final DefracRunConfiguration configuration = (DefracRunConfiguration) profile;
+      final DefracFacet facet = configuration.getFacet();
 
-      if(module == null) {
-        return false;
-      }
-
-      final DefracFacet facet = DefracFacet.getInstance(module);
-      assert facet != null : DefracBundle.message("facet.error.facetMissing", module.getName());
-
-      return facet.getPlatform() != DefracPlatform.JVM
-          && !DefaultDebugExecutor.EXECUTOR_ID.equals(executorId)
-          && facet.getPlatform().isAvailableOnHostOS();
+      return facet != null && facet.getPlatform().isAndroid();
     }
-
     return false;
   }
 }

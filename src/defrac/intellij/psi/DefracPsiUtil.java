@@ -55,6 +55,19 @@ public final class DefracPsiUtil {
       PsiModifier.PUBLIC,
   };
 
+  @Nullable
+  public static PsiClass enclosingClass(@Nullable final PsiElement element) {
+    if(element == null) {
+      return null;
+    }
+
+    if(element instanceof PsiClass) {
+      return (PsiClass)element;
+    }
+
+    return enclosingClass(element.getParent());
+  }
+
   @SuppressWarnings("SimplifiableIfStatement")
   @Contract("null -> false")
   public static boolean isMacro(@Nullable final PsiElement element) {

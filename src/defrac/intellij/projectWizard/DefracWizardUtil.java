@@ -41,9 +41,9 @@ public final class DefracWizardUtil {
 
     ApplicationSettingsController(@NotNull final JTextField applicationNameTextField,
                                   @NotNull final JTextField packageNameTextField,
-                                  @Nullable final JTextField mainClassTextField,
+                                  @Nullable final JTextField mainScreenNameTextField,
                                   @NotNull final JLabel errorLabel,
-                                  @Nullable final String mainClassName) {
+                                  @Nullable final String mainScreenName) {
       applicationNameTextField.getDocument().addDocumentListener(new DocumentAdapter() {
         @Override
         protected void textChanged(final DocumentEvent documentEvent) {
@@ -52,8 +52,8 @@ public final class DefracWizardUtil {
             if(appName.length() > 0) {
               final String defaultPackageName = getDefaultPackageNameByModuleName(appName);
               packageNameTextField.setText(defaultPackageName);
-              if(mainClassTextField != null) {
-                mainClassTextField.setText(defaultPackageName + '.' + mainClassName);
+              if(mainScreenNameTextField != null) {
+                mainScreenNameTextField.setText(defaultPackageName + '.' + mainScreenName);
               }
             }
             packageTextFieldChangedByUser = false;
@@ -110,10 +110,10 @@ public final class DefracWizardUtil {
 
   public static void handleApplicationSettingsInput(@NotNull final JTextField applicationNameTextField,
                                                     @NotNull final JTextField packageNameTextField,
-                                                    @Nullable final JTextField mainClassTextField,
+                                                    @Nullable final JTextField mainScreenNameTextField,
                                                     @NotNull final JLabel errorLabel,
-                                                    @Nullable final String mainClassName) {
-    new ApplicationSettingsController(applicationNameTextField, packageNameTextField, mainClassTextField, errorLabel, mainClassName);
+                                                    @Nullable final String mainScreenName) {
+    new ApplicationSettingsController(applicationNameTextField, packageNameTextField, mainScreenNameTextField, errorLabel, mainScreenName);
   }
 
   public static void handlePlatformsSettingsInput(final JCheckBox webCheckBox,
@@ -124,12 +124,12 @@ public final class DefracWizardUtil {
     new PlatformsSettingsController(webCheckBox, iosCheckBox, androidCheckBox, jvmCheckBox, errorLabel);
   }
 
-  public static void handleMainClassSettingsInput(final JTextField mainClassTextField,
-                                                  final JLabel errorLabel) {
-    mainClassTextField.getDocument().addDocumentListener(new DocumentAdapter() {
+  public static void handleMainScreenSettingsInput(final JTextField mainScreenNameTextField,
+                                                   final JLabel errorLabel) {
+    mainScreenNameTextField.getDocument().addDocumentListener(new DocumentAdapter() {
       @Override
       protected void textChanged(final DocumentEvent documentEvent) {
-        errorLabel.setText(validateMainClassName(mainClassTextField.getText()));
+        errorLabel.setText(validateMainScreenName(mainScreenNameTextField.getText()));
       }
     });
   }
@@ -159,15 +159,15 @@ public final class DefracWizardUtil {
   }
 
   @NotNull
-  public static String validateMainClassName(@NotNull final String value) {
+  public static String validateMainScreenName(@NotNull final String value) {
     final String name = value.trim();
 
     if(name.isEmpty()) {
-      return DefracBundle.message("projectWizard.error.noMainClass");
+      return DefracBundle.message("projectWizard.error.noMainScreen");
     }
 
     if(!isValidQualifiedName(name)) {
-      return DefracBundle.message("projectWizard.error.invalidMainClass");
+      return DefracBundle.message("projectWizard.error.invalidMainScreenName");
     }
 
     return "";

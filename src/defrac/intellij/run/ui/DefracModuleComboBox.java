@@ -14,26 +14,20 @@
  * limitations under the License.
  */
 
-package defrac.json;
+package defrac.intellij.run.ui;
+
+import com.intellij.application.options.ModulesComboBox;
+import com.intellij.execution.ui.ConfigurationModuleSelector;
+import com.intellij.openapi.project.Project;
+import org.jetbrains.annotations.NotNull;
 
 /**
- *
  */
-public final class JSONException extends RuntimeException {
-  private static final long serialVersionUID = 984245996151683099L;
+public final class DefracModuleComboBox extends ModulesComboBox {
+  @NotNull
+  public final ConfigurationModuleSelector moduleSelector;
 
-  public JSONException() {
-  }
-
-  public JSONException(final String message) {
-    super(message);
-  }
-
-  public JSONException(final String message, final Throwable cause) {
-    super(message, cause);
-  }
-
-  public JSONException(final Throwable cause) {
-    super(cause);
+  public DefracModuleComboBox(@NotNull final Project project) {
+    this.moduleSelector = new DefracConfigurationModuleSelector(project, this);
   }
 }

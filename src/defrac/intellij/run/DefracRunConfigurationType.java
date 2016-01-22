@@ -1,0 +1,101 @@
+/*
+ * Copyright 2014 defrac inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package defrac.intellij.run;
+
+import com.intellij.execution.application.ApplicationConfigurationType;
+import com.intellij.execution.configurations.ConfigurationFactory;
+import com.intellij.execution.configurations.ConfigurationTypeUtil;
+import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.facet.ProjectFacetManager;
+import com.intellij.openapi.project.Project;
+import defrac.intellij.DefracBundle;
+import defrac.intellij.facet.DefracFacet;
+import icons.DefracIcons;
+import org.jetbrains.annotations.NotNull;
+
+import javax.swing.*;
+
+/**
+ *
+ */
+public final class DefracRunConfigurationType extends ApplicationConfigurationType {
+
+  public static DefracRunConfigurationType getInstance() {
+    return ConfigurationTypeUtil.findConfigurationType(DefracRunConfigurationType.class);
+  }
+
+  @NotNull
+  public final ConfigurationFactory factory = new DefracRunConfigurationFactory();
+
+  @Override
+  public String getDisplayName() {
+    return DefracBundle.message("config.run.name");
+  }
+
+  @Override
+  public String getConfigurationTypeDescription() {
+    return DefracBundle.message("config.run.description");
+  }
+
+  @NotNull
+  @Override
+  public String getId() {
+    return "DefracRunConfigurationType";
+  }
+
+  @Override
+  public ConfigurationFactory[] getConfigurationFactories() {
+    return new ConfigurationFactory[]{factory};
+  }
+
+  @Override
+  public Icon getIcon() {
+    return DefracIcons.Defrac16x16;
+  }
+
+  final class DefracRunConfigurationFactory extends ConfigurationFactory {
+    DefracRunConfigurationFactory() {
+      super(DefracRunConfigurationType.this);
+    }
+
+    @Override
+    public Icon getIcon() {
+      return DefracIcons.Defrac16x16;
+    }
+
+    @Override
+    public boolean isConfigurationSingletonByDefault() {
+      return true;
+    }
+
+    @Override
+    public boolean canConfigurationBeSingleton() {
+      return true;
+    }
+
+    @Override
+    public boolean isApplicable(@NotNull final Project project) {
+      return ProjectFacetManager.getInstance(project).hasFacets(DefracFacet.ID);
+    }
+
+    @NotNull
+    @Override
+    public RunConfiguration createTemplateConfiguration(@NotNull final Project project) {
+      return new DefracRunConfiguration(project, DefracRunConfigurationType.this);
+    }
+  }
+}

@@ -41,9 +41,6 @@
           </grid>
         </constraints>
         <properties/>
-        <clientProperties>
-          <caretAspectRatio class="java.lang.Float" value="0.04"/>
-        </clientProperties>
       </component>
       <component id="d7327" class="javax.swing.JTextField" binding="packageNameTextField">
         <constraints>
@@ -52,9 +49,6 @@
           </grid>
         </constraints>
         <properties/>
-        <clientProperties>
-          <caretAspectRatio class="java.lang.Float" value="0.04"/>
-        </clientProperties>
       </component>
       <component id="bc8a" class="javax.swing.JCheckBox" binding="webCheckBox">
         <constraints>
@@ -93,9 +87,9 @@
           <text value="&amp;JVM"/>
         </properties>
       </component>
-      <component id="b3514" class="javax.swing.JTextField" binding="mainClassNameTextField">
+      <component id="b3514" class="javax.swing.JTextField" binding="mainScreenNameTextField">
         <constraints>
-          <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+          <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="1" use-parent-layout="false">
             <preferred-size width="150" height="-1"/>
           </grid>
         </constraints>
@@ -103,9 +97,6 @@
           <enabled value="true"/>
           <text value="com.example.MainScreen"/>
         </properties>
-        <clientProperties>
-          <caretAspectRatio class="java.lang.Float" value="0.04"/>
-        </clientProperties>
       </component>
       <component id="847eb" class="javax.swing.JLabel">
         <constraints>
