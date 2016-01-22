@@ -174,13 +174,15 @@ public final class DefracRunConfiguration extends ApplicationConfiguration {
           androidRunConfiguration.PREFERRED_AVD = getEmulator();
         }
 
+        // HACK: we need to disable dex generation due to overhead and missing java 8 support
         final JpsAndroidModuleProperties properties = androidFacet.getProperties();
-        properties.ENABLE_PRE_DEXING = false;
-        properties.ENABLE_SOURCES_AUTOGENERATION = false;
-        properties.COMPILE_CUSTOM_GENERATED_SOURCES = false;
-        properties.APK_PATH = "/../target/android/" + config.getPackage() + ".apk";
+        properties.ALLOW_USER_CONFIGURATION = true;
 
-        return androidRunConfiguration.getState(executor, env);
+        final RunProfileState state = androidRunConfiguration.getState(executor, env);
+
+        properties.ALLOW_USER_CONFIGURATION = false;
+
+        return state;
       case IOS:
         return new DefracRunningState(env, this, facet);
       default:
