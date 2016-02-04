@@ -17,6 +17,7 @@
 package defrac.intellij.compiler;
 
 import com.intellij.openapi.compiler.CompileContext;
+import defrac.intellij.DefracPlatform;
 import defrac.intellij.config.DefracConfig;
 import defrac.intellij.config.DefracConfigBase;
 import defrac.intellij.facet.DefracFacet;
@@ -60,16 +61,17 @@ public final class LoadTask extends BooleanBasedCompilerTask {
     }
 
     // configure settings
-    final DefracConfigBase settings = checkNotNull(config.getOrCreatePlatform(facet.getPlatform())).copy();
-    settings.setMain(checkNotNull(configuration.getRunClass()));
-    settings.setStrict(configuration.isStrict());
+    final DefracConfig localSettings = config.copy();
+    final DefracConfigBase platformSettings = checkNotNull(localSettings.getOrCreatePlatform(facet.getPlatform()));
+    platformSettings.setMain(checkNotNull(configuration.getRunClass()));
+    platformSettings.setStrict(configuration.isStrict());
 
     if(configuration.launchInEmulator()) {
-      settings.setDeployOnEmulator();
+      platformSettings.setDeployOnEmulator();
     } else if(configuration.launchOnDevice()) {
-      settings.setDeployOnDevice();
+      platformSettings.setDeployOnDevice();
     }
 
-    return ipc.load(facet.getPlatform(), settings);
+    return ipc.load(DefracPlatform.GENERIC, localSettings);
   }
 }
