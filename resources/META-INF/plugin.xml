@@ -17,7 +17,7 @@
 <idea-plugin version="2">
   <id>defrac.intellij</id>
   <name>defrac Support</name>
-  <version>0.0.16</version>
+  <version>0.0.17</version>
   <vendor email="team@defrac.com" url="https://www.defrac.com">defrac inc.</vendor>
 
   <description>
@@ -26,6 +26,7 @@
 
   <change-notes>
     <![CDATA[<ul>
+      <li>2016-02-04 - Support for extended load command</li>
       <li>2016-01-22 - Run and Debug integration for Android, JVM and Web</li>
       <li>2015-08-04 - Migration from GSON to defrac JSON</li>
       <li>2015-06-22 - Fix detection of synthetic access methods</li>
