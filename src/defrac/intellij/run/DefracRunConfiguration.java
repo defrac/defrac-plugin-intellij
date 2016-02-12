@@ -112,16 +112,18 @@ public final class DefracRunConfiguration extends ApplicationConfiguration {
         throw new RuntimeConfigurationError(DefracBundle.message("facet.error.androidFacetMissing", module.getName()));
       }
 
-      final AvdManager avdManager = androidFacet.getAvdManagerSilently();
+      if(MODE == LAUNCH_IN_EMULATOR) {
+        final AvdManager avdManager = androidFacet.getAvdManagerSilently();
 
-      if(avdManager == null) {
-        throw new RuntimeConfigurationError(DefracBundle.message("facet.error.noAVDManager"));
-      }
+        if(avdManager == null) {
+          throw new RuntimeConfigurationError(DefracBundle.message("facet.error.noAVDManager"));
+        }
 
-      final AvdInfo avdInfo = avdManager.getAvd(getEmulator(), true);
+        final AvdInfo avdInfo = avdManager.getAvd(getEmulator(), true);
 
-      if(avdInfo == null) {
-        throw new RuntimeConfigurationError(DefracBundle.message("facet.error.noAVD"));
+        if(avdInfo == null) {
+          throw new RuntimeConfigurationError(DefracBundle.message("facet.error.noAVD"));
+        }
       }
     }
   }
