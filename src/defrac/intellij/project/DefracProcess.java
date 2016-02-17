@@ -17,6 +17,7 @@
 package defrac.intellij.project;
 
 import com.google.common.collect.Lists;
+import com.intellij.debugger.engine.DebuggerUtils;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.filters.BrowserHyperlinkInfo;
@@ -56,8 +57,6 @@ public final class DefracProcess extends DefracProjectComponent {
   @Nullable
   private DefracIpc ipc;
 
-  private int webServerPort;
-
   @NotNull
   public static DefracProcess getInstance(@NotNull final Project project) {
     return checkNotNull(project.getComponent(DefracProcess.class));
@@ -69,7 +68,6 @@ public final class DefracProcess extends DefracProjectComponent {
 
   @Override
   protected void doInitComponent(@NotNull final Project project) {
-    webServerPort = WEB_SERVER_PORT.getAndIncrement();
     killProcessHandler();
   }
 
@@ -143,7 +141,11 @@ public final class DefracProcess extends DefracProjectComponent {
     // redefine the port of the configuration so multiple open
     // projects don't create a mess for the user
     cmd.add("--Cport");
-    cmd.add(String.valueOf(webServerPort));
+    try {
+      cmd.add(DebuggerUtils.getInstance().findAvailableDebugAddress(true));
+    } catch(ExecutionException e) {
+      cmd.add(String.valueOf(WEB_SERVER_PORT.getAndIncrement()));
+    }
 
     // let defrac know the current path to the project
     final String basePath = getProject().getBasePath();
