@@ -166,7 +166,8 @@ public final class DefracRunConfiguration extends ApplicationConfiguration {
 
         final AndroidRunConfiguration androidRunConfiguration = new AndroidRunConfiguration(getProject(), getFactory());
         androidRunConfiguration.setModule(module);
-        androidRunConfiguration.MODE = AndroidRunConfiguration.LAUNCH_DEFAULT_ACTIVITY;
+        androidRunConfiguration.MODE = AndroidRunConfiguration.LAUNCH_SPECIFIC_ACTIVITY;
+        androidRunConfiguration.ACTIVITY_CLASS = getRunClass();
         androidRunConfiguration.DEPLOY = true;
 
         if(launchOnDevice()) {
